@@ -16,10 +16,11 @@ complx-tools is a suite of educational tools for learning lc3 assembly. It inclu
 1. `./configure`
 2. `./configure`
 3. `cmake --build build`
-4. `cmake --build build -- install`<sub>1</sub>
-5. `ldconfig`<sub>2</sub>
+4. `cmake --build build -- install`<sup>1</sup>
+5. `ldconfig`<sup>2</sup>
 
 <sub>1. May require sudo if on unix and installing to a system directory</sub>
+
 <sub>2. Only necessary on linux, may require sudo</sub>
 
 # Features
