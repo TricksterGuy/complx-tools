@@ -18,8 +18,8 @@ const wxChar* bases[] = {
 
 const long values[] =
 {
-    Decimal,
-    Hexadecimal,
+    RegisterProperty::Decimal,
+    RegisterProperty::Hexadecimal,
 };
 
 wxString GetAllowedCharacters(unsigned int flags)
