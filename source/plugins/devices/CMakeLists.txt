@@ -1,0 +1,3 @@
+add_subdirectory(lc3_random)
+add_subdirectory(lc3_second_timer)
+add_subdirectory(lc3_timer)

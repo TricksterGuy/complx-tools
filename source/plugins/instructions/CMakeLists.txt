@@ -1,0 +1,1 @@
+add_subdirectory(lc3_multiply)
