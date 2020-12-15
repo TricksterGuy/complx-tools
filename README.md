@@ -1,4 +1,4 @@
-complx
+complx-tools
 ======
 
 Extensible LC-3 Simulator written in C++.  Includes a Graphical User Interface and Command Line Interface simulator, Assembler, [Python Bindings](https://github.com/zucchini/pyLC3), and Python Autograder. Mainly used in CS2110 at Georgia Tech.  Maintained by Brandon (bwhitehead0308 [AT] gmail [DOT] com).
@@ -6,13 +6,21 @@ Extensible LC-3 Simulator written in C++.  Includes a Graphical User Interface a
 __Special Note__ Let me know if your school is using any portion of the tools provided here. The tools are subject to change every semester as new features are added or stuff is tweaked based on student feedback. I don't want to break anyone's setup, and would like to keep users in the loop with changes and suggest features.
 
 # Overview
-complx is a suite of educational tools for learning lc3 assembly. It includes both a gui and cli based simulator (named complx and comp respectively), an assembler (as2obj), python bindings via pyLC3, and an autograder framework written in python.  Complx also be extended with plugins that add additional functionality to the LC3.  The tools also come with a C++ interface to the LC3 (liblc3) along with python bindings to it via [pyLC3](https://github.com/zucchini/pyLC3). Complx, the GUI simulator, was written using the wxWidgets library.
+complx-tools is a suite of educational tools for learning lc3 assembly. It includes both a gui and cli based simulator (named complx and comp respectively), an assembler (lc3as), python bindings via pyLC3, and an autograder framework written in python.  Complx also be extended with plugins that add additional functionality to the LC3.  The tools also come with a C++ interface to the LC3 (liblc3) along with python bindings to it via [pyLC3](https://github.com/zucchini/pyLC3). Complx, the GUI simulator, was written using the wxWidgets library.
 
 # Installation
 
 [Installing Prebuilt Binaries](https://github.com/TricksterGuy/complx/wiki/Installing-Prebuilt-Binaries)
 
-[Build Instructions for Linux](https://github.com/TricksterGuy/complx/wiki/Building-for-Linux)
+## Manual Build from source
+1. `./configure`
+2. `./configure`
+3. `cmake --build build`
+4. `cmake --build build -- install`<sub>1</sub>
+5. `ldconfig`<sub>2</sub>
+
+<sub>1. May require sudo if on unix and installing to a system directory</sub>
+<sub>2. Only necessary on linux, may require sudo</sub>
 
 # Features
 * Both a textual and graphical user interface available
