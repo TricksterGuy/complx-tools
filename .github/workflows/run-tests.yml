@@ -36,4 +36,4 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: make test
+      run: make -C build-test test
