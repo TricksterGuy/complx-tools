@@ -2,10 +2,6 @@ name: Run Tests
 
 on: [push, pull_request]
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-
 jobs:
   test:
     strategy:
@@ -30,9 +26,8 @@ jobs:
       run: ./configure test
 
     - name: Build and Install
-      working-directory: ${{runner.workspace}}/build-test
       shell: bash
-      run: cmake --build . --config $BUILD_TYPE --target install
+      run: sudo make --build build-test --target install
       
     - name: Run LdConfig
       shell: bash
