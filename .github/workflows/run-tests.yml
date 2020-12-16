@@ -1,0 +1,44 @@
+name: CMake
+
+on: [push, pull_request]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Test Dependencies
+      shell: bash
+      run: sudo apt install -y libboost-test-dev libboost-serialization-dev
+
+    - name: Create Local Config
+      shell: bash
+      run: ./configure test
+
+    - name: Configure CMake
+      shell: bash
+      run: ./configure test
+
+    - name: Build and Install
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE --target install
+      
+    - name: Run LdConfig
+      shell: bash
+      run: sudo ldconfig
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: make test
