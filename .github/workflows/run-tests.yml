@@ -34,6 +34,5 @@ jobs:
       run: sudo ldconfig
 
     - name: Test
-      working-directory: ${{runner.workspace}}/build
       shell: bash
       run: make -C build-test test
