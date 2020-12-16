@@ -27,7 +27,7 @@ jobs:
 
     - name: Build and Install
       shell: bash
-      run: sudo make --build build-test --target install
+      run: sudo cmake --build build-test --target install
       
     - name: Run LdConfig
       shell: bash
