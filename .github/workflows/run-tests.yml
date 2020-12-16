@@ -1,4 +1,4 @@
-name: CMake
+name: Run Tests
 
 on: [push, pull_request]
 
@@ -30,7 +30,7 @@ jobs:
       run: ./configure test
 
     - name: Build and Install
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}/build-test
       shell: bash
       run: cmake --build . --config $BUILD_TYPE --target install
       
