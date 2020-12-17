@@ -37,6 +37,7 @@ jobs:
     - name: Run LdConfig
       shell: bash
       run: sudo ldconfig
+      if: matrix.os == 'ubuntu-latest'
 
     - name: Test
       shell: bash
