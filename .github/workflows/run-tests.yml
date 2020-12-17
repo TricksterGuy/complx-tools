@@ -3,19 +3,24 @@ name: Run Tests
 on: [push, pull_request]
 
 jobs:
+
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install Test Dependencies
-      shell: bash
+    - name: Install Test Dependencies (Linux)
       run: sudo apt install -y libboost-test-dev libboost-serialization-dev
+      if: matrix.os == 'ubuntu-latest'
+  
+    - name: Install Test Dependencies (macOS)
+      run: brew install boost
+      if: matrix.os == 'macos-latest'
 
     - name: Create Local Config
       shell: bash
