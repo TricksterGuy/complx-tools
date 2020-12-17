@@ -1,0 +1,43 @@
+name: Run Tests Windows
+
+on: [push, pull_request]
+
+jobs:
+
+  test:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup MSYS2
+      # You may pin to the exact commit or the version.
+      # uses: msys2/setup-msys2@e00cc7ca871a28b4d575714454769e57342da3da
+      uses: msys2/setup-msys2@v2
+      with:
+        # Variant of the environment to set by default: MSYS, MINGW32 or MINGW64
+        msystem: # optional, default is MINGW64
+        # Default value for MSYS2_PATH_TYPE environment variable: strict, inherit or minimal
+        path-type: # optional, default is minimal
+        # Retrieve and extract base installation from upstream GitHub Releases
+        release: # optional, default is true
+        # Update MSYS2 installation through pacman
+        update: # optional
+        # Install packages after installation through pacman
+        install: mingw-w64-x86_64-boost mingw-w64-x86_64-cmake
+
+    - name: Create Local Config
+      shell: msys2 {0}
+      run: ./configure test
+
+    - name: Configure CMake
+      shell: msys2 {0}
+      run: ./configure test
+
+    - name: Build and Install
+      shell: msys2 {0}
+      run: cmake --build build-test --target install
+
+    - name: Test
+      shell: msys2 {0}
+      run: make -C build-test test
