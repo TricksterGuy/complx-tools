@@ -29,7 +29,8 @@ complx-tools is a suite of educational tools for learning lc3 assembly. It inclu
 
 ## Manual Build from source
 
-To build manually you will need at least Cmake-3.8 and g++-9
+To build manually you will need at least cmake-3.8 and g++-9.
+Dependencies are Boost-Serialization and wxWidgets, 
 
 1. `./configure`
 2. `./configure`
