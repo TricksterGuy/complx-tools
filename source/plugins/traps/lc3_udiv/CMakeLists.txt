@@ -186,5 +186,6 @@ generate_coverage_report(${target})
 
 # Library
 install(TARGETS ${target}
-    RUNTIME DESTINATION ${INSTALL_LIB}    COMPONENT runtime
+    RUNTIME DESTINATION ${INSTALL_LIB} COMPONENT runtime
+    LIBRARY DESTINATION ${INSTALL_LIB} COMPONENT runtime
 )
