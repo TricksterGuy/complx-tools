@@ -10,9 +10,27 @@ complx-tools is a suite of educational tools for learning lc3 assembly. It inclu
 
 # Installation
 
-[Installing Prebuilt Binaries](https://github.com/TricksterGuy/complx/wiki/Installing-Prebuilt-Binaries)
+## Installing from prebuilt packages
+
+### Linux (apt-based distros)
+
+`sudo add-apt-repository ppa:tricksterguy87/complx2-release`
+`sudo apt update`
+`sudo apt install complx-tools`
+
+## Installing nightly build
+
+### Linux (apt-based distros)
+
+`sudo add-apt-repository ppa:tricksterguy87/complx2-release`
+`sudo apt update`
+`sudo apt install complx-tools`
+
 
 ## Manual Build from source
+
+To build manually you will need at least Cmake-3.8 and g++-9
+
 1. `./configure`
 2. `./configure`
 3. `cmake --build build`
