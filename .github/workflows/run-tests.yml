@@ -44,7 +44,7 @@ jobs:
       run: make -C build-test test
 
   test-windows:
-    name: Run tests Windows
+    name: test (windows-latest)
     runs-on: windows-latest
     defaults:
       run:
