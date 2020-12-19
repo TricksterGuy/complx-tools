@@ -10,7 +10,7 @@ option(OPTION_ENABLE_COLORLCD_PLUGIN "Enable the Color LCD Plugin" ON)
 #
 
 set(wxWidgets_USE_LIBS core base)
-find_package(wxWidgets)
+find_package(wxWidgets QUIET)
 include(${wxWidgets_USE_FILE})
 
 

@@ -4,7 +4,7 @@
 #
 
 # CMake version
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 # Meta information about the project
 set(META_PROJECT_NAME "complx-tools")
@@ -43,7 +43,7 @@ function(add_test_without_ctest target)
         COMMAND $<TARGET_FILE:${target}_test>
     )
 
-    generate_coverage_report(${target})
+    generate_coverage_report(${target}_test)
 endfunction()
 
 
@@ -51,7 +51,7 @@ endfunction()
 # External dependencies
 #
 
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework REQUIRED QUIET)
 
 
 #

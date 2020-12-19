@@ -10,7 +10,7 @@ option(OPTION_ENABLE_BWLCD_PLUGIN "Enable the Black White LCD Plugin" ON)
 #
 
 set(wxWidgets_USE_LIBS core base)
-find_package(wxWidgets)
+find_package(wxWidgets QUIET)
 include(${wxWidgets_USE_FILE})
 
 

@@ -2,7 +2,7 @@
 # External dependencies
 #
 
-find_package(Boost COMPONENTS serialization)
+find_package(Boost COMPONENTS serialization QUIET)
 
 #
 # Library name and options

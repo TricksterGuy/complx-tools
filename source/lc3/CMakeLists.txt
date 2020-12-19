@@ -230,7 +230,6 @@ perform_health_checks(
 
 generate_coverage_report(${target})
 
-
 #
 # Deployment
 #
