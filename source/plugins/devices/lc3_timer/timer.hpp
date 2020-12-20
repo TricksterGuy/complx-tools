@@ -9,6 +9,8 @@
 #define TIMER_MAJOR_VERSION 1
 #define TIMER_MINOR_VERSION 6
 
+class LC3_TIMER_API Plugin;
+
 ///TODO complete this plugin
 class LC3_TIMER_API TimerPlugin : public Plugin
 {

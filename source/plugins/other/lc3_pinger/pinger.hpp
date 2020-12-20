@@ -7,6 +7,8 @@
 #define PINGER_MAJOR_VERSION 1
 #define PINGER_MINOR_VERSION 6
 
+class LC3_PINGER_API Plugin;
+
 class LC3_PINGER_API PingerPlugin : public Plugin
 {
 public:

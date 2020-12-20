@@ -7,6 +7,8 @@
 #define UDIV_MAJOR_VERSION 1
 #define UDIV_MINOR_VERSION 6
 
+class LC3_UDIV_API TrapFunctionPlugin;
+
 class LC3_UDIV_API UdivPlugin : public TrapFunctionPlugin
 {
 public:
