@@ -197,7 +197,7 @@ public:
       * @return The ushort that was read.
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
-    ushort read_ushort_required(const std::string& key) const;
+    unsigned short read_ushort_required(const std::string& key) const;
     /** read_uint_required
       *
       * Reads an unsigned int, parsing the value as if by the strtoul function.
