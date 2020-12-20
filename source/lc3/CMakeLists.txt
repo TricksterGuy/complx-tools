@@ -2,7 +2,16 @@
 #
 # External dependencies
 #
-
+if (WIN32)
+    find_package(dlfcn-win32 QUIET)
+    if (NOT dlfcn-win32_FOUND)
+        find_library(DL_LIBS dl REQUIRED)
+	set(CMAKE_DL_LIBS ${DL_LIBS})
+    else()
+        set(CMAKE_DL_LIBS dlfcn-win32::dl)
+    endif()
+    
+endif()
 
 #
 # Library name and options
@@ -207,7 +216,7 @@ target_link_libraries(${target}
 
     PUBLIC
     ${DEFAULT_LINKER_OPTIONS}
-    dl
+    ${CMAKE_DL_LIBS}
 
     INTERFACE
 )
