@@ -905,35 +905,35 @@ bool lc3_assemble_full_writer(const std::string& filename, lc3_state& state, con
 
 bool lc3_assemble(const std::string& filename, const std::string& output_prefix, const LC3AssembleOptions& options)
 {
-    lc3_state state;
-    lc3_init(state);
+    auto state = std::make_unique<lc3_state>();
+    lc3_init(*state);
     std::vector<code_range> ranges;
-    lc3_assemble(state, filename, ranges, options);
+    lc3_assemble(*state, filename, ranges, options);
     std::string prefix = output_prefix;
     if (output_prefix.empty())
         prefix = filename.substr(0, filename.rfind('.'));
 
-    if (!state.symbols.empty())
+    if (!state->symbols.empty())
     {
         std::string sym_file = prefix + ".sym";
         std::ofstream sym(sym_file.c_str());
         if (!sym.good()) return false;
-        for (const auto& addr_symbol : state.rev_symbols)
+        for (const auto& addr_symbol : state->rev_symbols)
             sym << std::hex << addr_symbol.first << std::dec << "\t" << addr_symbol.second << std::endl;
     }
 
     switch (options.output_mode)
     {
         case LC3AssembleOptions::OBJECT_FILE:
-            return lc3_assemble_object_writer(prefix, state, ranges);
+            return lc3_assemble_object_writer(prefix, *state, ranges);
         case LC3AssembleOptions::BINARY_FILE:
-            return lc3_assemble_binary_writer(prefix, state, ranges);
+            return lc3_assemble_binary_writer(prefix, *state, ranges);
         case LC3AssembleOptions::HEXADECIMAL_FILE:
-            return lc3_assemble_hexadecimal_writer(prefix, state, ranges);
+            return lc3_assemble_hexadecimal_writer(prefix, *state, ranges);
         case LC3AssembleOptions::FULL_REPRESENTATION_FILE:
-            return lc3_assemble_full_writer(prefix, state, ranges);
+            return lc3_assemble_full_writer(prefix, *state, ranges);
         default:
-            return lc3_assemble_object_writer(prefix, state, ranges);
+            return lc3_assemble_object_writer(prefix, *state, ranges);
     }
 }
 
