@@ -103,7 +103,7 @@ struct LC3_API LC3AssembleOptions
     bool enable_warnings = false;
     bool disable_plugins = false;
     bool process_debug_comments = true;
-    enum OutputMode {
+    enum class OutputMode {
         // Non readable object file.
         OBJECT_FILE = 0,
         // Machine langauge ASCII in binary.
@@ -114,7 +114,7 @@ struct LC3_API LC3AssembleOptions
         FULL_REPRESENTATION_FILE = 3,
     };
     // Only for calls to lc3_assemble that produce file output.
-    OutputMode output_mode = OBJECT_FILE;
+    OutputMode output_mode = OutputMode::OBJECT_FILE;
 
 };
 

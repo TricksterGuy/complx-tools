@@ -924,13 +924,13 @@ bool lc3_assemble(const std::string& filename, const std::string& output_prefix,
 
     switch (options.output_mode)
     {
-        case LC3AssembleOptions::OBJECT_FILE:
+        case LC3AssembleOptions::OutputMode::OBJECT_FILE:
             return lc3_assemble_object_writer(prefix, *state, ranges);
-        case LC3AssembleOptions::BINARY_FILE:
+        case LC3AssembleOptions::OutputMode::BINARY_FILE:
             return lc3_assemble_binary_writer(prefix, *state, ranges);
-        case LC3AssembleOptions::HEXADECIMAL_FILE:
+        case LC3AssembleOptions::OutputMode::HEXADECIMAL_FILE:
             return lc3_assemble_hexadecimal_writer(prefix, *state, ranges);
-        case LC3AssembleOptions::FULL_REPRESENTATION_FILE:
+        case LC3AssembleOptions::OutputMode::FULL_REPRESENTATION_FILE:
             return lc3_assemble_full_writer(prefix, *state, ranges);
         default:
             return lc3_assemble_object_writer(prefix, *state, ranges);

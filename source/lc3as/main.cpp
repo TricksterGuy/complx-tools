@@ -28,11 +28,11 @@ usage:
         else if (arg == "-disable_plugins")
             options.disable_plugins = true;
         else if (arg == "-hex")
-            options.output_mode = LC3AssembleOptions::HEXADECIMAL_FILE;
+            options.output_mode = LC3AssembleOptions::OutputMode::HEXADECIMAL_FILE;
         else if (arg == "-bin")
-            options.output_mode = LC3AssembleOptions::BINARY_FILE;
+            options.output_mode = LC3AssembleOptions::OutputMode::BINARY_FILE;
         else if (arg == "-full")
-            options.output_mode = LC3AssembleOptions::FULL_REPRESENTATION_FILE;
+            options.output_mode = LC3AssembleOptions::OutputMode::FULL_REPRESENTATION_FILE;
         else if (arg[0] == '-') {
             printf("Invalid option %s given.\n", argv[i]);
             goto usage;
