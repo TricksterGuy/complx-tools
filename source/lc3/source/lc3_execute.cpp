@@ -447,7 +447,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             changes.value = state.regs[changes.location];
 
             state.regs[changes.location] = state.pc + instruction.mem.offset.pc_offset;
-            // In the 2019 revision of LC-3 LEA no int64_ter sets condition codes.
+            // In the 2019 revision of LC-3 LEA no longer sets condition codes.
             if (state.lc3_version == 0)
                 lc3_setcc(state, state.regs[changes.location]);
             break;
@@ -854,7 +854,7 @@ void lc3_warning(lc3_state& state, uint32_t warn_id, int16_t arg1, int16_t arg2)
     state.warn_stats[warn_id] += 1;
     if (state.warn_limits.find(warn_id) != state.warn_limits.end() && state.warn_limits[warn_id] <= state.warn_stats[warn_id])
     {
-        lc3_warning(state, "Limit for previous warning has been reached will no int64_ter output messages of this type");
+        lc3_warning(state, "Limit for previous warning has been reached will no longer output messages of this type");
         return;
     }
 }

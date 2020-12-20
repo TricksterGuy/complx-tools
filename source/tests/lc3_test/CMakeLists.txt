@@ -10,7 +10,7 @@ find_package(${META_PROJECT_NAME} REQUIRED HINTS "${CMAKE_CURRENT_SOURCE_DIR}/..
 #
 
 # Target name
-set(target lc3_plugins_test)
+set(target lc3_test)
 message(STATUS "Test ${target}")
 
 
@@ -19,7 +19,13 @@ message(STATUS "Test ${target}")
 #
 
 set(sources
+    lc3_assemble_test.cpp
+    lc3_basic_test.cpp
+    lc3_parser_test.cpp
+    lc3_params_test.cpp
+    lc3_revision_2019_test.cpp
     lc3_plugins_test.cpp
+    lc3_replay_test.cpp
 )
 
 
@@ -68,7 +74,7 @@ target_link_libraries(${target}
     ${DEFAULT_LIBRARIES}
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
     ${META_PROJECT_NAME}::lc3
-
+    ${META_PROJECT_NAME}::lc3_replay
 )
 
 

@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE LC3_Plugin_Test
 #include <lc3.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>

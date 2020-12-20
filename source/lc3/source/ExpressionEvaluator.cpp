@@ -110,7 +110,7 @@ int isOperator(const string& op)
     unsigned int i = 0;
     int oplen = 0;
     string s = operators[0].op;
-    // scan as int64_t as it is a valid operator
+    // scan as long as it is a valid operator
     // an operator might  have not just one symbol to represent it
 
     while (i<op.length())
@@ -138,7 +138,7 @@ int isOperator(const string& op)
 }
 
 // returns the operands length.
-// scans as int64_t as the current value is an alphanumeric or []
+// scans as long as the current value is an alphanumeric or []
 int getToken(const string& str)
 {
     unsigned int i=0;
