@@ -1077,13 +1077,13 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             {
             case 4:
                 times = atoi(pieces[3].c_str());
-                // fall through
+                [[fallthrough]];
             case 3:
                 condition = pieces[2];
-                // fall through
+                [[fallthrough]];
             case 2:
                 name = pieces[1];
-                // fall through
+                [[fallthrough]];
             case 1:
                 address = get_sym_imm(pieces[0], 16, dummy, true);
                 break;
@@ -1152,13 +1152,13 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             {
             case 4:
                 times = atoi(pieces[3].c_str());
-                // fall through
+                [[fallthrough]];
             case 3:
                 name = pieces[1];
-                // fall through
+                [[fallthrough]];
             case 2:
                 condition = pieces[2];
-                // fall through
+                [[fallthrough]];
             case 1:
                 if (pieces[0].size() == 2 && ((pieces[0][0] == 'R' || pieces[0][0] == 'r') &&
                                               pieces[0][1] >= '0' && pieces[0][1] <= '7'))
@@ -1233,10 +1233,10 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             {
             case 3:
                 params_str = pieces[2];
-                // fall through
+                [[fallthrough]];
             case 2:
                 name = pieces[1];
-                // fall through
+                [[fallthrough]];
             case 1:
                 address = get_sym_imm(pieces[0], 16, dummy, true);
                 break;
@@ -1302,10 +1302,10 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             {
             case 3:
                 condition = pieces[2];
-                // fall through
+                [[fallthrough]];
             case 2:
                 name = pieces[1];
-                // fall through
+                [[fallthrough]];
             case 1:
                 address = get_sym_imm(pieces[0], 16, dummy, true);
                 break;
