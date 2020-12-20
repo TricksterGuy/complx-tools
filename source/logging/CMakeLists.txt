@@ -166,5 +166,3 @@ perform_health_checks(
     ${sources}
     ${headers}
 )
-
-generate_coverage_report(${target})

@@ -24,26 +24,36 @@ std::string form_not_found_string(const std::string& key)
     return stream.str();
 }
 
-bool parse_integral(const std::string& value, int64_t& var, int64_t min, int64_t max)
+bool parse_integral(const std::string& value, long& var, long min, long max)
 {
     char* end;
+
+    errno = 0;
 
     if (value[0] == 'x')
         var = strtol(value.c_str() + 1, &end, 16);
     else
         var = strtol(value.c_str(), &end, 0);
 
+    if (errno == ERANGE)
+        return false;
+
     return *end == 0 && var >= min && var <= max;
 }
 
-bool parse_integral(const std::string& value, uint64_t& var, uint64_t max)
+bool parse_integral(const std::string& value, unsigned long& var, unsigned long max)
 {
     char* end;
+
+    errno = 0;
 
     if (value[0] == 'x')
         var = strtoul(value.c_str() + 1, &end, 16);
     else
         var = strtoul(value.c_str(), &end, 0);
+
+    if (errno == ERANGE)
+        return false;
 
     return *end == 0 && var <= max;
 }
@@ -122,7 +132,7 @@ bool PluginParams::read_char(const std::string& key, char& var) const
     if (!read_string(key, value))
         return false;
 
-    int64_t dummy;
+    long dummy;
     if (!parse_integral(value, dummy, CHAR_MIN, CHAR_MAX))
         throw LC3PluginException(name, full_path, form_error_string("char", key, value));
 
@@ -131,18 +141,18 @@ bool PluginParams::read_char(const std::string& key, char& var) const
     return true;
 }
 
-bool PluginParams::read_int16_t(const std::string& key, int16_t& var) const
+bool PluginParams::read_short(const std::string& key, short& var) const
 {
     std::string value;
 
     if (!read_string(key, value))
         return false;
 
-    int64_t dummy;
+    long dummy;
     if (!parse_integral(value, dummy, SHRT_MIN, SHRT_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("int16_t", key, value));
+        throw LC3PluginException(name, full_path, form_error_string("short", key, value));
 
-    var = static_cast<int16_t>(dummy);
+    var = static_cast<short>(dummy);
 
     return true;
 }
@@ -154,7 +164,7 @@ bool PluginParams::read_int(const std::string& key, int& var) const
     if (!read_string(key, value))
         return false;
 
-    int64_t dummy;
+    long dummy;
     if (!parse_integral(value, dummy, INT_MIN, INT_MAX))
         throw LC3PluginException(name, full_path, form_error_string("int", key, value));
 
@@ -163,7 +173,7 @@ bool PluginParams::read_int(const std::string& key, int& var) const
     return true;
 }
 
-bool PluginParams::read_int64_t(const std::string& key, int64_t& var) const
+bool PluginParams::read_long(const std::string& key, long& var) const
 {
     std::string value;
 
@@ -171,7 +181,7 @@ bool PluginParams::read_int64_t(const std::string& key, int64_t& var) const
         return false;
 
     if (!parse_integral(value, var, LONG_MIN, LONG_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("int64_t", key, value));
+        throw LC3PluginException(name, full_path, form_error_string("long", key, value));
 
     return true;
 }
@@ -183,7 +193,7 @@ bool PluginParams::read_uchar(const std::string& key, unsigned char& var) const
     if (!read_string(key, value))
         return false;
 
-    uint64_t dummy;
+    unsigned long dummy;
     if (!parse_integral(value, dummy, UCHAR_MAX))
         throw LC3PluginException(name, full_path, form_error_string("unsigned char", key, value));
 
@@ -192,18 +202,18 @@ bool PluginParams::read_uchar(const std::string& key, unsigned char& var) const
     return true;
 }
 
-bool PluginParams::read_uint16_t(const std::string& key, uint16_t& var) const
+bool PluginParams::read_ushort(const std::string& key, unsigned short& var) const
 {
     std::string value;
 
     if (!read_string(key, value))
         return false;
 
-    uint64_t dummy;
+    unsigned long dummy;
     if (!parse_integral(value, dummy, USHRT_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("uint16_t", key, value));
+        throw LC3PluginException(name, full_path, form_error_string("unsigned short", key, value));
 
-    var = static_cast<uint16_t>(dummy);
+    var = static_cast<unsigned short>(dummy);
 
     return true;
 }
@@ -215,7 +225,7 @@ bool PluginParams::read_uint(const std::string& key, unsigned int& var) const
     if (!read_string(key, value))
         return false;
 
-    uint64_t dummy;
+    unsigned long dummy;
     if (!parse_integral(value, dummy, UINT_MAX))
         throw LC3PluginException(name, full_path, form_error_string("unsigned int", key, value));
 
@@ -224,15 +234,15 @@ bool PluginParams::read_uint(const std::string& key, unsigned int& var) const
     return true;
 }
 
-bool PluginParams::read_uint64_t(const std::string& key, uint64_t& var) const
+bool PluginParams::read_ulong(const std::string& key, unsigned long& var) const
 {
     std::string value;
 
     if (!read_string(key, value))
         return false;
 
-    if (!parse_integral(value, var, ULONG_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("uint64_t", key, value));
+    if (value.empty() || value[0] == '-' || !parse_integral(value, var, ULONG_MAX))
+        throw LC3PluginException(name, full_path, form_error_string("unsigned long", key, value));
 
     return true;
 }
@@ -263,7 +273,7 @@ char PluginParams::read_char_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    int64_t var = 0;
+    long var = 0;
 
     if (!parse_integral(value, var, CHAR_MIN, CHAR_MAX))
         throw LC3PluginException(name, full_path, form_error_string("char", key, value));
@@ -271,23 +281,23 @@ char PluginParams::read_char_required(const std::string& key) const
     return static_cast<char>(var);
 }
 
-int16_t PluginParams::read_int16_t_required(const std::string& key) const
+short PluginParams::read_short_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    int64_t var = 0;
+    long var = 0;
 
     if (!parse_integral(value, var, SHRT_MIN, SHRT_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("int16_t", key, value));
+        throw LC3PluginException(name, full_path, form_error_string("short", key, value));
 
-    return static_cast<int16_t>(var);
+    return static_cast<short>(var);
 }
 
 int PluginParams::read_int_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    int64_t var = 0;
+    long var = 0;
 
     if (!parse_integral(value, var, INT_MIN, INT_MAX))
         throw LC3PluginException(name, full_path, form_error_string("int", key, value));
@@ -295,14 +305,14 @@ int PluginParams::read_int_required(const std::string& key) const
     return static_cast<int>(var);
 }
 
-int64_t PluginParams::read_int64_t_required(const std::string& key) const
+long PluginParams::read_long_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    int64_t var = 0;
+    long var = 0;
 
     if (!parse_integral(value, var, LONG_MIN, LONG_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("int64_t", key, value));
+        throw LC3PluginException(name, full_path, form_error_string("long", key, value));
 
     return var;
 }
@@ -311,7 +321,7 @@ unsigned char PluginParams::read_uchar_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    uint64_t var = 0;
+    unsigned long var = 0;
 
     if (!parse_integral(value, var, UCHAR_MAX))
         throw LC3PluginException(name, full_path, form_error_string("unsigned char", key, value));
@@ -319,23 +329,23 @@ unsigned char PluginParams::read_uchar_required(const std::string& key) const
     return static_cast<unsigned char>(var);
 }
 
-uint16_t PluginParams::read_uint16_t_required(const std::string& key) const
+unsigned short PluginParams::read_ushort_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    uint64_t var = 0;
+    unsigned long var = 0;
 
     if (!parse_integral(value, var, USHRT_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("uint16_t", key, value));
+        throw LC3PluginException(name, full_path, form_error_string("unsigned short", key, value));
 
-    return static_cast<uint16_t>(var);
+    return static_cast<unsigned short>(var);
 }
 
 unsigned int PluginParams::read_uint_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    uint64_t var = 0;
+    unsigned long var = 0;
 
     if (!parse_integral(value, var, UINT_MAX))
         throw LC3PluginException(name, full_path, form_error_string("unsigned int", key, value));
@@ -343,14 +353,14 @@ unsigned int PluginParams::read_uint_required(const std::string& key) const
     return static_cast<unsigned int>(var);
 }
 
-uint64_t PluginParams::read_uint64_t_required(const std::string& key) const
+unsigned long PluginParams::read_ulong_required(const std::string& key) const
 {
     const auto& value = read_string_required(key);
 
-    uint64_t var = 0;
+    unsigned long var = 0;
 
-    if (!parse_integral(value, var, ULONG_MAX))
-        throw LC3PluginException(name, full_path, form_error_string("uint64_t", key, value));
+    if (value[0] == '-' || !parse_integral(value, var, ULONG_MAX))
+        throw LC3PluginException(name, full_path, form_error_string("unsigned long", key, value));
 
     return var;
 }

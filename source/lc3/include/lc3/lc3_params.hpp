@@ -67,15 +67,15 @@ public:
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
     bool read_char(const std::string& key, char& var) const;
-    /** read_int16_t
+    /** read_short
       *
-      * Reads a int16_t, parsing the value as if by the strtol function.
+      * Reads a short, parsing the value as if by the strtol function.
       * @param key String key to get value for.
       * @param var Output parameter to store result.
       * @return True if value was found and able to be parsed. False if not found.
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
-    bool read_int16_t(const std::string& key, int16_t& var) const;
+    bool read_short(const std::string& key, short& var) const;
     /** read_int
       *
       * Reads a int, parsing the value as if by the strtol function.
@@ -85,15 +85,15 @@ public:
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
     bool read_int(const std::string& key, int& var) const;
-    /** read_int64_t
+    /** read_long
       *
-      * Reads a int64_t, parsing the value as if by the strtol function.
+      * Reads a long, parsing the value as if by the strtol function.
       * @param key String key to get value for.
       * @param var Output parameter to store result.
       * @return True if value was found and able to be parsed. False if not found.
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
-    bool read_int64_t(const std::string& key, int64_t& var) const;
+    bool read_long(const std::string& key, long& var) const;
     /** read_uchar
       *
       * Reads an unsigned char, parsing the value as if by the strtol function.
@@ -103,15 +103,15 @@ public:
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
     bool read_uchar(const std::string& key, unsigned char& var) const;
-    /** read_uint16_t
+    /** read_ushort
       *
-      * Reads an uint16_t, parsing the value as if by the strtol function.
+      * Reads an unsigned short, parsing the value as if by the strtol function.
       * @param key String key to get value for.
       * @param var Output parameter to store result.
       * @return True if value was found and able to be parsed. False if not found.
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
-    bool read_uint16_t(const std::string& key, uint16_t& var) const;
+    bool read_ushort(const std::string& key, unsigned short& var) const;
     /** read_uint
       *
       * Reads an unsigned int, parsing the value as if by the strtol function.
@@ -121,15 +121,15 @@ public:
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
     bool read_uint(const std::string& key, unsigned int& var) const;
-    /** read_uint64_t
+    /** read_ulong
       *
-      * Reads an unsigned int64_t, parsing the value as if by the strtol function.
+      * Reads an unsigned long, parsing the value as if by the strtol function.
       * @param key String key to get value for.
       * @param var Output parameter to store result.
       * @return True if value was found and able to be parsed. False if not found.
       * @throws LC3PluginException if key was found, but unable to be parsed.
       */
-    bool read_uint64_t(const std::string& key, uint64_t& var) const;
+    bool read_ulong(const std::string& key, unsigned long& var) const;
     /** read_string
       *
       * Reads a string.
@@ -158,14 +158,14 @@ public:
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
     char read_char_required(const std::string& key) const;
-    /** read_int16_t_required
+    /** read_short_required
       *
-      * Reads a int16_t, parsing the value as if by the strtol function.
+      * Reads a short, parsing the value as if by the strtol function.
       * @param key String key to get value for.
-      * @return The int16_t that was read.
+      * @return The short that was read.
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
-    int16_t read_int16_t_required(const std::string& key) const;
+    short read_short_required(const std::string& key) const;
     /** read_int_required
       *
       * Reads a int, parsing the value as if by the strtol function.
@@ -174,14 +174,14 @@ public:
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
     int read_int_required(const std::string& key) const;
-    /** read_int64_t_required
+    /** read_long_required
       *
-      * Reads a int64_t, parsing the value as if by the strtol function.
+      * Reads a long, parsing the value as if by the strtol function.
       * @param key String key to get value for.
-      * @return The int64_t that was read.
+      * @return The long that was read.
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
-    int64_t read_int64_t_required(const std::string& key) const;
+    long read_long_required(const std::string& key) const;
     /** read_uchar_required
       *
       * Reads an unsigned char, parsing the value as if by the strtoul function.
@@ -190,14 +190,14 @@ public:
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
     unsigned char read_uchar_required(const std::string& key) const;
-    /** read_uint16_t_required
+    /** read_ushort_required
       *
-      * Reads an uint16_t, parsing the value as if by the strtoul function.
+      * Reads an ushort, parsing the value as if by the strtoul function.
       * @param key String key to get value for.
-      * @return The uint16_t that was read.
+      * @return The ushort that was read.
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
-    uint16_t read_uint16_t_required(const std::string& key) const;
+    ushort read_ushort_required(const std::string& key) const;
     /** read_uint_required
       *
       * Reads an unsigned int, parsing the value as if by the strtoul function.
@@ -206,14 +206,14 @@ public:
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
     unsigned int read_uint_required(const std::string& key) const;
-    /** read_uint64_t_required
+    /** read_ulong_required
       *
-      * Reads an uint64_t, parsing the value as if by the strtol function.
+      * Reads an ulong, parsing the value as if by the strtol function.
       * @param key String key to get value for.
-      * @return The uint64_t that was read.
+      * @return The ulong that was read.
       * @throws LC3PluginException if key was not found, or could not be parsed.
       */
-    uint64_t read_uint64_t_required(const std::string& key) const;
+    unsigned long read_ulong_required(const std::string& key) const;
     /** read_string_required
       *
       * Reads a string.

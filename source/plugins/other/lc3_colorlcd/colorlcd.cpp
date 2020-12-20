@@ -15,10 +15,10 @@ Plugin* create_plugin(const PluginParams& params)
 
     uint16_t width, height, startaddr, initaddr;
 
-    width = params.read_uint16_t_required("width");
-    height = params.read_uint16_t_required("height");
-    startaddr = params.read_uint16_t_required("startaddr");
-    initaddr = params.read_uint16_t_required("initaddr");
+    width = params.read_ushort_required("width");
+    height = params.read_ushort_required("height");
+    startaddr = params.read_ushort_required("startaddr");
+    initaddr = params.read_ushort_required("initaddr");
 
     /*if (wxTheApp == nullptr)
     {

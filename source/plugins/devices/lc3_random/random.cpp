@@ -11,7 +11,7 @@ Plugin* create_plugin(const PluginParams& params)
     if (instance)
         return instance.get();
 
-    uint16_t address = params.read_uint16_t_required("address");
+    uint16_t address = params.read_ushort_required("address");
 
     unsigned int seed = 0;
     params.read_uint("seed", seed);

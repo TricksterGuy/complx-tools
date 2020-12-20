@@ -193,8 +193,6 @@ perform_health_checks(
     ${headers}
 )
 
-generate_coverage_report(${target})
-
 
 #
 # Deployment
