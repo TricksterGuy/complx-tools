@@ -29,8 +29,6 @@ private:
     unsigned int on;
 };
 
-class LC3_BWLCD_API Plugin;
-
 class LC3_BWLCD_API BWLCDPlugin : public wxEvtHandler, public Plugin
 {
 public:

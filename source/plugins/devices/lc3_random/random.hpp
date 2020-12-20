@@ -9,8 +9,6 @@
 #define RANDOM_MAJOR_VERSION 1
 #define RANDOM_MINOR_VERSION 6
 
-class LC3_RANDOM_API Plugin;
-
 class LC3_RANDOM_API RandomPlugin : public Plugin
 {
 public:

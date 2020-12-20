@@ -7,8 +7,6 @@
 #define SECOND_TIMER_MAJOR_VERSION 1
 #define SECOND_TIMER_MINOR_VERSION 6
 
-class LC3_SECOND_TIMER_API Plugin;
-
 ///TODO complete this plugin
 class LC3_SECOND_TIMER_API SecondTimerPlugin : public Plugin
 {

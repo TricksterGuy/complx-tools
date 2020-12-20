@@ -29,8 +29,6 @@ private:
     uint16_t startaddr;
 };
 
-class LC3_COLORLCD_API Plugin;
-
 class LC3_COLORLCD_API ColorLCDPlugin : public wxEvtHandler, public Plugin
 {
 public:

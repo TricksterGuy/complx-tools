@@ -7,8 +7,6 @@
 #define MULTIPLY_MAJOR_VERSION 1
 #define MULTIPLY_MINOR_VERSION 6
 
-class LC3_MULTIPLY_API InstructionPlugin;
-
 class LC3_MULTIPLY_API MultiplyPlugin : public InstructionPlugin
 {
 public:
