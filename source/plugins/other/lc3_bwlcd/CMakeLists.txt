@@ -9,9 +9,7 @@ option(OPTION_ENABLE_BWLCD_PLUGIN "Enable the Black White LCD Plugin" ON)
 # External dependencies
 #
 
-set(wxWidgets_USE_LIBS core base)
-find_package(wxWidgets QUIET)
-include(${wxWidgets_USE_FILE})
+find_package(wxWidgets COMPONENTS core base QUIET)
 
 
 #
@@ -40,6 +38,7 @@ else()
     message(STATUS "Plugin ${target}")
 endif()
 
+include(${wxWidgets_USE_FILE})
 
 #
 # Sources
