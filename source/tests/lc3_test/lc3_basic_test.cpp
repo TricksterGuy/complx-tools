@@ -527,12 +527,12 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
 
     // AND R0, R1, R2
     state.regs[0] = 23;
-    state.regs[1] = (short)0xFFFF;
+    state.regs[1] = -1;
     state.regs[2] = 0x0;
     instr.arith.reg = and_r;
     lc3_execute(state, instr);
     BOOST_CHECK_EQUAL(state.regs[0], 0);
-    BOOST_CHECK_EQUAL(state.regs[1], (short)0xFFFF);
+    BOOST_CHECK_EQUAL(state.regs[1], -1);
     BOOST_CHECK_EQUAL(state.regs[2], 0x0);
     BOOST_CHECK_EQUAL(state.n, 0);
     BOOST_CHECK_EQUAL(state.z, 1);
@@ -540,11 +540,11 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
 
     // AND R0, R1, #2
     state.regs[0] = 23;
-    state.regs[1] = (short)0xFFFF;
+    state.regs[1] = -1;
     instr.arith.imm = and_i;
     lc3_execute(state, instr);
     BOOST_CHECK_EQUAL(state.regs[0], 2);
-    BOOST_CHECK_EQUAL(state.regs[1], (short)0xFFFF);
+    BOOST_CHECK_EQUAL(state.regs[1], -1);
     BOOST_CHECK_EQUAL(state.n, 0);
     BOOST_CHECK_EQUAL(state.z, 0);
     BOOST_CHECK_EQUAL(state.p, 1);
@@ -554,7 +554,7 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
     state.regs[1] = 0x0;
     instr.arith.inv = not_r;
     lc3_execute(state, instr);
-    BOOST_CHECK_EQUAL(state.regs[0], (short)0xFFFF);
+    BOOST_CHECK_EQUAL(state.regs[0], -1);
     BOOST_CHECK_EQUAL(state.regs[1], 0x0);
     BOOST_CHECK_EQUAL(state.n, 1);
     BOOST_CHECK_EQUAL(state.z, 0);
@@ -823,7 +823,7 @@ BOOST_FIXTURE_TEST_CASE(TestLoadObj, LC3BasicTest)
     BOOST_CHECK_EQUAL(state.mem[0x3000], 0x2003);
     BOOST_CHECK_EQUAL(state.mem[0x3001], 0x2203);
     BOOST_CHECK_EQUAL(state.mem[0x3002], 0x1401);
-    BOOST_CHECK_EQUAL(state.mem[0x3003], (short)0xF025);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3003]), 0xF025);
     BOOST_CHECK_EQUAL(state.mem[0x3004], 0x003C);
     BOOST_CHECK_EQUAL(state.mem[0x3005], 0x0006);
     BOOST_CHECK_EQUAL(state.mem[0x3006], 0x0000);
@@ -837,7 +837,7 @@ BOOST_FIXTURE_TEST_CASE(TestLoadHex, LC3BasicTest)
     BOOST_CHECK_EQUAL(state.mem[0x3000], 0x2003);
     BOOST_CHECK_EQUAL(state.mem[0x3001], 0x2203);
     BOOST_CHECK_EQUAL(state.mem[0x3002], 0x1401);
-    BOOST_CHECK_EQUAL(state.mem[0x3003], (short)0xF025);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3003]), 0xF025);
     BOOST_CHECK_EQUAL(state.mem[0x3004], 0x003C);
     BOOST_CHECK_EQUAL(state.mem[0x3005], 0x0006);
     BOOST_CHECK_EQUAL(state.mem[0x3006], 0x0000);
@@ -1156,14 +1156,14 @@ BOOST_FIXTURE_TEST_CASE(TestTrapInstructions, LC3BasicTest)
     std::stringstream file(std::string(reinterpret_cast<const char*>(traps), traps_len));
     lc3_load(state, file, lc3_reader_obj);
 
-    BOOST_CHECK_EQUAL(state.mem[0x3000], (short)0xF021);
-    BOOST_CHECK_EQUAL(state.mem[0x3001], (short)0xF023);
-    BOOST_CHECK_EQUAL(state.mem[0x3002], (short)0xF020);
-    BOOST_CHECK_EQUAL(state.mem[0x3003], (short)0xE004);
-    BOOST_CHECK_EQUAL(state.mem[0x3004], (short)0xF022);
-    BOOST_CHECK_EQUAL(state.mem[0x3005], (short)0xE00E);
-    BOOST_CHECK_EQUAL(state.mem[0x3006], (short)0xF024);
-    BOOST_CHECK_EQUAL(state.mem[0x3007], (short)0xF025);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3000]), 0xF021);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3001]), 0xF023);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3002]), 0xF020);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3003]), 0xE004);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3004]), 0xF022);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3005]), 0xE00E);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3006]), 0xF024);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3007]), 0xF025);
     BOOST_CHECK_EQUAL(state.mem[0x3008], 'H');
     BOOST_CHECK_EQUAL(state.mem[0x3009], 'E');
     BOOST_CHECK_EQUAL(state.mem[0x300A], 'L');
@@ -1439,7 +1439,7 @@ BOOST_FIXTURE_TEST_CASE(TestDeviceRegisters, LC3BasicTest)
     BOOST_CHECK_EQUAL(state.halted, 1);
     BOOST_CHECK_EQUAL(state.pc, 0x502);
     BOOST_CHECK_EQUAL(state.warnings, 0U); // No warning since its in the OS MEM.
-    BOOST_CHECK_EQUAL(state.regs[1], (short)0x8000);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.regs[1]), 0x8000);
 
     state.input = &std::cin;
     state.output = &std::cout;
@@ -1645,7 +1645,7 @@ BOOST_FIXTURE_TEST_CASE(InstructionAssembleTest, LC3BasicTest)
     BOOST_CHECK_EQUAL(state.mem[0x3000], 0x2003);
     BOOST_CHECK_EQUAL(state.mem[0x3001], 0x2203);
     BOOST_CHECK_EQUAL(state.mem[0x3002], 0x1401);
-    BOOST_CHECK_EQUAL(state.mem[0x3003], (short)0xF025);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3003]), 0xF025);
     BOOST_CHECK_EQUAL(state.mem[0x3004], 0x003C);
     BOOST_CHECK_EQUAL(state.mem[0x3005], 0x0006);
     BOOST_CHECK_EQUAL(state.mem[0x3006], 0x0000);

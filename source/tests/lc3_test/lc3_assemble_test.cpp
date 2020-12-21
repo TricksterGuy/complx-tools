@@ -238,7 +238,7 @@ BOOST_FIXTURE_TEST_CASE(BinaryLiteralTest, LC3AssembleTest)
     BOOST_CHECK_EQUAL(state.mem[0x3001], 1);
     BOOST_CHECK_EQUAL(state.mem[0x3002], 0x70EF);
     BOOST_CHECK_EQUAL(state.mem[0x3003], 0x106F);
-    BOOST_CHECK_EQUAL(state.mem[0x3004], (short)0xE0F0);
+    BOOST_CHECK_EQUAL(static_cast<unsigned short>(state.mem[0x3004]), 0xE0F0);
     BOOST_CHECK_EQUAL(state.mem[0x3005], 0x4BC1);
     BOOST_CHECK_EQUAL(state.mem[0x3006], 0x605F);
 }

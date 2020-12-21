@@ -41,8 +41,8 @@ BOOST_FIXTURE_TEST_CASE(TestInstructionPlugin, LC3PluginTest)
     std::stringstream file(asm_file);
     BOOST_REQUIRE_NO_THROW(lc3_assemble(state, file, options));
     BOOST_REQUIRE(state.instructionPlugin != nullptr);
-    BOOST_REQUIRE_EQUAL(state.mem[0x3002], short(0xD401));
-    BOOST_REQUIRE_EQUAL(state.mem[0x3003], short(0xD624));
+    BOOST_REQUIRE_EQUAL(static_cast<unsigned short>(state.mem[0x3002]), 0xD401);
+    BOOST_REQUIRE_EQUAL(static_cast<unsigned short>(state.mem[0x3003]), 0xD624);
     lc3_run(state, 5);
     BOOST_REQUIRE(state.halted);
     BOOST_CHECK_EQUAL(state.regs[0], 125);
@@ -196,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE(TestTrapPlugin, LC3PluginTest)
     BOOST_REQUIRE_NO_THROW(lc3_assemble(state, file, options));
     BOOST_REQUIRE(state.trapPlugins[0x80] != nullptr);
     BOOST_REQUIRE(lc3_sym_lookup(state, "UDIV") == -1);
-    BOOST_REQUIRE_EQUAL(state.mem[0x3002], short(0xF080));
+    BOOST_REQUIRE_EQUAL(static_cast<unsigned short>(state.mem[0x3002]), 0xF080);
     lc3_run(state, 4);
     BOOST_REQUIRE(state.halted);
     BOOST_CHECK_EQUAL(state.regs[0], 250);
@@ -220,7 +220,7 @@ BOOST_FIXTURE_TEST_CASE(TestTrapPluginViaVector, LC3PluginTest)
     BOOST_REQUIRE_NO_THROW(lc3_assemble(state, file, options));
     BOOST_REQUIRE(state.trapPlugins[0x80] != nullptr);
     BOOST_REQUIRE(lc3_sym_lookup(state, "UDIV") == -1);
-    BOOST_REQUIRE_EQUAL(state.mem[0x3002], short(0xF080));
+    BOOST_REQUIRE_EQUAL(static_cast<unsigned short>(state.mem[0x3002]), 0xF080);
     lc3_run(state, 4);
     BOOST_REQUIRE(state.halted);
     BOOST_CHECK_EQUAL(state.regs[0], 250);
@@ -242,7 +242,7 @@ BOOST_FIXTURE_TEST_CASE(TestTrapPluginDivByZero, LC3PluginTest)
     BOOST_REQUIRE_NO_THROW(lc3_assemble(state, file, options));
     BOOST_REQUIRE(state.trapPlugins[0x80] != nullptr);
     BOOST_REQUIRE(lc3_sym_lookup(state, "UDIV") == -1);
-    BOOST_REQUIRE_EQUAL(state.mem[0x3002], short(0xF080));
+    BOOST_REQUIRE_EQUAL(static_cast<unsigned short>(state.mem[0x3002]), 0xF080);
     lc3_run(state, 4);
     BOOST_REQUIRE(state.halted);
     BOOST_CHECK_EQUAL(state.regs[0], -1);
@@ -266,7 +266,7 @@ BOOST_FIXTURE_TEST_CASE(TestTrapPluginDisassemble, LC3PluginTest)
     BOOST_REQUIRE_NO_THROW(lc3_assemble(state, file, options));
     BOOST_REQUIRE(state.trapPlugins[0x80] != nullptr);
     BOOST_REQUIRE(lc3_sym_lookup(state, "UDIV") == -1);
-    BOOST_REQUIRE_EQUAL(state.mem[0x3002], short(0xF080));
+    BOOST_REQUIRE_EQUAL(static_cast<unsigned short>(state.mem[0x3002]), 0xF080);
     BOOST_CHECK_EQUAL(lc3_disassemble(state, state.mem[0x3002], -1, LC3_BASIC_DISASSEMBLE), "TRAP x80");
     BOOST_CHECK_EQUAL(lc3_disassemble(state, state.mem[0x3002], -1, LC3_NORMAL_DISASSEMBLE), "UDIV");
     BOOST_CHECK_EQUAL(lc3_disassemble(state, state.mem[0x3002], -1, LC3_ADVANCED_DISASSEMBLE), "UDIV");

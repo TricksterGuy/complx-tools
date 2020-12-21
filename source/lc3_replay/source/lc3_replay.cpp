@@ -470,7 +470,7 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
                 break;
             case PreconditionFlag::STRING:
                 state.mem[static_cast<uint16_t>(state.mem[address] + params.size())] = 0;
-                // fall through
+                [[fallthrough]];
             case PreconditionFlag::ARRAY:
                 for (unsigned int i = 0; i < params.size(); i++)
                     state.mem[static_cast<uint16_t>(state.mem[address]) + i] = params[i];
@@ -497,7 +497,7 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
                 break;
             case PreconditionFlag::DIRECT_STRING:
                 state.mem[address + params.size()] = 0;
-                // fall through
+                [[fallthrough]];
             case PreconditionFlag::DIRECT_ARRAY:
                 for (unsigned int i = 0; i < params.size(); i++)
                     state.mem[address + i] = params[i];
