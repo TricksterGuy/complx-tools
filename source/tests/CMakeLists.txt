@@ -1,4 +1,3 @@
-
 #
 # Configure test project and environment
 #
@@ -51,8 +50,7 @@ endfunction()
 # External dependencies
 #
 
-find_package(Boost COMPONENTS unit_test_framework REQUIRED QUIET)
-
+find_package(Boost COMPONENTS unit_test_framework serialization REQUIRED QUIET)
 
 #
 # Target 'test'
