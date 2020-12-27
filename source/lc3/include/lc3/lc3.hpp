@@ -589,6 +589,28 @@ struct LC3_API lc3_state
     bool in_lc3test;
 };
 
+/** lc3_init
+  *
+  * Initializes the state of the lc3.
+  * @param state LC3State object.
+  * @param randomize_registers if true randomizes registers.
+  * @param randomize_memory if true randomizes memory.
+  * @param register_fill_value ignored if randomize_registers is true otherwise sets registers to this value.
+  * @param memory_fill_value ignored if randomize_memory is true otherwise sets memory to this value (except for TVT, IVT and lc3 os code).
+  */
+void LC3_API lc3_init(lc3_state& state, bool randomize_registers = true, bool randomize_memory = true, int16_t register_fill_value = 0, int16_t memory_fill_value = 0);
+/** lc3_set_version
+  * Sets the lc3's version should be done after lc3_init.
+  * This function will overwrite the LC3OS code with the proper OS for that version.
+  * @param version. LC-3 Version. Valid values are 0 for original LC-3 and 1 for 2019's revision.
+  */
+void LC3_API lc3_set_version(lc3_state& state, int version);
+/** lc3_remove_plugins
+  *
+  * Removes all installed lc3 plugins.
+  * @param state LC3State object.
+  */
+void LC3_API lc3_remove_plugins(lc3_state& state);
 /** lc3_basic_disassemble
   *
   * Disassemble the data passed in.
@@ -714,5 +736,11 @@ inline uint16_t lc3_random(lc3_state& state) { return state.dist(state.rng); }
   * @param state LC3State object.
   */
 void lc3_randomize(lc3_state& state);
+/** lc3_trace
+  *
+  * Prints current lc3 state.
+  * @param state LC3State object.
+  */
+void lc3_trace(lc3_state& state);
 
 #endif

@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <dlfcn.h>
 #include <iostream>
 #include <istream>
 #include <sstream>
@@ -13,6 +14,164 @@
 #include "lc3/lc3_os.hpp"
 #include "lc3/lc3_plugin.hpp"
 #include "lc3/lc3_symbol.hpp"
+
+void lc3_init(lc3_state& state, bool randomize_registers, bool randomize_memory, int16_t register_fill_value, int16_t memory_fill_value)
+{
+    state.dist.reset();
+    state.rng.seed(state.default_seed);
+
+    // Set Registers
+    state.regs[0] = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.regs[1] = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.regs[2] = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.regs[3] = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.regs[4] = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.regs[5] = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.regs[6] = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.regs[7] = randomize_registers ? lc3_random(state) : register_fill_value;
+
+    // PC is initially at address 3000
+    /// TODO Add PC parameter and avoid hardcoding this value.
+    state.pc = 0x3000;
+
+    // User mode
+    state.privilege = 1;
+    state.priority = 0;
+
+    // Set Control Flags
+    int16_t rand_value = randomize_registers ? lc3_random(state) : register_fill_value;
+    state.n = rand_value < 0;
+    state.z = rand_value == 0;
+    state.p = rand_value > 0;
+
+    // Set Additional Flags
+    state.halted = 0;
+    state.true_traps = 0;
+    state.warnings = 0;
+    state.executions = 0;
+    state.interrupt_enabled = 0;
+    state.strict_execution = 1;
+    state.lc3_version = 1;
+
+    // Clear subroutine info
+    state.max_call_stack_size = -1;
+    state.call_stack.clear();
+
+    state.warn_stats.clear();
+    state.warn_limits.clear();
+    state.warn_limits[LC3_INVALID_CHARACTER_WRITE] = 100;
+    state.warn_limits[LC3_RESERVED_MEM_WRITE] = 100;
+    state.warn_limits[LC3_RESERVED_MEM_READ] = 100;
+    state.warn_limits[LC3_PUTSP_UNEXPECTED_NUL] = 100;
+
+
+    // Set Stack Flags
+    state.max_stack_size = -1;
+    state.undo_stack.clear();
+
+    // Set I/O Stuff
+    state.input = &std::cin;
+    state.reader = lc3_read_char;
+    state.peek = lc3_peek_char;
+    state.output = &std::cout;
+    state.writer = lc3_do_write_char;
+    state.warning = &std::cout;
+
+    // Clear memory
+    if (randomize_memory)
+    {
+        lc3_randomize(state);
+    }
+    else
+    {
+        std::fill(state.mem, state.mem + 65536, memory_fill_value);
+    }
+
+    // Add LC3 OS
+    std::copy(lc3_osv2.begin(), lc3_osv2.end(), state.mem);
+
+    // Clear plugins
+    lc3_remove_plugins(state);
+
+    // Clear Symbol Table
+    state.symbols.clear();
+    state.rev_symbols.clear();
+
+    // Clear Breakpoints and all that jazz
+    state.breakpoints.clear();
+    state.blackboxes.clear();
+    state.comments.clear();
+    state.reg_watchpoints.clear();
+    state.mem_watchpoints.clear();
+    state.subroutines.clear();
+
+    // Clear pending interrupts
+    state.interrupts.clear();
+    state.interrupt_test.clear();
+    state.interrupt_vector = -1;
+    state.savedssp = 0x3000;
+    state.savedusp = 0xF000;
+
+    state.keyboard_int_counter = 0;
+    state.keyboard_int_delay = DEFAULT_KEYBOARD_INTERRUPT_DELAY;
+
+    state.memory_ops.clear();
+    state.total_reads = 0;
+    state.total_writes = 0;
+
+    state.trace = nullptr;
+
+    state.in_lc3test = false;
+}
+
+void lc3_set_version(lc3_state& state, int version)
+{
+    if (version >= 0 && version <= 1)
+    {
+        state.lc3_version = version;
+        const std::array<uint16_t, 0x300>& os = (version == 0) ? lc3_os : lc3_osv2;
+        std::copy(os.begin(), os.end(), state.mem);
+    }
+    else
+    {
+        fprintf(stderr, "Invalid lc3 version: %d. Valid values are 0 or 1\n", version);
+    }
+}
+
+void lc3_remove_plugins(lc3_state& state)
+{
+    state.instructionPlugin = nullptr;
+    state.plugins.clear();
+    state.address_plugins.clear();
+    state.trapPlugins.clear();
+    state.interruptPlugin.clear();
+
+    // Destroy all plugins
+    for (const auto& file_plugin : state.filePlugin)
+    {
+        const PluginInfo& infos = file_plugin.second;
+        infos.destroy(infos.plugin);
+        dlclose(infos.handle);
+    }
+    state.filePlugin.clear();
+
+    // Set up "dummy plugins" to sit on reserved addresses
+    state.trapPlugins[TRAP_GETC]  = nullptr;
+    state.trapPlugins[TRAP_OUT]   = nullptr;
+    state.trapPlugins[TRAP_PUTS]  = nullptr;
+    state.trapPlugins[TRAP_IN]    = nullptr;
+    state.trapPlugins[TRAP_PUTSP] = nullptr;
+    state.trapPlugins[TRAP_HALT]  = nullptr;
+
+    state.address_plugins[DEV_KBSR] = nullptr;
+    state.address_plugins[DEV_KBDR] = nullptr;
+    state.address_plugins[DEV_DSR]  = nullptr;
+    state.address_plugins[DEV_DDR]  = nullptr;
+    state.address_plugins[DEV_MCR]  = nullptr;
+
+    if (state.lc3_version >= 1)
+        state.address_plugins[DEV_PSR] = nullptr;
+}
 
 const char* BASIC_DISASSEMBLE_LOOKUP[16][2] =
 {
@@ -727,3 +886,35 @@ void lc3_randomize(lc3_state& state)
         state.mem[i] = lc3_random(state);
 }
 
+void lc3_trace(lc3_state& state)
+{
+    char buf[128];
+    std::ostream& stream = *state.trace;
+
+    snprintf(buf, 128, "PC x%04x\n", state.pc);
+    stream << buf;
+
+    snprintf(buf, 128, "instr: %s", lc3_disassemble(state, state.mem[state.pc], state.pc, 1).c_str());
+    stream << buf;
+
+    snprintf(buf, 128, " (%04x)\n", static_cast<uint16_t>(state.mem[state.pc]));
+    stream << buf;
+
+    snprintf(buf, 128, "R0 %6d|x%04x\tR1 %6d|x%04x\tR2 %6d|x%04x\tR3 %6d|x%04x\n",
+             state.regs[0], static_cast<uint16_t>(state.regs[0]),
+             state.regs[1], static_cast<uint16_t>(state.regs[1]),
+             state.regs[2], static_cast<uint16_t>(state.regs[2]),
+             state.regs[3], static_cast<uint16_t>(state.regs[3]));
+    stream << buf;
+
+
+    snprintf(buf, 128, "R4 %6d|x%04x\tR5 %6d|x%04x\tR6 %6d|x%04x\tR7 %6d|x%04x\n",
+             state.regs[4], static_cast<uint16_t>(state.regs[4]),
+             state.regs[5], static_cast<uint16_t>(state.regs[5]),
+             state.regs[6], static_cast<uint16_t>(state.regs[6]),
+             state.regs[7], static_cast<uint16_t>(state.regs[7]));
+    stream << buf;
+
+    snprintf(buf, 128, "CC: %s\n\n", (state.n ? "N" : (state.z ? "Z" : "P")));
+    stream << buf;
+}
