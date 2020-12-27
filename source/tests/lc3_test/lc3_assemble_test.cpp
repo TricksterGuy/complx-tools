@@ -15,7 +15,7 @@ struct LC3AssembleTest
 
     LC3AssembleTest()
     {
-        lc3_init(state, false);
+        lc3_init(state, false, false);
         options.multiple_errors = false;
     }
 };

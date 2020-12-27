@@ -1658,11 +1658,11 @@ BOOST_FIXTURE_TEST_CASE(InitRandomTest, LC3BasicTest)
 {
     state.default_seed = 1000;
 
-    lc3_init(state);
+    lc3_init(state, false, false);
 
     unsigned short first = lc3_random(state);
 
-    lc3_init(state);
+    lc3_init(state, false, false);
 
     unsigned short second = lc3_random(state);
 

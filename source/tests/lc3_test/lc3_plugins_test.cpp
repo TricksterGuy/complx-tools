@@ -11,7 +11,7 @@ struct LC3PluginTest
 {
     LC3PluginTest()
     {
-        lc3_init(state, false);
+        lc3_init(state, false, false);
         options.multiple_errors = false;
     }
 
@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(TestInstructionPluginDisassemble, LC3PluginTest)
 
 BOOST_FIXTURE_TEST_CASE(TestInstructionPluginColoring, LC3PluginTest)
 {
-    std::map<std::string, std::string> params;
+    std::unordered_map<std::string, std::string> params;
     BOOST_REQUIRE_NO_THROW(lc3_install_plugin(state, "lc3_multiply", params));
 
     BOOST_REQUIRE(state.instructionPlugin != nullptr);
@@ -147,6 +147,7 @@ BOOST_FIXTURE_TEST_CASE(TestInstructionPluginColoring, LC3PluginTest)
 
 bool is_syntax_error(const LC3AssembleException& ex)
 {
+    BOOST_TEST_MESSAGE(ex.what());
     return ex.get_id() == SYNTAX_ERROR;
 }
 
@@ -164,6 +165,7 @@ BOOST_FIXTURE_TEST_CASE(TestInstructionPluginAssembleFail, LC3PluginTest)
 
 bool is_extra_input(const LC3AssembleException& ex)
 {
+    BOOST_TEST_MESSAGE(ex.what());
     return ex.get_id() == EXTRA_INPUT;
 }
 

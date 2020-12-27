@@ -12,7 +12,7 @@ struct LC3ParserTest
 {
     LC3ParserTest()
     {
-        lc3_init(state, false);
+        lc3_init(state, false, false);
         context.state = &state;
         context.options.multiple_errors = false;
     }
