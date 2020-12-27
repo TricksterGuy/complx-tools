@@ -2,8 +2,8 @@
 #define LC3_PARAMS_HPP
 
 #include <lc3/lc3_api.h>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 /** Exception thrown on loading / creating plugins */
 class LC3PluginException : public std::exception
@@ -33,7 +33,7 @@ public:
       * @param plugin_path Full path to the associated plugin filename.
       * @param params Map of key, value pairs of parameters.
       */
-    PluginParams(const std::string& name, const std::string& plugin_path, const std::map<std::string, std::string>& params);
+    PluginParams(const std::string& name, const std::string& plugin_path, const std::unordered_map<std::string, std::string>& params);
     /** has_key
       *
       * Tests if the params has a key set.
@@ -225,7 +225,7 @@ public:
 private:
     std::string name;
     std::string full_path;
-    std::map<std::string, std::string> params;
+    std::unordered_map<std::string, std::string> params;
 };
 
 #endif

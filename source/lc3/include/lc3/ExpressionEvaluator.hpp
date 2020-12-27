@@ -1,9 +1,9 @@
 #ifndef EXPRESSION_EVALUATOR_HPP
 #define EXPRESSION_EVALUATOR_HPP
 
-#include <map>
 #include <stack>
 #include <string>
+#include <unordered_map>
 
 namespace ExpressionEvaluator
 {
@@ -21,7 +21,7 @@ namespace ExpressionEvaluator
 
     };
 
-    extern std::map<std::string, eval_type> symbol_table;
+    extern std::unordered_map<std::string, eval_type> symbol_table;
     extern int (*OnUndefinedSymbol)(const std::string& symbol, bool hasref, int ref, int& error);
 
     enum

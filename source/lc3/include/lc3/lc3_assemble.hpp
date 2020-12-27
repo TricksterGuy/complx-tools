@@ -13,17 +13,6 @@
 struct LC3_API code_range
 {
     code_range(unsigned int loc, unsigned int sz) : location(loc), size(sz) {}
-
-    bool operator<(const code_range& o) const
-    {
-        return location < o.location;
-    }
-
-    bool operator>(const code_range& o) const
-    {
-        return location > o.location;
-    }
-
     unsigned int location;
     unsigned int size;
 };

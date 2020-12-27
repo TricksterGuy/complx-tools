@@ -91,7 +91,7 @@ std::string LC3PluginException::form_error_message() const noexcept
 }
 
 
-PluginParams::PluginParams(const std::string& plugin_name, const std::string& plugin_path, const std::map<std::string, std::string>& plugin_params) :
+PluginParams::PluginParams(const std::string& plugin_name, const std::string& plugin_path, const std::unordered_map<std::string, std::string>& plugin_params) :
     name(plugin_name), full_path(plugin_path), params(plugin_params)
 {
 

@@ -120,7 +120,7 @@ void lc3_init(lc3_state& state, bool randomize_registers, bool randomize_memory,
     }
 
     // Add LC3 OS
-    memcpy(state.mem, lc3_osv2.data(), lc3_osv2.size() * sizeof(uint16_t));
+    std::copy(lc3_osv2.begin(), lc3_osv2.end(), state.mem);
 
     // Clear plugins
     lc3_remove_plugins(state);
@@ -158,11 +158,11 @@ void lc3_init(lc3_state& state, bool randomize_registers, bool randomize_memory,
 
 void lc3_set_version(lc3_state& state, int version)
 {
-    if (version >=0 && version <= 1)
+    if (version >= 0 && version <= 1)
     {
         state.lc3_version = version;
         const std::array<uint16_t, 0x300>& os = (version == 0) ? lc3_os : lc3_osv2;
-        memcpy(state.mem, os.data(), os.size() * sizeof(uint16_t));
+        std::copy(os.begin(), os.end(), state.mem);
     }
     else
     {

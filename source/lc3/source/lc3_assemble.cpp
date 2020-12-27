@@ -49,7 +49,7 @@ uint16_t lc3_assemble_one(lc3_state& state, LC3AssembleContext& context);
 void process_debug_info(lc3_state& state, const debug_statement& statement, bool enable_debug_statements);
 void process_plugin_info(lc3_state& state, const LC3AssembleContext& context);
 void process_version_info(lc3_state& state, const LC3AssembleContext& context);
-void parse_params(const std::string& line, std::map<std::string, std::string>& params);
+void parse_params(const std::string& line, std::unordered_map<std::string, std::string>& params);
 
 
 LC3AssembleException::LC3AssembleException(const std::string& line_str, const std::vector<std::string>& args, int errorid, int linenum) noexcept :
@@ -948,7 +948,7 @@ void process_plugin_info(lc3_state& state, const LC3AssembleContext& context)
     size_t index = line.find_first_of(" \t");
     std::string plugin_params = (index == std::string::npos) ? "" : context.line.substr(index + 1);
 
-    std::map<std::string, std::string> params;
+    std::unordered_map<std::string, std::string> params;
     parse_params(plugin_params, params);
 
     if (params.find("filename") == params.end())
@@ -1022,7 +1022,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
 
     size_t index = statement.line.find_first_of(" \t");
     std::string debug_params = (index == std::string::npos) ? "" : statement.line.substr(index + 1);
-    std::map<std::string, std::string> params;
+    std::unordered_map<std::string, std::string> params;
     bool equal_sign_mode = statement.line.find('=') != std::string::npos;
     if (equal_sign_mode)
         parse_params(debug_params, params);
@@ -1326,7 +1326,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
   *
   * Converts a string of key=value pairs into a map of string=>string
   */
-void parse_params(const std::string& line, std::map<std::string, std::string>& params)
+void parse_params(const std::string& line, std::unordered_map<std::string, std::string>& params)
 {
     std::vector<std::string> pieces;
     tokenize(line, pieces, " \t");

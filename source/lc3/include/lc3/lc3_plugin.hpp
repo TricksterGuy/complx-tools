@@ -265,21 +265,6 @@ public:
     virtual std::list<RLEColorEntry> GetInstructionColoring(uint16_t instr) const;
 };
 
-/** Typedef of function that handles creation of a plugin */
-using PluginCreateFunc = std::function<Plugin*(const PluginParams&)>;
-/** Typedef of function that handles destroying a plugin */
-using PluginDestroyFunc = std::function<void(Plugin*)>;
-
-
-struct PluginInfo
-{
-    std::string filename;
-    PluginCreateFunc create;
-    PluginDestroyFunc destroy;
-    void* handle;
-    Plugin* plugin;
-};
-
 /** lc3_set_plugin_install_dir
   *
   * Sets the directory where plugins are searched for
@@ -296,7 +281,7 @@ void LC3_API lc3_set_plugin_install_dir(const std::string& dir);
   * @param params Params to install the plugin, like the trap vector, or memory address to bind to.
   * @throws LC3PluginException if plugin fails to load for some reason.
   */
-void LC3_API lc3_install_plugin(lc3_state& state, const std::string& filename, const std::map<std::string, std::string>& params);
+void LC3_API lc3_install_plugin(lc3_state& state, const std::string& filename, const std::unordered_map<std::string, std::string>& params);
 /** lc3_uninstall_plugin
   *
   * Uninstalls a plugin given by the filename.

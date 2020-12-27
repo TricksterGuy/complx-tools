@@ -97,7 +97,7 @@ const operator_t operators[] =
 };
 
 
-std::map<std::string, eval_type> symbol_table;
+std::unordered_map<std::string, eval_type> symbol_table;
 int (*OnUndefinedSymbol)(const string& symbol, bool hasref, int ref, int& error) = nullptr;
 
 int EvaluateOperand(const string&, int&);

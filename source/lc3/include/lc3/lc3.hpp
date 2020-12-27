@@ -9,11 +9,11 @@
 #include <fstream>
 #include <functional>
 #include <list>
-#include <map>
 #include <memory>
 #include <random>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 /** Sign Character */
 #define SIGN_CHR(x) (((x) < 0) ? "-" : "+")
@@ -162,7 +162,19 @@ class Plugin;
 class InstructionPlugin;
 class DeviceRegisterPlugin;
 class TrapFunctionPlugin;
-struct PluginInfo;
+class PluginParams;
+
+using PluginCreateFunc = std::function<Plugin*(const PluginParams&)>;
+using PluginDestroyFunc = std::function<void(Plugin*)>;
+
+struct PluginInfo
+{
+    std::string filename;
+    PluginCreateFunc create;
+    PluginDestroyFunc destroy;
+    void* handle;
+    Plugin* plugin;
+};
 
 /** Arithmetic instruction type with registers. */
 struct arithreg_instruction
@@ -472,8 +484,6 @@ typedef struct lc3_rti_stack_item
     bool is_interrupt;
 } lc3_rti_stack_item;
 
-struct lc3_state;
-
 /** Main type for a running lc3 machine */
 struct LC3_API lc3_state
 {
@@ -492,8 +502,8 @@ struct LC3_API lc3_state
     uint32_t warnings;
     uint32_t executions;
 
-    std::map<std::string, uint16_t> symbols;
-    std::map<uint16_t, std::string> rev_symbols;
+    std::unordered_map<std::string, uint16_t> symbols;
+    std::unordered_map<uint16_t, std::string> rev_symbols;
 
     int16_t mem[65536];
 
@@ -514,15 +524,15 @@ struct LC3_API lc3_state
 
     // Plugins loaded into the state
     InstructionPlugin* instructionPlugin;
-    std::map<uint8_t, TrapFunctionPlugin*> trapPlugins;
-    std::map<uint16_t, Plugin*> address_plugins;
+    std::unordered_map<uint8_t, TrapFunctionPlugin*> trapPlugins;
+    std::unordered_map<uint16_t, Plugin*> address_plugins;
     std::vector<Plugin*> plugins;
 
     // Plugin handle information
-    std::map<std::string, PluginInfo> filePlugin;
+    std::unordered_map<std::string, PluginInfo> filePlugin;
 
     // Plugin interrupt information
-    std::map<uint8_t, Plugin*> interruptPlugin;
+    std::unordered_map<uint8_t, Plugin*> interruptPlugin;
 
     // Maximum undo stack size just here for people who like to infinite loop/recurse and don't want their computers to explode.
     uint32_t max_stack_size;
@@ -545,8 +555,8 @@ struct LC3_API lc3_state
     uint32_t default_seed = 0;
 
     // Warn limit map
-    std::map<int32_t, uint32_t> warn_stats;
-    std::map<int32_t, uint32_t> warn_limits;
+    std::unordered_map<int32_t, uint32_t> warn_stats;
+    std::unordered_map<int32_t, uint32_t> warn_limits;
 
     // Interrupt support push things here to cause interrupt
     std::list<lc3_interrupt_req> interrupts;
@@ -559,15 +569,15 @@ struct LC3_API lc3_state
     uint32_t keyboard_int_counter; // Counter for the above delay.
 
     // Debugging information.
-    std::map<uint16_t, lc3_breakpoint_info> breakpoints;
-    std::map<uint16_t, lc3_blackbox_info> blackboxes;
-    std::map<uint16_t, lc3_watchpoint_info> mem_watchpoints;
-    std::map<uint16_t, lc3_watchpoint_info> reg_watchpoints;
-    std::map<uint16_t, std::string> comments;
-    std::map<uint16_t, lc3_subroutine_info> subroutines;
+    std::unordered_map<uint16_t, lc3_breakpoint_info> breakpoints;
+    std::unordered_map<uint16_t, lc3_blackbox_info> blackboxes;
+    std::unordered_map<uint16_t, lc3_watchpoint_info> mem_watchpoints;
+    std::unordered_map<uint16_t, lc3_watchpoint_info> reg_watchpoints;
+    std::unordered_map<uint16_t, std::string> comments;
+    std::unordered_map<uint16_t, lc3_subroutine_info> subroutines;
 
     // Statistics
-    std::map<uint16_t, lc3_memory_stats> memory_ops;
+    std::unordered_map<uint16_t, lc3_memory_stats> memory_ops;
     uint64_t total_reads;
     uint64_t total_writes;
 
