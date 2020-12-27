@@ -1,6 +1,9 @@
 #ifndef LOADING_OPTIONS_HPP
 #define LOADING_OPTIONS_HPP
 
+#include <wx/datetime.h>
+#include <wx/string.h>
+
 /** Method of initializing registers / memory when loading.
   * A nonzero value between -32767 thru 32767 means fill with that value.
   */
