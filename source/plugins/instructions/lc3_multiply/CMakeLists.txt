@@ -2,7 +2,7 @@
 # Options
 #
 
-option(OPTION_ENABLE_MULTIPLY_PLUGIN "Enable the Multiply Instruction Plugin" ON)
+option(OPTION_BUILD_MULTIPLY_PLUGIN "Enable the Multiply Instruction Plugin" ON)
 
 
 #
@@ -21,7 +21,7 @@ set(template_export_file "include/${target}/${target}_api.h")
 set(export_macro         "${target_id}_API")
 
 # Exit here if required dependencies are not met
-if (NOT OPTION_ENABLE_MULTIPLY_PLUGIN)
+if (NOT OPTION_BUILD_MULTIPLY_PLUGIN)
     message(STATUS "Plugin ${target} disabled")
     return()
 else()

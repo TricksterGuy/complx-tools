@@ -2,7 +2,7 @@
 # Options
 #
 
-option(OPTION_ENABLE_COLORLCD_PLUGIN "Enable the Color LCD Plugin" ON)
+option(OPTION_BUILD_COLORLCD_PLUGIN "Enable the Color LCD Plugin" ON)
 
 
 #
@@ -28,7 +28,7 @@ set(template_export_file "include/${target}/${target}_api.h")
 set(export_macro         "${target_id}_API")
 
 # Exit here if required dependencies are not met
-if (NOT OPTION_ENABLE_COLORLCD_PLUGIN)
+if (NOT OPTION_BUILD_COLORLCD_PLUGIN)
     message(STATUS "Plugin ${target} disabled")
     return()
 elseif (NOT wxWidgets_FOUND)

@@ -2,7 +2,7 @@
 # Options
 #
 
-option(OPTION_ENABLE_SECOND_TIMER_PLUGIN "Enable the Second Timer Plugin" OFF)
+option(OPTION_BUILD_SECOND_TIMER_PLUGIN "Enable the Second Timer Plugin" OFF)
 
 
 #
@@ -21,7 +21,7 @@ set(template_export_file "include/${target}/${target}_api.h")
 set(export_macro         "${target_id}_API")
 
 # Exit here if required dependencies are not met
-if (NOT OPTION_ENABLE_SECOND_TIMER_PLUGIN)
+if (NOT OPTION_BUILD_SECOND_TIMER_PLUGIN)
     message(STATUS "Plugin ${target} disabled")
     return()
 else()

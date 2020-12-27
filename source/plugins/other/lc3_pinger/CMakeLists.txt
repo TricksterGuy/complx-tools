@@ -2,7 +2,7 @@
 # Options
 #
 
-option(OPTION_ENABLE_PINGER_PLUGIN "Enable the Pinger Plugin" ON)
+option(OPTION_BUILD_PINGER_PLUGIN "Enable the Pinger Plugin" ON)
 
 
 #
@@ -21,7 +21,7 @@ set(template_export_file "include/${target}/${target}_api.h")
 set(export_macro         "${target_id}_API")
 
 # Exit here if required dependencies are not met
-if (NOT OPTION_ENABLE_RANDOM_PLUGIN)
+if (NOT OPTION_BUILD_RANDOM_PLUGIN)
     message(STATUS "Plugin ${target} disabled")
     return()
 else()
