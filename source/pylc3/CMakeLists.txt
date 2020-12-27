@@ -1,6 +1,6 @@
-option(OPTION_ENABLE_PYLC3 OFF)
+option(OPTION_BUILD_PYLC3 OFF)
 
-if (NOT OPTION_ENABLE_PYL3)
+if (NOT OPTION_BUILD_PYL3)
   message(STATUS "Lib pylc3 disabled")
   return()
 endif()
