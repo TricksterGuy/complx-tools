@@ -7,7 +7,7 @@ if(UNIX)
     pkg_check_modules(GLIB2 REQUIRED glib-2.0)
 endif(UNIX)
 
-find_package(wxWidgets COMPONENTS aui propgrid stc adv core base QUIET)
+find_package(wxWidgets COMPONENTS aui propgrid stc adv core base)
 
 #
 # Executable name and options
