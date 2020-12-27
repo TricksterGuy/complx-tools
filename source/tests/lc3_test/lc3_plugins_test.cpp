@@ -5,8 +5,6 @@
 #include <fstream>
 #include <vector>
 
-#define IS_EXCEPTION(type) [](const LC3AssembleException& e) {return e.get_id() == type;}
-
 struct LC3PluginTest
 {
     LC3PluginTest()
@@ -274,6 +272,12 @@ BOOST_FIXTURE_TEST_CASE(TestTrapPluginDisassemble, LC3PluginTest)
     BOOST_CHECK_EQUAL(lc3_disassemble(state, state.mem[0x3002], -1, LC3_ADVANCED_DISASSEMBLE), "UDIV");
 }
 
+bool is_plugin_fail(const LC3AssembleException& ex)
+{
+    BOOST_TEST_MESSAGE(ex.what());
+    return ex.get_id() == PLUGIN_FAILED_TO_LOAD;
+}
+
 BOOST_FIXTURE_TEST_CASE(TestTrapPluginAssembleFailure, LC3PluginTest)
 {
     const std::string asm_file =
@@ -283,7 +287,7 @@ BOOST_FIXTURE_TEST_CASE(TestTrapPluginAssembleFailure, LC3PluginTest)
     ".end";
 
     std::stringstream file(asm_file);
-    BOOST_CHECK_EXCEPTION(lc3_assemble(state, file, options), LC3AssembleException, IS_EXCEPTION(PLUGIN_FAILED_TO_LOAD));
+    BOOST_CHECK_EXCEPTION(lc3_assemble(state, file, options), LC3AssembleException, is_plugin_fail);
 }
 
 BOOST_FIXTURE_TEST_CASE(TestTrapPluginAssembleFailure2, LC3PluginTest)
@@ -295,5 +299,5 @@ BOOST_FIXTURE_TEST_CASE(TestTrapPluginAssembleFailure2, LC3PluginTest)
     ".end";
 
     std::stringstream file(asm_file);
-    BOOST_CHECK_EXCEPTION(lc3_assemble(state, file, options), LC3AssembleException, IS_EXCEPTION(PLUGIN_FAILED_TO_LOAD));
+    BOOST_CHECK_EXCEPTION(lc3_assemble(state, file, options), LC3AssembleException, is_plugin_fail);
 }
