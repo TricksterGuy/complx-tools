@@ -1,10 +1,12 @@
 
-# 
+#
 # Platform and architecture setup
-# 
+#
 
 # Get upper case system name
 string(TOUPPER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME_UPPER)
+
+option(OPTION_ENABLE_PROFILING "Enable Code Profiling compile options" OFF)
 
 # Determine architecture (32/64 bit)
 set(X64 OFF)
@@ -13,9 +15,9 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 
-# 
+#
 # Project options
-# 
+#
 
 set(DEFAULT_PROJECT_OPTIONS
     DEBUG_POSTFIX             "d"
@@ -39,23 +41,23 @@ if(APPLE)
     )
 endif()
 
-# 
+#
 # Include directories
-# 
+#
 
 set(DEFAULT_INCLUDE_DIRECTORIES)
 
 
-# 
+#
 # Libraries
-# 
+#
 
 set(DEFAULT_LIBRARIES)
 
 
-# 
+#
 # Compile definitions
-# 
+#
 
 set(DEFAULT_COMPILE_DEFINITIONS
     SYSTEM_${SYSTEM_NAME_UPPER}
@@ -70,9 +72,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
 endif ()
 
 
-# 
+#
 # Compile options
-# 
+#
 
 set(DEFAULT_COMPILE_OPTIONS)
 
@@ -88,13 +90,13 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
             #/RTCc         # -> value is assigned to a smaller data type and results in a data loss
             #>
 
-            $<$<CONFIG:Release>: 
+            $<$<CONFIG:Release>:
             /Gw           # -> whole program global optimization
-            /GS-          # -> buffer security check: no 
+            /GS-          # -> buffer security check: no
             /GL           # -> whole program optimization: enable link-time code generation (disables Zi)
             /GF           # -> enable string pooling
             >
-            
+
             /std:c++17
         PUBLIC
             /wd4251       # -> disable warning: 'identifier': class 'type' needs to have dll-interface to be used by clients of class 'type2'
@@ -123,26 +125,30 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCH
             -Wswitch-default
             -Wuninitialized
             -Wmissing-field-initializers
-            
+
             $<$<CXX_COMPILER_ID:GNU>:
                 -Wmaybe-uninitialized
-                
+
                 $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,4.8>:
                     -Wpedantic
-                    
+
                     -Wreturn-local-addr
                 >
             >
-            
+
             $<$<CXX_COMPILER_ID:Clang>:
                 -Wpedantic
-                
+
                 # -Wreturn-stack-address # gives false positives
             >
-            
+
             $<$<BOOL:${OPTION_COVERAGE_ENABLED}>:
                 -fprofile-arcs
                 -ftest-coverage
+            >
+
+            $<$<BOOL:${OPTION_ENABLE_PROFILING}>:
+                -pg
             >
             -std=c++17
         PUBLIC
@@ -153,9 +159,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCH
 endif ()
 
 
-# 
+#
 # Linker options
-# 
+#
 
 set(DEFAULT_LINKER_OPTIONS)
 
@@ -166,7 +172,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_SYSTEM_NAME}" MATCHES "L
             ${DEFAULT_LINKER_OPTIONS}
             -pthread
     )
-    
+
     if (${OPTION_COVERAGE_ENABLED})
         set(DEFAULT_LINKER_OPTIONS
             PUBLIC
@@ -174,7 +180,15 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_SYSTEM_NAME}" MATCHES "L
                 -fprofile-arcs
                 -ftest-coverage
         )
-    endif ()
+    endif()
+
+    if (${OPTION_ENABLE_PROFILING})
+        set(DEFAULT_LINKER_OPTIONS
+            PUBLIC
+                ${DEFAULT_LINKER_OPTIONS}
+                -pg
+        )
+    endif()
 endif()
 
 # Use -flat_namespace on OSX this is apparently needed due to plugins not working well i.e. InstructionPlugins won't be recognized as such.
