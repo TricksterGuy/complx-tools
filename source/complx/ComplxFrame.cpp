@@ -39,6 +39,12 @@ ComplxFrame::~ComplxFrame()
     logger->SetLogTarget(std::cerr);
 }
 
+void ComplxFrame::OnExit(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    Destroy();
+}
+
 void ComplxFrame::InitializeMenus()
 {
     for (auto i = 0U; i < cycle_speed_menu_items.size(); i++)
@@ -56,11 +62,12 @@ void ComplxFrame::InitializeLC3State()
 
     InfoLog("Random Seed %u", state->default_seed);
 
-    lc3_init(*state, false, false);
+    // TODO change back to false, false
+    lc3_init(*state, false, false, 0x1000, 0x1000);
 
     state->output = output.get();
     state->warning = warning.get();
-    state->trace = trace.get();
+    //state->trace = trace.get();
     state->reader = std::bind(&ComplxFrame::ConsoleRead, this, std::placeholders::_1, std::placeholders::_2);
     state->peek = std::bind(&ComplxFrame::ConsolePeek, this, std::placeholders::_1, std::placeholders::_2);
 }
@@ -105,7 +112,7 @@ void ComplxFrame::InitializeOutput()
 {
     output = std::make_unique<std::ostream>(consoleText);
     warning = std::make_unique<std::ostream>(warningText);
-    trace = std::make_unique<std::ostream>(traceText);
+    //trace = std::make_unique<std::ostream>(traceText);
     logging = std::make_unique<std::ostream>(loggingText);
 
     // Copy initial logs to the logging textctrl. And switch to logging to the textctrl.
@@ -214,10 +221,21 @@ void ComplxFrame::PostLoadFile()
     memoryView->ScrollTo(state->pc);
 }
 
-void ComplxFrame::OnExit(wxCommandEvent& WXUNUSED(event))
+void ComplxFrame::OnLogLevel(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
-    Destroy();
+
+    if (menuViewLogLevelVerbose->IsChecked())
+        logger->SetLogLevel(LogLevel::VERBOSE);
+    if (menuViewLogLevelInfo->IsChecked())
+        logger->SetLogLevel(LogLevel::INFO);
+    if (menuViewLogLevelWarning->IsChecked())
+        logger->SetLogLevel(LogLevel::WARNING);
+    if (menuViewLogLevelDebug->IsChecked())
+        logger->SetLogLevel(LogLevel::DEBUG);
+    if (menuViewLogLevelFatal->IsChecked())
+        logger->SetLogLevel(LogLevel::FATAL);
+
 }
 
 void ComplxFrame::OnCycleSpeed(wxCommandEvent& event)
@@ -244,7 +262,7 @@ void ComplxFrame::OnStep(wxCommandEvent& WXUNUSED(event))
     EventLog l(__func__);
     InfoLog("Stepping 1 instruction");
     PreExecute();
-    Execute(RunMode::STEP, 1);
+    Execute(RunMode::STEP, 3000);
 }
 
 void ComplxFrame::OnBack(wxCommandEvent& WXUNUSED(event))
@@ -303,7 +321,7 @@ void ComplxFrame::Execute(RunMode mode, long instructions)
     opts.mode = mode;
     opts.instructions = instructions;
     opts.fps = 60;
-    opts.ips = 1000;
+    opts.ips = 3000;
 
     execution = ExecutionInfo(opts);
 
@@ -328,6 +346,7 @@ void ComplxFrame::EndExecution()
     execution = std::nullopt;
     PostExecute();
     Disconnect(wxEVT_IDLE, wxIdleEventHandler(ComplxFrame::OnIdle), nullptr, this);
+    InfoLog("Finished previous execution command");
 }
 
 int ComplxFrame::ConsoleRead(lc3_state& state, std::istream&)
@@ -369,7 +388,6 @@ void ComplxFrame::OnIdle(wxIdleEvent& event)
     watch.Pause();
 
     auto time_elapsed_ms = watch.Time();
-    VerboseLog("time elapsed %ld", time_elapsed_ms);
 
     unsigned long icount = static_cast<unsigned long>(execution->count);
     double execute = execution->options.ips * time_elapsed_ms / 1000.0;
@@ -378,7 +396,6 @@ void ComplxFrame::OnIdle(wxIdleEvent& event)
 
     if (fcount > icount)
     {
-        EventLog l("run instruction");
         VerboseLog("Running %d instructions", fcount - icount);
         lc3_run(*state, fcount - icount);
     }

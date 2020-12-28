@@ -31,6 +31,9 @@ public:
     void OnLoad(wxCommandEvent& event) override;
     void OnReload(wxCommandEvent& event) override;
 
+    // View Menu Event Handlers
+    void OnLogLevel(wxCommandEvent& event) override;
+
     // Control Menu Event Handlers
     void OnCycleSpeed(wxCommandEvent& event);
     void OnCycleSpeedCustom(wxCommandEvent& event) override;

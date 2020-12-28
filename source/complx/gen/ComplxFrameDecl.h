@@ -38,9 +38,14 @@ class MemoryView;
 ///////////////////////////////////////////////////////////////////////////
 
 #define ID_ADVANCED_LOAD 1000
-#define ID_CUSTOM 1001
-#define ID_STEP 1002
-#define ID_BACK 1003
+#define ID_FATAL 1001
+#define ID_DEBUG 1002
+#define ID_WARNING 1003
+#define ID_INFO 1004
+#define ID_VERBOSE 1005
+#define ID_CUSTOM 1006
+#define ID_STEP 1007
+#define ID_BACK 1008
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class ComplxFrameDecl
@@ -53,6 +58,12 @@ class ComplxFrameDecl : public wxFrame
 		wxMenuBar* menuBar;
 		wxMenu* menuFile;
 		wxMenu* menuView;
+		wxMenu* menuViewLogLevel;
+		wxMenuItem* menuViewLogLevelFatal;
+		wxMenuItem* menuViewLogLevelDebug;
+		wxMenuItem* menuViewLogLevelWarning;
+		wxMenuItem* menuViewLogLevelInfo;
+		wxMenuItem* menuViewLogLevelVerbose;
 		wxMenu* menuControl;
 		wxMenu* menuCycleSpeed;
 		wxMenu* menuState;
@@ -93,6 +104,7 @@ class ComplxFrameDecl : public wxFrame
 		virtual void OnLoad( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnReload( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExit( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnLogLevel( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnCycleSpeedCustom( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStep( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnBack( wxCommandEvent& event ) { event.Skip(); }

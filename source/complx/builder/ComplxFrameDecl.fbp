@@ -140,6 +140,82 @@
                     <property name="label">View</property>
                     <property name="name">menuView</property>
                     <property name="permission">protected</property>
+                    <object class="submenu" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="label">Log Level</property>
+                        <property name="name">menuViewLogLevel</property>
+                        <property name="permission">protected</property>
+                        <object class="wxMenuItem" expanded="1">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help"></property>
+                            <property name="id">ID_FATAL</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Fatal</property>
+                            <property name="name">menuViewLogLevelFatal</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnLogLevel</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="1">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help"></property>
+                            <property name="id">ID_DEBUG</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Debug</property>
+                            <property name="name">menuViewLogLevelDebug</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnLogLevel</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="1">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help"></property>
+                            <property name="id">ID_WARNING</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Warning</property>
+                            <property name="name">menuViewLogLevelWarning</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnLogLevel</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="1">
+                            <property name="bitmap"></property>
+                            <property name="checked">1</property>
+                            <property name="enabled">1</property>
+                            <property name="help"></property>
+                            <property name="id">ID_INFO</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Info</property>
+                            <property name="name">menuViewLogLevelInfo</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnLogLevel</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="1">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help"></property>
+                            <property name="id">ID_VERBOSE</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Verbose</property>
+                            <property name="name">menuViewLogLevelVerbose</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnLogLevel</event>
+                        </object>
+                    </object>
                 </object>
                 <object class="wxMenu" expanded="1">
                     <property name="label">Control</property>

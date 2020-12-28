@@ -39,6 +39,26 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 	menuBar->Append( menuFile, wxT("File") );
 
 	menuView = new wxMenu();
+	menuViewLogLevel = new wxMenu();
+	wxMenuItem* menuViewLogLevelItem = new wxMenuItem( menuView, wxID_ANY, wxT("Log Level"), wxEmptyString, wxITEM_NORMAL, menuViewLogLevel );
+	menuViewLogLevelFatal = new wxMenuItem( menuViewLogLevel, ID_FATAL, wxString( wxT("Fatal") ) , wxEmptyString, wxITEM_RADIO );
+	menuViewLogLevel->Append( menuViewLogLevelFatal );
+
+	menuViewLogLevelDebug = new wxMenuItem( menuViewLogLevel, ID_DEBUG, wxString( wxT("Debug") ) , wxEmptyString, wxITEM_RADIO );
+	menuViewLogLevel->Append( menuViewLogLevelDebug );
+
+	menuViewLogLevelWarning = new wxMenuItem( menuViewLogLevel, ID_WARNING, wxString( wxT("Warning") ) , wxEmptyString, wxITEM_RADIO );
+	menuViewLogLevel->Append( menuViewLogLevelWarning );
+
+	menuViewLogLevelInfo = new wxMenuItem( menuViewLogLevel, ID_INFO, wxString( wxT("Info") ) , wxEmptyString, wxITEM_RADIO );
+	menuViewLogLevel->Append( menuViewLogLevelInfo );
+	menuViewLogLevelInfo->Check( true );
+
+	menuViewLogLevelVerbose = new wxMenuItem( menuViewLogLevel, ID_VERBOSE, wxString( wxT("Verbose") ) , wxEmptyString, wxITEM_RADIO );
+	menuViewLogLevel->Append( menuViewLogLevelVerbose );
+
+	menuView->Append( menuViewLogLevelItem );
+
 	menuBar->Append( menuView, wxT("View") );
 
 	menuControl = new wxMenu();
@@ -208,6 +228,11 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLoad ), this, menuFileLoad->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnReload ), this, menuFileReload->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnExit ), this, menuFileExit->GetId());
+	menuViewLogLevel->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLogLevel ), this, menuViewLogLevelFatal->GetId());
+	menuViewLogLevel->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLogLevel ), this, menuViewLogLevelDebug->GetId());
+	menuViewLogLevel->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLogLevel ), this, menuViewLogLevelWarning->GetId());
+	menuViewLogLevel->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLogLevel ), this, menuViewLogLevelInfo->GetId());
+	menuViewLogLevel->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLogLevel ), this, menuViewLogLevelVerbose->GetId());
 	menuCycleSpeed->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnCycleSpeedCustom ), this, menuCycleSpeedCustom->GetId());
 	menuControl->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnStep ), this, menuControlStep->GetId());
 	menuControl->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnBack ), this, menuControlBack->GetId());
