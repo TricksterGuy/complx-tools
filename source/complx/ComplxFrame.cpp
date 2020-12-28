@@ -259,18 +259,31 @@ void ComplxFrame::OnCycleSpeed(wxCommandEvent& event)
     EventLog l(__func__);
     auto speed = event.GetId() - ID_CYCLE_SPEED;
     InfoLog("Setting instructions per second to %d", 1 << speed);
+
+    if (execution)
+    {
+        VerboseLog("Updating current execution speed");
+        execution->options.ips = 1 << speed;
+    }
 }
 
 void ComplxFrame::OnCycleSpeedCustom(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
-    auto speed = wxGetNumberFromUser("Enter new instructions per second (1-1000000)", wxEmptyString, "Set Custom Instruction Cycle Speed", 1000, 1, 1000000, this);
+    auto speed = wxGetNumberFromUser("Enter new instructions per second (1-1000000)", wxEmptyString, "Set Custom Instruction Cycle Speed", custom_ips, 1, 1000000, this);
     if (speed == -1)
     {
         WarnLog("User canceled dialog, not setting speed.");
         return;
     }
     InfoLog("Setting instructions per second to %d", speed);
+    custom_ips = speed;
+
+    if (execution)
+    {
+        VerboseLog("Updating current execution speed");
+        execution->options.ips = custom_ips;
+    }
 }
 
 void ComplxFrame::OnStep(wxCommandEvent& WXUNUSED(event))
@@ -337,11 +350,25 @@ void ComplxFrame::Execute(RunMode mode, long instructions)
     opts.mode = mode;
     opts.instructions = instructions;
     opts.fps = 60;
-    opts.ips = 1000;
+    opts.ips = GetIps();
 
     execution = ExecutionInfo(opts);
     timer.Start(1000 / opts.fps);
     watch.Start();
+}
+
+long ComplxFrame::GetIps() const
+{
+    long speed = custom_ips;
+    long item_speed = 1;
+    for (const auto& item : cycle_speed_menu_items)
+    {
+        if (item->IsChecked())
+            speed = item_speed;
+        item_speed = item_speed << 1;
+    }
+    InfoLog("Ips: %ld", speed);
+    return speed;
 }
 
 void ComplxFrame::PostExecute()

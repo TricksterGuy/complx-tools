@@ -76,6 +76,9 @@ private:
     int ConsoleRead(lc3_state& state, std::istream& file);
     int ConsolePeek(lc3_state& state, std::istream& file);
 
+    /** Get Instructions per second */
+    long GetIps() const;
+
     std::unique_ptr<lc3_state> state;
 
     /** Options used when reloading assembly files */
@@ -93,6 +96,9 @@ private:
     RegisterProperty* pc_property;
     ProcessStatusRegisterProperty* cc_property;
     std::array<RegisterProperty*, 8> register_properties;
+
+    /** Custom Instructions Per Second set */
+    long custom_ips = 1024;
 
     /** Streams for output */
     std::unique_ptr<std::ostream> output;
