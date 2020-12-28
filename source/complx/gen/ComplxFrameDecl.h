@@ -38,8 +38,9 @@ class MemoryView;
 ///////////////////////////////////////////////////////////////////////////
 
 #define ID_ADVANCED_LOAD 1000
-#define ID_STEP 1001
-#define ID_BACK 1002
+#define ID_CUSTOM 1001
+#define ID_STEP 1002
+#define ID_BACK 1003
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class ComplxFrameDecl
@@ -53,6 +54,7 @@ class ComplxFrameDecl : public wxFrame
 		wxMenu* menuFile;
 		wxMenu* menuView;
 		wxMenu* menuControl;
+		wxMenu* menuCycleSpeed;
 		wxMenu* menuState;
 		wxMenu* menuDebug;
 		wxMenu* menuTest;
@@ -91,8 +93,14 @@ class ComplxFrameDecl : public wxFrame
 		virtual void OnLoad( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnReload( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExit( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnCycleSpeedCustom( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStep( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnBack( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnRun( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnStepOver( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnBackOver( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnStepOut( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnRewind( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStateChange( wxPropertyGridEvent& event ) { event.Skip(); }
 
 

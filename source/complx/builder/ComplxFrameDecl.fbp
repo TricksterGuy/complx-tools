@@ -50,7 +50,7 @@
             <property name="subclass">; ; forward_declare</property>
             <property name="title">Complx2</property>
             <property name="tooltip"></property>
-            <property name="window_extra_style">wxWS_EX_VALIDATE_RECURSIVELY</property>
+            <property name="window_extra_style">wxWS_EX_PROCESS_IDLE|wxWS_EX_VALIDATE_RECURSIVELY</property>
             <property name="window_name"></property>
             <property name="window_style">wxTAB_TRAVERSAL</property>
             <property name="xrc_skip_sizer">1</property>
