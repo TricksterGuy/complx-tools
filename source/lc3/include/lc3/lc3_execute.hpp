@@ -61,7 +61,7 @@ void LC3_API lc3_mem_write(lc3_state& state, uint16_t addr, int16_t val, bool pr
   * @param arg1 Argument 1 for formatting.
   * @param arg2 Argument 2 for formatting.
   */
-void LC3_API lc3_warning(lc3_state& state, uint32_t warn_id, int16_t arg1, int16_t arg2);
+void LC3_API lc3_warning(lc3_state& state, uint32_t warn_id, int16_t arg1, int16_t arg2 = 0);
 /** lc3_warning
   *
   * Prints a custom warning message on the warnings stream.

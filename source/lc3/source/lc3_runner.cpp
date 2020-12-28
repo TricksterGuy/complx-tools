@@ -46,6 +46,11 @@ void lc3_step(lc3_state& state)
     lc3_tick_plugins(state);
     // Fetch Instruction
     uint16_t data = state.mem[state.pc];
+    // Warn if executing TVT/IVT
+    if (state.pc <= 0xFF)
+        lc3_warning(state, LC3_EXECUTE_TVT, state.pc);
+    if (state.pc >= 0x100 && state.pc <= 0x1FF)
+        lc3_warning(state, LC3_EXECUTE_IVT, state.pc);
     // Test for blackbox (If the line was a JSR statement and it had a blackbox).
     bool blackbox_finish = lc3_blackbox_test(state);
     // Increment PC

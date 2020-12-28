@@ -22,7 +22,9 @@ const char* WARNING_MESSAGES[LC3_WARNINGS] =
     "Turning off machine via the MCR register.",
     "PUTSP called with invalid address x%04x",
     "PUTSP found an unexpected NUL byte at address x%04x.",
-    "Invalid value x%04x loaded into the PSR."
+    "Invalid value x%04x loaded into the PSR.",
+    "Executing trap vector table address x%04x.",
+    "Executing interrupt vector table address x%04x."
 };
 
 lc3_instr lc3_decode(lc3_state& state, uint16_t data)
@@ -142,7 +144,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             else if ((instruction.br.n && state.n) || (instruction.br.z && state.z) || (instruction.br.p && state.p))
                 state.pc = state.pc + instruction.br.pc_offset;
@@ -153,7 +155,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             else
             {
@@ -198,7 +200,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             else
             {
@@ -257,7 +259,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             else
             {
@@ -302,7 +304,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             // SECURITY!
             else if (state.privilege) // user mode
@@ -316,7 +318,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
                 else
                 {
                     // Warning
-                    lc3_warning(state, LC3_USER_RTI, 0, 0);
+                    lc3_warning(state, LC3_USER_RTI, 0);
                     state.halted = 1;
                     state.pc--;
                 }
@@ -330,7 +332,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
                 // Invalid PSR check, if the unspecified bits are filled or trying
                 // to set multiple nzp bits warn.
                 if ((psr & 0x78F8) != 0 || bits[psr & 7] != 1)
-                    lc3_warning(state, LC3_INVALID_PSR_VALUE, psr, 0);
+                    lc3_warning(state, LC3_INVALID_PSR_VALUE, psr);
 
                 state.regs[6] += 2;
                 state.privilege = (psr >> 15) & 1;
@@ -385,7 +387,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             else
             {
@@ -420,7 +422,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             else
             {
@@ -457,7 +459,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             {
                 state.halted = 1;
                 state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc], 0);
+                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
             }
             else
         {
@@ -491,7 +493,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
                 else
                 {
                     // Warning
-                    lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data, 0);
+                    lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data);
                     state.halted = 1;
                     state.pc--;
                 }
@@ -499,7 +501,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             break;
         default:
             // shouldn't happen.
-            lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data, 0);
+            lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data);
             state.halted = 1;
             state.pc--;
             break;
@@ -593,7 +595,7 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
             case TRAP_PUTS:
                 if ((r0 < 0x3000U || r0 >= 0xFE00U) && !kernel_mode)
                 {
-                    lc3_warning(state, LC3_PUTS_INVALID_MEMORY, r0, 0);
+                    lc3_warning(state, LC3_PUTS_INVALID_MEMORY, r0);
                 }
                 else
                 {
@@ -623,7 +625,7 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
                 // memory address with 0x0000 in it. Meh...
                 if ((r0 < 0x3000U || r0 >= 0xFE00U) && !kernel_mode)
                 {
-                    lc3_warning(state, LC3_PUTSP_INVALID_MEMORY, r0, 0);
+                    lc3_warning(state, LC3_PUTSP_INVALID_MEMORY, r0);
                 }
                 else
                 {
@@ -631,12 +633,12 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
                     while (state.mem[r0] != 0x0000)
                     {
                         if (putsp_should_stop)
-                            lc3_warning(state, LC3_PUTSP_UNEXPECTED_NUL, r0, 0);
+                            lc3_warning(state, LC3_PUTSP_UNEXPECTED_NUL, r0);
                         uint16_t chunk = state.mem[r0];
                         if ((chunk & 0xFF) != 0)
                             lc3_write_char(state, *state.output, chunk & 0xFF);
                         else
-                            lc3_warning(state, LC3_PUTSP_UNEXPECTED_NUL, r0, 0);
+                            lc3_warning(state, LC3_PUTSP_UNEXPECTED_NUL, r0);
                         if ((chunk & 0xFF00) != 0)
                             lc3_write_char(state, *state.output, (chunk >> 8) & 0xFF);
                         else
@@ -663,7 +665,7 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
                 }
                 else
                 {
-                    lc3_warning(state, LC3_UNSUPPORTED_TRAP, trap.vector, 0);
+                    lc3_warning(state, LC3_UNSUPPORTED_TRAP, trap.vector);
                     state.halted = 1;
                     state.pc--;
                     // In case anyone writes a bad interrupt and bad traps.
@@ -715,7 +717,7 @@ int16_t lc3_mem_read(lc3_state& state, uint16_t addr, bool privileged)
             }
             else
             {
-                lc3_warning(state, LC3_KEYBOARD_NOT_READY, 0, 0);
+                lc3_warning(state, LC3_KEYBOARD_NOT_READY, 0);
                 state.mem[DEV_KBDR] = 0;
             }
             break;
@@ -729,7 +731,7 @@ int16_t lc3_mem_read(lc3_state& state, uint16_t addr, bool privileged)
             break;
         case DEV_DDR:
             if (!kernel_mode)
-                lc3_warning(state, LC3_RESERVED_MEM_READ, addr, 0);
+                lc3_warning(state, LC3_RESERVED_MEM_READ, addr);
             break;
         case DEV_PSR:
             if (state.lc3_version > 0)
@@ -741,7 +743,7 @@ int16_t lc3_mem_read(lc3_state& state, uint16_t addr, bool privileged)
                     return state.address_plugins[addr]->OnRead(state, addr);
                 else if (!kernel_mode)
                     // Warn if reading from reserved memory if you aren't in kernel mode
-                    lc3_warning(state, LC3_RESERVED_MEM_READ, addr, 0);
+                    lc3_warning(state, LC3_RESERVED_MEM_READ, addr);
             }
             break;
         case DEV_MCR:
@@ -753,7 +755,7 @@ int16_t lc3_mem_read(lc3_state& state, uint16_t addr, bool privileged)
                 return state.address_plugins[addr]->OnRead(state, addr);
             else if (!kernel_mode)
                 // Warn if reading from reserved memory if you aren't in kernel mode
-                lc3_warning(state, LC3_RESERVED_MEM_READ, addr, 0);
+                lc3_warning(state, LC3_RESERVED_MEM_READ, addr);
             break;
         }
     }
@@ -786,7 +788,7 @@ void lc3_mem_write(lc3_state& state, uint16_t addr, int16_t value, bool privileg
         case DEV_KBDR:
         case DEV_DSR:
             if (!kernel_mode)
-                lc3_warning(state, LC3_RESERVED_MEM_WRITE, addr, 0);
+                lc3_warning(state, LC3_RESERVED_MEM_WRITE, addr);
             break;
         case DEV_DDR:
             if (state.mem[DEV_DSR])
@@ -797,12 +799,12 @@ void lc3_mem_write(lc3_state& state, uint16_t addr, int16_t value, bool privileg
             }
             else
             {
-                lc3_warning(state, LC3_DISPLAY_NOT_READY, 0, 0);
+                lc3_warning(state, LC3_DISPLAY_NOT_READY, 0);
             }
             break;
         case DEV_PSR:
             if (state.lc3_version > 0) {
-                lc3_warning(state, LC3_RESERVED_MEM_WRITE, addr, 0);
+                lc3_warning(state, LC3_RESERVED_MEM_WRITE, addr);
                 /// TODO consider allowing writing to the PSR.
             } else {
                 if (addr >= 0xFE00U && state.address_plugins.find(addr) != state.address_plugins.end())
@@ -814,7 +816,7 @@ void lc3_mem_write(lc3_state& state, uint16_t addr, int16_t value, bool privileg
         case DEV_MCR:
             if (!(value & 0x8000))
             {
-                if (!kernel_mode) lc3_warning(state, LC3_TURN_OFF_VIA_MCR, 0, 0);
+                if (!kernel_mode) lc3_warning(state, LC3_TURN_OFF_VIA_MCR, 0);
                 state.halted = 1;
                 state.pc--;
             }

@@ -63,6 +63,8 @@ void lc3_init(lc3_state& state, bool randomize_registers, bool randomize_memory,
     state.warn_limits[LC3_RESERVED_MEM_WRITE] = 100;
     state.warn_limits[LC3_RESERVED_MEM_READ] = 100;
     state.warn_limits[LC3_PUTSP_UNEXPECTED_NUL] = 100;
+    state.warn_limits[LC3_EXECUTE_IVT] = 1;
+    state.warn_limits[LC3_EXECUTE_TVT] = 1;
 
 
     // Set Stack Flags
@@ -79,13 +81,9 @@ void lc3_init(lc3_state& state, bool randomize_registers, bool randomize_memory,
 
     // Clear memory
     if (randomize_memory)
-    {
         lc3_randomize(state);
-    }
     else
-    {
         std::fill(state.mem, state.mem + 65536, memory_fill_value);
-    }
 
     // Add LC3 OS
     std::copy(lc3_osv2.begin(), lc3_osv2.end(), state.mem);
@@ -827,7 +825,7 @@ int32_t lc3_read_char(lc3_state& state, std::istream& file)
     int8_t c = file.get();
     if (!file.good())
     {
-        lc3_warning(state, LC3_OUT_OF_INPUT, 0, 0);
+        lc3_warning(state, LC3_OUT_OF_INPUT, 0);
         state.pc--;
         state.halted = true;
         return -1;
@@ -840,7 +838,7 @@ int32_t lc3_peek_char(lc3_state& state, std::istream& file)
     int8_t c = file.peek();
     if (!file.good())
     {
-        lc3_warning(state, LC3_OUT_OF_INPUT, 0, 0);
+        lc3_warning(state, LC3_OUT_OF_INPUT, 0);
         state.pc--;
         state.halted = true;
         return -1;
@@ -851,7 +849,7 @@ int32_t lc3_peek_char(lc3_state& state, std::istream& file)
 int32_t lc3_write_char(lc3_state& state, std::ostream& file, int32_t chr)
 {
     if (chr > 255 || !(isgraph(chr) || isspace(chr) || chr == '\b'))
-        lc3_warning(state, LC3_INVALID_CHARACTER_WRITE, chr, 0);
+        lc3_warning(state, LC3_INVALID_CHARACTER_WRITE, chr);
     return state.writer(state, file, chr);
 }
 
