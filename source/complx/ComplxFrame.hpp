@@ -15,6 +15,7 @@
 #include "data/ProcessStatusRegisterProperty.hpp"
 #include "gen/ComplxFrameDecl.h"
 #include <wx/stopwatch.h>
+#include <wx/timer.h>
 
 #define ID_CYCLE_SPEED 6000
 
@@ -45,7 +46,7 @@ public:
 
     // Misc Event Handlers
     // Actually handles executing instructions.
-    void OnIdle(wxIdleEvent& event);
+    void OnTimer(wxTimerEvent& event);
 
 private:
     // Initialization
@@ -54,6 +55,8 @@ private:
     void InitializeMemoryView();
     void InitializeStatePropGrid();
     void InitializeOutput();
+
+    void DoExit();
 
     /** Do the work of assembling a file. */
     bool DoLoadFile(const LoadingOptions& opts);
@@ -98,6 +101,7 @@ private:
     std::unique_ptr<std::ostream> logging;
 
     wxStopWatch watch;
+    wxTimer timer;
 };
 
 

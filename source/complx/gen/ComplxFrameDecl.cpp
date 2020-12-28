@@ -52,10 +52,10 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 
 	menuViewLogLevelInfo = new wxMenuItem( menuViewLogLevel, ID_INFO, wxString( wxT("Info") ) , wxEmptyString, wxITEM_RADIO );
 	menuViewLogLevel->Append( menuViewLogLevelInfo );
-	menuViewLogLevelInfo->Check( true );
 
 	menuViewLogLevelVerbose = new wxMenuItem( menuViewLogLevel, ID_VERBOSE, wxString( wxT("Verbose") ) , wxEmptyString, wxITEM_RADIO );
 	menuViewLogLevel->Append( menuViewLogLevelVerbose );
+	menuViewLogLevelVerbose->Check( true );
 
 	menuView->Append( menuViewLogLevelItem );
 
@@ -225,6 +225,7 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 	this->Centre( wxBOTH );
 
 	// Connect Events
+	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( ComplxFrameDecl::OnClose ) );
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLoad ), this, menuFileLoad->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnReload ), this, menuFileReload->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnExit ), this, menuFileExit->GetId());
@@ -249,6 +250,7 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 ComplxFrameDecl::~ComplxFrameDecl()
 {
 	// Disconnect Events
+	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( ComplxFrameDecl::OnClose ) );
 	m_button1->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnRun ), NULL, this );
 	m_button2->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnStep ), NULL, this );
 	m_button3->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnBack ), NULL, this );

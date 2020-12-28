@@ -22,7 +22,7 @@ wxString AskForAssemblyFile()
 
 }
 
-ComplxFrame::ComplxFrame() : ComplxFrameDecl(nullptr), state(new lc3_state()), memory_view_model(new MemoryViewDataModel(std::ref(*state)))
+ComplxFrame::ComplxFrame() : ComplxFrameDecl(nullptr), state(new lc3_state()), memory_view_model(new MemoryViewDataModel(std::ref(*state))), timer(this, wxID_ANY)
 {
     EventLog l(__func__);
 
@@ -31,6 +31,7 @@ ComplxFrame::ComplxFrame() : ComplxFrameDecl(nullptr), state(new lc3_state()), m
     InitializeLC3State();
     InitializeMemoryView();
     InitializeStatePropGrid();
+    Connect(timer.GetId(), wxEVT_TIMER, wxTimerEventHandler(ComplxFrame::OnTimer), nullptr, this);
 }
 
 ComplxFrame::~ComplxFrame()
@@ -39,9 +40,22 @@ ComplxFrame::~ComplxFrame()
     logger->SetLogTarget(std::cerr);
 }
 
+void ComplxFrame::OnClose(wxCloseEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    DoExit();
+}
+
 void ComplxFrame::OnExit(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
+    DoExit();
+}
+
+void ComplxFrame::DoExit()
+{
+    timer.Stop();
+    Disconnect(timer.GetId(), wxEVT_TIMER, wxTimerEventHandler(ComplxFrame::OnTimer), nullptr, this);
     Destroy();
 }
 
@@ -110,6 +124,7 @@ void ComplxFrame::InitializeStatePropGrid()
 
 void ComplxFrame::InitializeOutput()
 {
+    // TODO Buffer the output, uses up a lot of CPU on verbose mode.
     output = std::make_unique<std::ostream>(consoleText);
     warning = std::make_unique<std::ostream>(warningText);
     //trace = std::make_unique<std::ostream>(traceText);
@@ -236,6 +251,7 @@ void ComplxFrame::OnLogLevel(wxCommandEvent& WXUNUSED(event))
     if (menuViewLogLevelFatal->IsChecked())
         logger->SetLogLevel(LogLevel::FATAL);
 
+    InfoLog("Log level set to %d", logger->GetLogLevel());
 }
 
 void ComplxFrame::OnCycleSpeed(wxCommandEvent& event)
@@ -251,7 +267,7 @@ void ComplxFrame::OnCycleSpeedCustom(wxCommandEvent& WXUNUSED(event))
     auto speed = wxGetNumberFromUser("Enter new instructions per second (1-1000000)", wxEmptyString, "Set Custom Instruction Cycle Speed", 1000, 1, 1000000, this);
     if (speed == -1)
     {
-        VerboseLog("User canceled dialog, not setting speed.");
+        WarnLog("User canceled dialog, not setting speed.");
         return;
     }
     InfoLog("Setting instructions per second to %d", speed);
@@ -262,7 +278,7 @@ void ComplxFrame::OnStep(wxCommandEvent& WXUNUSED(event))
     EventLog l(__func__);
     InfoLog("Stepping 1 instruction");
     PreExecute();
-    Execute(RunMode::STEP, 3000);
+    Execute(RunMode::STEP, 1000000);
 }
 
 void ComplxFrame::OnBack(wxCommandEvent& WXUNUSED(event))
@@ -307,7 +323,7 @@ void ComplxFrame::PreExecute()
 
     if (execution)
     {
-        InfoLog("Cancelling previous execution command.");
+        WarnLog("Canceling previous execution command.");
         EndExecution();
     }
 }
@@ -321,11 +337,10 @@ void ComplxFrame::Execute(RunMode mode, long instructions)
     opts.mode = mode;
     opts.instructions = instructions;
     opts.fps = 60;
-    opts.ips = 3000;
+    opts.ips = 1000;
 
     execution = ExecutionInfo(opts);
-
-    Connect(wxEVT_IDLE, wxIdleEventHandler(ComplxFrame::OnIdle), nullptr, this);
+    timer.Start(1000 / opts.fps);
     watch.Start();
 }
 
@@ -345,7 +360,8 @@ void ComplxFrame::EndExecution()
     EventLog l(__func__);
     execution = std::nullopt;
     PostExecute();
-    Disconnect(wxEVT_IDLE, wxIdleEventHandler(ComplxFrame::OnIdle), nullptr, this);
+    timer.Stop();
+
     InfoLog("Finished previous execution command");
 }
 
@@ -374,13 +390,13 @@ int ComplxFrame::ConsolePeek(lc3_state& state, std::istream&)
         state.halted = true;
         return -1;
     }
-    InfoLog("Peek Character %c value: %d", static_cast<char>(consoleInput[0]), consoleInput[0]);
+    VerboseLog("Peek Character %c value: %d", static_cast<char>(consoleInput[0]), consoleInput[0]);
     return consoleInput[0];
 }
 
-void ComplxFrame::OnIdle(wxIdleEvent& event)
+void ComplxFrame::OnTimer(wxTimerEvent& event)
 {
-    event.Skip();
+    EventLog l(__func__);
 
     if (!execution)
         return;
@@ -388,7 +404,6 @@ void ComplxFrame::OnIdle(wxIdleEvent& event)
     watch.Pause();
 
     auto time_elapsed_ms = watch.Time();
-
     unsigned long icount = static_cast<unsigned long>(execution->count);
     double execute = execution->options.ips * time_elapsed_ms / 1000.0;
     execution->count = std::min(execution->count + execute, static_cast<double>(execution->options.instructions));
@@ -406,6 +421,5 @@ void ComplxFrame::OnIdle(wxIdleEvent& event)
         return;
     }
 
-    watch.Resume();
-    event.RequestMore();
+    watch.Start();
 }

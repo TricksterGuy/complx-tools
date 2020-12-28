@@ -24,8 +24,6 @@ bool ComplxApp::OnInit()
     wxHandleFatalExceptions();
 #endif
 
-    wxIdleEvent::SetMode(wxIDLE_PROCESS_SPECIFIED);
-
     logger->SetLogTarget(initial_logging_stream);
     logger->SetLogLevel(LogLevel::VERBOSE);
     logger->SetLogColor(false);
