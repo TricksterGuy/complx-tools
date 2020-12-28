@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include <wx/filedlg.h>
+#include <wx/numdlg.h>
 #include <wx/valnum.h>
 
 #include <logging.hpp>
@@ -25,6 +26,7 @@ ComplxFrame::ComplxFrame() : ComplxFrameDecl(nullptr), state(new lc3_state()), m
 {
     EventLog l(__func__);
 
+    InitializeMenus();
     InitializeOutput();
     InitializeLC3State();
     InitializeMemoryView();
@@ -37,89 +39,15 @@ ComplxFrame::~ComplxFrame()
     logger->SetLogTarget(std::cerr);
 }
 
-void ComplxFrame::OnLoad(wxCommandEvent& WXUNUSED(event))
+void ComplxFrame::InitializeMenus()
 {
-    EventLog l(__func__);
-    wxString file = AskForAssemblyFile();
-    if (file.IsEmpty())
+    for (auto i = 0U; i < cycle_speed_menu_items.size(); i++)
     {
-        WarnLog("No file loaded.");
-        return;
+        auto id = cycle_speed_menu_items.size() - i - 1;
+        auto menu_id = ID_CYCLE_SPEED + id;
+        cycle_speed_menu_items[id] = menuCycleSpeed->PrependRadioItem(menu_id, wxString::Format("%d Instruction%s", 1 << id, id == 0 ? "" : "s"));
+        menuCycleSpeed->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(ComplxFrame::OnCycleSpeed), this, menu_id);
     }
-
-    InfoLog("File selected: %s", static_cast<const char*>(file));
-
-    LoadingOptions options;
-    options.file = file;
-
-    // Success/failure logs handled in DoLoadFile.
-    if (DoLoadFile(options))
-        reload_options = options;
-}
-
-void ComplxFrame::OnReload(wxCommandEvent& event)
-{
-    EventLog l(__func__);
-    if (reload_options.file.IsEmpty())
-    {
-        OnLoad(event);
-        return;
-    }
-
-    InfoLog("Reloading: %s", static_cast<const char*>(reload_options.file));
-    DoLoadFile(reload_options);
-}
-
-void ComplxFrame::OnExit(wxCommandEvent& WXUNUSED(event))
-{
-    EventLog l(__func__);
-    Destroy();
-}
-
-void ComplxFrame::OnStep(wxCommandEvent& WXUNUSED(event))
-{
-    EventLog l(__func__);
-    PreExecute();
-    InfoLog("Stepping 1 instruction");
-    lc3_step(*state);
-    PostExecute();
-}
-
-void ComplxFrame::OnBack(wxCommandEvent& WXUNUSED(event))
-{
-    EventLog l(__func__);
-    PreExecute();
-    InfoLog("Stepping back 1 instruction");
-    lc3_back(*state);
-    PostExecute();
-}
-
-void ComplxFrame::OnStateChange(wxPropertyGridEvent& event)
-{
-    EventLog l(__func__);
-    auto* property = event.GetProperty();
-    auto property_type = reinterpret_cast<uintptr_t>(property->GetClientData());
-
-    if (property_type == PropertyType::Register)
-    {
-        auto* register_property = dynamic_cast<RegisterProperty*>(property);
-        wxASSERT(register_property);
-        register_property->UpdateRegisterValue();
-    }
-
-    if (property_type == PropertyType::RegisterDisplayBase)
-    {
-        auto* register_property = dynamic_cast<RegisterProperty*>(property->GetParent());
-        wxASSERT(register_property);
-        register_property->UpdateDisplayBase();
-    }
-
-    // This means they changed the value of the PC.
-    if (property == pc_property)
-        memoryView->Refresh();
-
-    if (property == cc_property)
-        cc_property->UpdateRegisterValue();
 }
 
 void ComplxFrame::InitializeLC3State()
@@ -128,7 +56,7 @@ void ComplxFrame::InitializeLC3State()
 
     InfoLog("Random Seed %u", state->default_seed);
 
-    lc3_init(*state);
+    lc3_init(*state, false, false);
 
     state->output = output.get();
     state->warning = warning.get();
@@ -186,6 +114,51 @@ void ComplxFrame::InitializeOutput()
     logger->SetLogTarget(*logging);
 }
 
+void ComplxFrame::OnLoad(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    if (execution)
+    {
+        WarnLog("Currently executing instructions, please stop execution first.");
+        return;
+    }
+
+    wxString file = AskForAssemblyFile();
+    if (file.IsEmpty())
+    {
+        WarnLog("No file loaded.");
+        return;
+    }
+
+    InfoLog("File selected: %s", static_cast<const char*>(file));
+
+    LoadingOptions options;
+    options.file = file;
+
+    // Success/failure logs handled in DoLoadFile.
+    if (DoLoadFile(options))
+        reload_options = options;
+}
+
+void ComplxFrame::OnReload(wxCommandEvent& event)
+{
+    EventLog l(__func__);
+    if (execution)
+    {
+        WarnLog("Currently executing instructions, please stop execution first.");
+        return;
+    }
+
+    if (reload_options.file.IsEmpty())
+    {
+        OnLoad(event);
+        return;
+    }
+
+    InfoLog("Reloading: %s", static_cast<const char*>(reload_options.file));
+    DoLoadFile(reload_options);
+}
+
 bool ComplxFrame::DoLoadFile(const LoadingOptions& opts)
 {
     std::unique_ptr<lc3_state> new_state(new lc3_state());
@@ -241,9 +214,101 @@ void ComplxFrame::PostLoadFile()
     memoryView->ScrollTo(state->pc);
 }
 
+void ComplxFrame::OnExit(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    Destroy();
+}
+
+void ComplxFrame::OnCycleSpeed(wxCommandEvent& event)
+{
+    EventLog l(__func__);
+    auto speed = event.GetId() - ID_CYCLE_SPEED;
+    InfoLog("Setting instructions per second to %d", 1 << speed);
+}
+
+void ComplxFrame::OnCycleSpeedCustom(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    auto speed = wxGetNumberFromUser("Enter new instructions per second (1-1000000)", wxEmptyString, "Set Custom Instruction Cycle Speed", 1000, 1, 1000000, this);
+    if (speed == -1)
+    {
+        VerboseLog("User canceled dialog, not setting speed.");
+        return;
+    }
+    InfoLog("Setting instructions per second to %d", speed);
+}
+
+void ComplxFrame::OnStep(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    InfoLog("Stepping 1 instruction");
+    PreExecute();
+    Execute(RunMode::STEP, 1);
+}
+
+void ComplxFrame::OnBack(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    InfoLog("Stepping back 1 instruction");
+    PreExecute();
+    Execute(RunMode::BACK, 1);
+}
+
+void ComplxFrame::OnStateChange(wxPropertyGridEvent& event)
+{
+    EventLog l(__func__);
+    auto* property = event.GetProperty();
+    auto property_type = reinterpret_cast<uintptr_t>(property->GetClientData());
+
+    if (property_type == PropertyType::Register)
+    {
+        auto* register_property = dynamic_cast<RegisterProperty*>(property);
+        wxASSERT(register_property);
+        register_property->UpdateRegisterValue();
+    }
+
+    if (property_type == PropertyType::RegisterDisplayBase)
+    {
+        auto* register_property = dynamic_cast<RegisterProperty*>(property->GetParent());
+        wxASSERT(register_property);
+        register_property->UpdateDisplayBase();
+    }
+
+    // This means they changed the value of the PC.
+    if (property == pc_property)
+        memoryView->Refresh();
+
+    if (property == cc_property)
+        cc_property->UpdateRegisterValue();
+}
+
 void ComplxFrame::PreExecute()
 {
     TransferDataFromWindow();
+
+    if (execution)
+    {
+        InfoLog("Cancelling previous execution command.");
+        EndExecution();
+    }
+}
+
+void ComplxFrame::Execute(RunMode mode, long instructions)
+{
+    if (execution)
+        DFatalLog("Called execute twice? this shouldn't happen");
+
+    ExecuteOptions opts;
+    opts.mode = mode;
+    opts.instructions = instructions;
+    opts.fps = 60;
+    opts.ips = 1000;
+
+    execution = ExecutionInfo(opts);
+
+    Connect(wxEVT_IDLE, wxIdleEventHandler(ComplxFrame::OnIdle), nullptr, this);
+    watch.Start();
 }
 
 void ComplxFrame::PostExecute()
@@ -257,11 +322,19 @@ void ComplxFrame::PostExecute()
     cc_property->RefreshDisplayedValue();
 }
 
+void ComplxFrame::EndExecution()
+{
+    EventLog l(__func__);
+    execution = std::nullopt;
+    PostExecute();
+    Disconnect(wxEVT_IDLE, wxIdleEventHandler(ComplxFrame::OnIdle), nullptr, this);
+}
+
 int ComplxFrame::ConsoleRead(lc3_state& state, std::istream&)
 {
     if (consoleInput.IsEmpty())
     {
-        lc3_warning(state, LC3_OUT_OF_INPUT, 0, 0);
+        lc3_warning(state, LC3_OUT_OF_INPUT, 0);
         state.pc--;
         state.halted = true;
         return -1;
@@ -277,7 +350,7 @@ int ComplxFrame::ConsolePeek(lc3_state& state, std::istream&)
 {
     if (consoleInput.IsEmpty())
     {
-        lc3_warning(state, LC3_OUT_OF_INPUT, 0, 0);
+        lc3_warning(state, LC3_OUT_OF_INPUT, 0);
         state.pc--;
         state.halted = true;
         return -1;
@@ -286,3 +359,36 @@ int ComplxFrame::ConsolePeek(lc3_state& state, std::istream&)
     return consoleInput[0];
 }
 
+void ComplxFrame::OnIdle(wxIdleEvent& event)
+{
+    event.Skip();
+
+    if (!execution)
+        return;
+
+    watch.Pause();
+
+    auto time_elapsed_ms = watch.Time();
+    VerboseLog("time elapsed %ld", time_elapsed_ms);
+
+    unsigned long icount = static_cast<unsigned long>(execution->count);
+    double execute = execution->options.ips * time_elapsed_ms / 1000.0;
+    execution->count = std::min(execution->count + execute, static_cast<double>(execution->options.instructions));
+    unsigned long fcount = static_cast<unsigned long>(execution->count);
+
+    if (fcount > icount)
+    {
+        EventLog l("run instruction");
+        VerboseLog("Running %d instructions", fcount - icount);
+        lc3_run(*state, fcount - icount);
+    }
+
+    if ((execution && execution->count == execution->options.instructions) || state->halted)
+    {
+        EndExecution();
+        return;
+    }
+
+    watch.Resume();
+    event.RequestMore();
+}
