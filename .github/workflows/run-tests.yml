@@ -1,9 +1,24 @@
 name: Run Tests
 
-on: [push, pull_request]
+on: 
+  push:
+    paths:
+      - 'source/tests/**'
+      - 'source/lc3/**'
+      - 'source/plugins/instructions/lc3_multiply/**'
+      - 'source/plugins/devices/lc3_random/**'
+      - 'source/plugins/traps/lc3_udiv/**'
+      - 'source/lc3_replay/**'
+  pull_request:
+    paths:
+      - 'source/tests/**'
+      - 'source/lc3/**'
+      - 'source/plugins/instructions/lc3_multiply/**'
+      - 'source/plugins/devices/lc3_random/**'
+      - 'source/plugins/traps/lc3_udiv/**'
+      - 'source/lc3_replay/**'
 
 jobs:
-
   test:
     strategy:
       matrix:
