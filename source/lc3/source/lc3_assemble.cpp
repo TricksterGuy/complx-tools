@@ -1031,7 +1031,6 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
     // break[point] address name condition times
     // watch[point] target=??? name=label condition="0" times=-1
     // watch[point] target name condition times
-    // blackbox address=address name=label condition=1
     // subroutine address=address name=label num_params=0
     if (type == std::string("break") && enable_debug_statements)
     {
@@ -1258,66 +1257,6 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
                 tokenize(params_str, subro_params, ",");
                 lc3_add_subroutine(state, address, name, subro_params);
             }
-        }
-    }
-    else if (type == std::string("black") && enable_debug_statements)
-    {
-        if (debug_params.empty())
-        {
-            if (statement.address != 0)
-                lc3_add_blackbox(state, statement.address);
-            return;
-        }
-        // If using = sign mode
-        if (equal_sign_mode)
-        {
-            uint16_t address;
-            std::string name = params.find("name") == params.end() ? "" : params["name"];
-            std::string condition = params.find("condition") == params.end() ? "1" : params["condition"];
-
-            // Address calculation
-            if (params.find("address") == params.end())
-            {
-                if (statement.address == 0) return;
-                address = statement.address;
-            }
-            else
-            {
-                address = get_sym_imm(params["address"], 16, dummy, true);
-            }
-            lc3_add_blackbox(state, address, name, condition);
-        }
-        // If using function call mode
-        else
-        {
-            uint16_t address;
-            std::string name;
-            std::string condition = "1";
-
-            std::vector<std::string> pieces;
-            tokenize(debug_params, pieces, " \t");
-            if (pieces.size() > 3) pieces.resize(3);
-
-            switch (pieces.size())
-            {
-            case 3:
-                condition = pieces[2];
-                [[fallthrough]];
-            case 2:
-                name = pieces[1];
-                [[fallthrough]];
-            case 1:
-                address = get_sym_imm(pieces[0], 16, dummy, true);
-                break;
-            case 0:
-                if (statement.address == 0) return;
-                address = statement.address;
-                break;
-            default: // shouldn't happen
-                return;
-            }
-
-            lc3_add_blackbox(state, address, name, condition);
         }
     }
 }

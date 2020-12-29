@@ -11,16 +11,6 @@
 #include "lc3/lc3_os.hpp"
 #include "lc3/lc3_plugin.hpp"
 
-void lc3_run(lc3_state& state)
-{
-    // Do this until halted
-    while (!state.halted)
-    {
-        // Step one instruction
-        lc3_step(state);
-    }
-}
-
 void lc3_run(lc3_state& state, unsigned int num)
 {
     unsigned int i = 0;
@@ -46,22 +36,20 @@ void lc3_step(lc3_state& state)
     lc3_tick_plugins(state);
     // Fetch Instruction
     uint16_t data = state.mem[state.pc];
+
     // Warn if executing TVT/IVT
     if (state.pc <= 0xFF)
         lc3_warning(state, LC3_EXECUTE_TVT, state.pc);
     if (state.pc >= 0x100 && state.pc <= 0x1FF)
         lc3_warning(state, LC3_EXECUTE_IVT, state.pc);
-    // Test for blackbox (If the line was a JSR statement and it had a blackbox).
-    bool blackbox_finish = lc3_blackbox_test(state);
+
     // Increment PC
     state.pc++;
     // Form Instruction
     lc3_instr instr = lc3_decode(state, data);
     // Execute Instruction
     const lc3_state_change change = lc3_execute(state, instr);
-    // Test for blackbox (If the first line of subroutine had a blackbox).
-    if (instr.data.opcode == JSR_INSTR || (instr.data.opcode == TRAP_INSTR && state.true_traps))
-        blackbox_finish = blackbox_finish || lc3_blackbox_test(state);
+
     // Increment executions
     state.executions++;
 
@@ -94,9 +82,6 @@ void lc3_step(lc3_state& state)
 
     // Tock all plugins
     lc3_tock_plugins(state);
-
-    if (blackbox_finish)
-        lc3_finish(state);
 
     // If we hit an error or a halt instruction return. no need to do any breakpoint tests.
     if (state.halted) return;
@@ -221,30 +206,17 @@ void lc3_rewind(lc3_state& state, unsigned int num)
         // Backstep
         lc3_back(state);
         num--;
-
     }
 }
 
-void lc3_rewind(lc3_state& state)
+int lc3_next_line(lc3_state& state, unsigned int num, int depth)
 {
-    bool interrupt_begin = false;
-    // Do this until no more changes.
-    while (!state.undo_stack.empty() && !interrupt_begin)
-    {
-        lc3_state_change& last = state.undo_stack.back();
-        interrupt_begin = (last.changes == LC3_INTERRUPT_BEGIN);
-        // Backstep
-        lc3_back(state);
-    }
-}
-
-void lc3_next_line(lc3_state& state)
-{
-    // Subroutine depth
-    int depth = 0;
+    unsigned int i = 0;
 
     do
     {
+        i++;
+
         // Get Next Instruction.
         lc3_instr instr = lc3_decode(state, state.mem[state.pc]);
         // So if we get a JSR/JSRR or if we get a TRAP and true traps are enabled
@@ -266,23 +238,28 @@ void lc3_next_line(lc3_state& state)
         if (state.interrupt_enabled && state.undo_stack.back().changes == LC3_INTERRUPT_BEGIN)
             depth++;
 
+        if (i >= num && depth != 0)
+            return depth;
     }
     while (depth != 0 && !state.halted);
+
+    return -1;
 }
 
-void lc3_prev_line(lc3_state& state)
+int lc3_prev_line(lc3_state& state, unsigned int num, int depth)
 {
-    // Subroutine depth
-    int depth = 0;
+    unsigned int i = 0;
 
     do
     {
+        i++;
+
         if (!state.undo_stack.empty())
         {
             lc3_state_change& last = state.undo_stack.back();
             // Can't backstep through interrupt
             if (last.changes == LC3_INTERRUPT_BEGIN)
-                return;
+                return -1;
 
             // Get rid of all processed interrupts.
             while (last.changes == LC3_INTERRUPT && !state.undo_stack.empty())
@@ -304,39 +281,13 @@ void lc3_prev_line(lc3_state& state)
         if (instr.data.opcode == JSR_INSTR || (instr.data.opcode == TRAP_INSTR && state.true_traps))
             depth--;
         // Don't have to handle interrupts here...
+
+        if (i >= num && depth != 0)
+            return depth;
     }
     while (depth != 0 && !state.halted && !state.undo_stack.empty());
-}
 
-void lc3_finish(lc3_state& state)
-{
-    // Subroutine depth We assume the user is already in a subroutine and just wants to get out of it
-    int depth = 1;
-
-    do
-    {
-        // Get Next Instruction.
-        lc3_instr instr = lc3_decode(state, state.mem[state.pc]);
-        // So if we get a JSR/JSRR or if we get a TRAP and true traps are enabled
-        if (instr.data.opcode == JSR_INSTR || (instr.data.opcode == TRAP_INSTR && state.true_traps))
-            depth++;
-
-        // If we get a RET instruction JMP R7
-        if (instr.data.opcode == JMP_INSTR && instr.jmp.base_r == 7)
-            depth--;
-
-        // If we got an RTI instruction
-        if (instr.data.opcode == RTI_INSTR)
-            depth--;
-
-        // Execute
-        lc3_step(state);
-
-        // If we got interrupted
-        if (state.interrupt_enabled && state.undo_stack.back().changes == LC3_INTERRUPT_BEGIN)
-            depth++;
-    }
-    while (depth != 0 && !state.halted);
+    return -1;
 }
 
 bool lc3_interrupt(lc3_state& state)

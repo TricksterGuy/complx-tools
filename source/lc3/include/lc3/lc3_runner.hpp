@@ -5,17 +5,11 @@
 
 /** lc3_run
   *
-  * Executes instructions until the lc3 is halted.
-  * @param state LC3State object.
-  */
-void LC3_API lc3_run(lc3_state& state);
-/** lc3_run
-  *
   * Runs for X instructions or until the lc3 is halted.
   * @param state LC3State object.
   * @param num Number of instructions to execute.
   */
-void LC3_API lc3_run(lc3_state& state, unsigned int num);
+void LC3_API lc3_run(lc3_state& state, unsigned int num = -1);
 /** lc3_step
   *
   * Executes one instruction.
@@ -34,35 +28,28 @@ void LC3_API lc3_back(lc3_state& state);
   * Attempts to backstep a number of instructions.
   * This may not be possible depending on the size of the undo stack.
   * @param state LC3State object.
-  * @param num Number of instructions to back step.
+  * @param num Number of instructions to back step (default max).
   */
-void LC3_API lc3_rewind(lc3_state& state, unsigned int num);
-/** lc3_rewind
-  *
-  * Attempts to backstep as many instructions as possible to get back to initial state.
-  * This may not be possible depending on the size of the undo stack.
-  * @param state LC3State object.
-  */
-void LC3_API lc3_rewind(lc3_state& state);
+void LC3_API lc3_rewind(lc3_state& state, unsigned int num = -1);
 /** lc3_next_line
   *
   * Executes the next line and blackboxes any subroutines and traps.
   * @param state LC3State object.
+  * @param num Maximum number of instructions to execute
+  * @param depth Current subroutine depth in case num was provided
+  * @return -1 if successfully executed previous line, otherwise the final subroutine depth if partially complete
   */
-void LC3_API lc3_next_line(lc3_state& state);
+int LC3_API lc3_next_line(lc3_state& state, unsigned int num = -1, int depth = 0);
 /** lc3_prev_line
   *
   * Goes back one line again blackboxes any subroutines and traps.
   * This may not be possible depending on the size of the undo stack.
   * @param state LC3State object.
+  * @param num Maximum number of instructions to execute
+  * @param depth Current subroutine depth in case num was provided
+  * @return -1 if successfully executed previous line, otherwise the final subroutine depth if partially complete
   */
-void LC3_API lc3_prev_line(lc3_state& state);
-/** lc3_finish
-  *
-  * Finishes the current subroutine.
-  * @param state LC3State object.
-  */
-void LC3_API lc3_finish(lc3_state& state);
+int LC3_API lc3_prev_line(lc3_state& state, unsigned int num = -1, int depth = 0);
 /** lc3_interrupt
   *
   * Checks for and processes a single pending interrupt.

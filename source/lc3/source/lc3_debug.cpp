@@ -38,20 +38,6 @@ bool lc3_has_watch(lc3_state& state, bool is_reg, uint16_t data)
         return state.mem_watchpoints.find(data) != state.mem_watchpoints.end();
 }
 
-
-bool lc3_has_blackbox(lc3_state& state, const std::string& symbol)
-{
-    int addr = lc3_sym_lookup(state, symbol);
-    if (addr == -1) return false;
-
-    return lc3_has_blackbox(state, addr);
-}
-
-bool lc3_has_blackbox(lc3_state& state, uint16_t addr)
-{
-    return state.blackboxes.find(addr) != state.blackboxes.end();
-}
-
 bool lc3_add_break(lc3_state& state, const std::string& symbol, const std::string& label, const std::string& condition, int times)
 {
     int addr = lc3_sym_lookup(state, symbol);
@@ -73,30 +59,6 @@ bool lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label, co
     info.condition = condition;
 
     state.breakpoints[addr] = info;
-
-    return false;
-}
-
-bool lc3_add_blackbox(lc3_state& state, const std::string& symbol, const std::string& label, const std::string& condition)
-{
-    int addr = lc3_sym_lookup(state, symbol);
-    if (addr == -1) return true;
-
-    return lc3_add_blackbox(state, addr, label, condition);
-}
-
-bool lc3_add_blackbox(lc3_state& state, uint16_t addr, const std::string& label, const std::string& condition)
-{
-    if (state.blackboxes.find(addr) != state.blackboxes.end()) return true;
-
-    lc3_blackbox_info info;
-    info.enabled = true;
-    info.addr = addr;
-    info.hit_count = 0;
-    info.label = label;
-    info.condition = condition;
-
-    state.blackboxes[addr] = info;
 
     return false;
 }
@@ -164,7 +126,6 @@ bool lc3_add_subroutine(lc3_state& state, uint16_t address, const std::string& n
     return lc3_add_subroutine(state, address, name, num_params, params);
 }
 
-
 bool lc3_add_subroutine(lc3_state& state, uint16_t address, const std::string& name, int num_params, const std::vector<std::string>& params)
 {
     if (state.subroutines.find(address) != state.subroutines.end()) return true;
@@ -192,23 +153,6 @@ bool lc3_remove_break(lc3_state& state, uint16_t addr)
     if (state.breakpoints.find(addr) == state.breakpoints.end()) return true;
 
     state.breakpoints.erase(addr);
-
-    return false;
-}
-
-bool lc3_remove_blackbox(lc3_state& state, const std::string& symbol)
-{
-    int addr = lc3_sym_lookup(state, symbol);
-    if (addr == -1) return true;
-
-    return lc3_remove_blackbox(state, addr);
-}
-
-bool lc3_remove_blackbox(lc3_state& state, uint16_t addr)
-{
-    if (state.blackboxes.find(addr) == state.blackboxes.end()) return true;
-
-    state.blackboxes.erase(addr);
 
     return false;
 }
@@ -389,39 +333,4 @@ bool lc3_break_test(lc3_state& state, const lc3_state_change* changes)
     }
 
     return state.halted;
-}
-
-bool lc3_blackbox_test(lc3_state& state)
-{
-    bool blackboxing = false;
-    // Test for blackboxes
-    if (state.blackboxes.find(state.pc) != state.blackboxes.end())
-    {
-        lc3_blackbox_info& info = state.blackboxes[state.pc];
-        if (info.enabled)
-        {
-            int boolean = 0;
-            try
-            {
-                boolean = lc3_calculate(state, info.condition);
-            }
-            catch (const LC3CalculateException& e)
-            {
-                std::stringstream msg;
-                msg << "Blackbox address: x" << std::hex << state.pc << " name: " << info.label << " " << e.what() << "\n Halting processor.";
-                lc3_warning(state, msg.str());
-                state.halted = 1;
-                state.pc--;
-                return false;
-            }
-            if (boolean)
-            {
-                // Signal blackbox
-                blackboxing = true;
-                info.hit_count++;
-            }
-        }
-    }
-
-    return blackboxing;
 }

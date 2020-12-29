@@ -374,20 +374,6 @@ struct LC3_API lc3_watchpoint_info
     }
 };
 
-/** Record of stats for a blackbox. */
-struct LC3_API lc3_blackbox_info
-{
-    bool enabled;
-    uint16_t addr;
-    int32_t hit_count;
-    std::string label;
-    std::string condition;
-    bool operator==(const lc3_blackbox_info& other) const
-    {
-        return addr == other.addr && condition == other.condition;
-    }
-};
-
 /** Record of subroutine information. */
 struct LC3_API lc3_subroutine_info
 {
@@ -572,7 +558,6 @@ struct LC3_API lc3_state
 
     // Debugging information.
     std::unordered_map<uint16_t, lc3_breakpoint_info> breakpoints;
-    std::unordered_map<uint16_t, lc3_blackbox_info> blackboxes;
     std::unordered_map<uint16_t, lc3_watchpoint_info> mem_watchpoints;
     std::unordered_map<uint16_t, lc3_watchpoint_info> reg_watchpoints;
     std::unordered_map<uint16_t, std::string> comments;

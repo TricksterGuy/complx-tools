@@ -41,42 +41,6 @@ bool LC3_API lc3_has_breakpoint(lc3_state& state, const std::string& symbol);
   * @return True if there is a breakpoint at the given address.
   */
 bool LC3_API lc3_has_breakpoint(lc3_state& state, uint16_t addr);
-/** lc3_add_blackbox
-  *
-  * Adds a blackbox at the given symbol.
-  * @param state LC3State object.
-  * @param symbol Symbol to add blackbox to.
-  * @param label The name for this blackbox.
-  * @param condition If condition evaluates to true, then the code will not be traced (will execute all of the code when stepped through).
-  * @return True if there was an error adding the blackbox false otherwise.
-  */
-bool LC3_API lc3_add_blackbox(lc3_state& state, const std::string& symbol, const std::string& label = "", const std::string& condition = "1");
-/** lc3_add_blackbox
-  *
-  * Adds a blackbox at the given address.
-  * @param state LC3State object.
-  * @param addr Address to place the blackbox
-  * @param label The name for this blackbox.
-  * @param condition If condition evaluates to true, then the code will not be traced (will execute all of the code when stepped through).
-  * @return True if there was an error adding the blackbox false otherwise.
-  */
-bool LC3_API lc3_add_blackbox(lc3_state& state, uint16_t addr, const std::string& label = "", const std::string& condition = "1");
-/** lc3_has_blackbox
-  *
-  * Checks if there is a blackbox at the given symbol.
-  * @param state LC3State object.
-  * @param symbol Address to check.
-  * @return True if there is a blackbox at the given symbol.
-  */
-bool LC3_API lc3_has_blackbox(lc3_state& state, const std::string& symbol);
-/** lc3_has_blackbox
-  *
-  * Checks if there is a blackbox at the given address.
-  * @param state LC3State object.
-  * @param addr Address to check.
-  * @return True if there is a blackbox at the given address.
-  */
-bool LC3_API lc3_has_blackbox(lc3_state& state, uint16_t addr);
 /** lc3_add_watch
   *
   * Adds a watchpoint at the given address or register.
@@ -172,25 +136,9 @@ bool LC3_API lc3_remove_break(lc3_state& state, const std::string& symbol);
   * Removes the breakpoints associated with the address.
   * @param state LC3State object.
   * @param addr Address to remove breakpoint from.
-  * @return True if there was an error removing the blackbox false otherwise.
+  * @return True if there was an error removing the breakpoint false otherwise.
   */
 bool LC3_API lc3_remove_break(lc3_state& state, uint16_t addr);
-/** lc3_remove_blackbox
-  *
-  * Removes the blackbox associated with the symbol.
-  * @param state LC3State object.
-  * @param symbol Symbol to remove blackbox from.
-  * @return True if there was an error removing the blackbox false otherwise.
-  */
-bool LC3_API lc3_remove_blackbox(lc3_state& state, const std::string& symbol);
-/** lc3_remove_blackbox
-  *
-  * Removes the blackbox associated with the address.
-  * @param state LC3State object.
-  * @param addr address to remove blackbox from.
-  * @return True if there was an error removing the blackbox false otherwise.
-  */
-bool LC3_API lc3_remove_blackbox(lc3_state& state, uint16_t addr);
 /** lc3_remove_watch
   *
   * Removes any watchpoints associated with the register/memory address.
@@ -214,12 +162,5 @@ bool LC3_API lc3_remove_watch(lc3_state& state, const std::string& symbol);
   * @return True if we have triggered a breakpoint/watchpoint.
   */
 bool lc3_break_test(lc3_state& state, const lc3_state_change* changes);
-/** lc3_blackbox_test
-  *
-  * Tests if we have hit a blackbox.
-  * @param state LC3State object.
-  * @return True if we have triggered a blackbox.
-  */
-bool lc3_blackbox_test(lc3_state& state);
 
 #endif
