@@ -61,12 +61,6 @@ void MemoryViewDataModel::GetValueByRow(wxVariant& variant, unsigned int row, un
                 if (!state.breakpoints[addr].enabled)
                     info |= BREAKPOINT_DISABLED;
             }
-            if  (state.blackboxes.find(addr) != state.blackboxes.end())
-            {
-                info |= DRAW_BLACKBOX;
-                if (!state.blackboxes[addr].enabled)
-                    info |= BLACKBOX_DISABLED;
-            }
             if (state.mem_watchpoints.find(addr) != state.mem_watchpoints.end())
             {
                 info |= DRAW_WATCHPOINT;

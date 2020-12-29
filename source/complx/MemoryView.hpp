@@ -14,7 +14,6 @@ enum
     MemoryMenuTemporary,
     MemoryMenuAdvanced,
     MemoryMenuWatchpoint,
-    MemoryMenuBlackbox,
     MemoryMenuPCHere,
     MemoryMenuGoto
 };
@@ -34,7 +33,6 @@ public:
     void OnTemporaryBreakpoint(wxCommandEvent& event);
     void OnBreakpoint(wxCommandEvent& event);
     void OnWatchpoint(wxCommandEvent& event);
-    void OnBlackbox(wxCommandEvent& event);
     void OnAdvancedBreakpoint(wxCommandEvent& event);
     void OnSetPcHere(wxCommandEvent& event);
     void OnGotoAddress(wxCommandEvent& event);

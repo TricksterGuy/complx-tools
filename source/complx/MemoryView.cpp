@@ -42,7 +42,6 @@ MemoryView::MemoryView(wxWindow* parent, wxWindowID id, const wxPoint& pos, cons
     Connect(MemoryMenuBreakpoint,   wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryView::OnBreakpoint));
     Connect(MemoryMenuTemporary,    wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryView::OnTemporaryBreakpoint));
     Connect(MemoryMenuWatchpoint,   wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryView::OnWatchpoint));
-    Connect(MemoryMenuBlackbox,     wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryView::OnBlackbox));
     Connect(MemoryMenuAdvanced,     wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryView::OnAdvancedBreakpoint));
     Connect(MemoryMenuPCHere,       wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryView::OnSetPcHere));
     Connect(MemoryMenuGoto,         wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(MemoryView::OnGotoAddress));
@@ -114,7 +113,6 @@ void MemoryView::OnContextMenu(wxDataViewEvent& WXUNUSED(event))
     menu.Append(MemoryMenuBreakpoint,   "Mark as Breakpoint");
     menu.Append(MemoryMenuWatchpoint,   "Mark as Watchpoint");
     menu.Append(MemoryMenuAdvanced,     "Advanced Breakpoint...");
-    menu.Append(MemoryMenuBlackbox,     "Mark as Blackbox");
     menu.Append(MemoryMenuPCHere,       "Move PC Here");
     menu.Append(MemoryMenuGoto,         "Goto Address...");
 
@@ -203,34 +201,6 @@ void MemoryView::OnWatchpoint(wxCommandEvent& WXUNUSED(event))
     {
         InfoLog("Removing watchpoint at x%04x", address);
         lc3_remove_watch(state, false, address);
-    }
-}
-
-void MemoryView::OnBlackbox(wxCommandEvent& WXUNUSED(event))
-{
-    EventLog l(__func__);
-
-    wxASSERT(state_ref);
-    lc3_state& state = *state_ref;
-
-    int addr = GetSelectedAddress();
-    if (addr == -1)
-    {
-        WarnLog("No address selected");
-        return;
-    }
-
-    auto address = static_cast<uint16_t>(addr);
-
-    if (!lc3_has_blackbox(state, address))
-    {
-        InfoLog("Adding blackbox at x%04x", address);
-        lc3_add_blackbox(state, address);
-    }
-    else
-    {
-        InfoLog("Removing blackbox at x%04x", address);
-        lc3_remove_blackbox(state, address);
     }
 }
 
