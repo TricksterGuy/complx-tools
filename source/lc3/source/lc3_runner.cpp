@@ -212,7 +212,6 @@ void lc3_rewind(lc3_state& state, unsigned int num)
 int lc3_next_line(lc3_state& state, unsigned int num, int depth)
 {
     unsigned int i = 0;
-
     do
     {
         i++;
@@ -249,7 +248,6 @@ int lc3_next_line(lc3_state& state, unsigned int num, int depth)
 int lc3_prev_line(lc3_state& state, unsigned int num, int depth)
 {
     unsigned int i = 0;
-
     do
     {
         i++;
