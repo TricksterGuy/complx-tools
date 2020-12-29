@@ -1103,7 +1103,8 @@ BOOST_FIXTURE_TEST_CASE(TestFinish, LC3BasicTest)
     lc3_load(state, file, lc3_reader_obj);
 
     lc3_step(state);
-    lc3_finish(state);
+    lc3_next_line(state, -1, 1);
+    //lc3_finish(state);
 
     BOOST_CHECK_EQUAL(state.pc, 0x3001U);
     BOOST_CHECK_EQUAL(state.regs[0], 60);
