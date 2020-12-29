@@ -289,17 +289,57 @@ void ComplxFrame::OnCycleSpeedCustom(wxCommandEvent& WXUNUSED(event))
 void ComplxFrame::OnStep(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
-    InfoLog("Stepping 1 instruction");
+    InfoLog("Stepping 1 instruction.");
     PreExecute();
-    Execute(RunMode::STEP, 1000000);
+    Execute(RunMode::STEP, 1);
 }
 
 void ComplxFrame::OnBack(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
-    InfoLog("Stepping back 1 instruction");
+    InfoLog("Stepping back 1 instruction.");
     PreExecute();
     Execute(RunMode::BACK, 1);
+}
+
+void ComplxFrame::OnRun(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    InfoLog("Running until HALT.");
+    PreExecute();
+    Execute(RunMode::RUN, -1);
+}
+
+void ComplxFrame::OnStepOver(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    InfoLog("Stepping over Subroutines/Traps.");
+    PreExecute();
+    Execute(RunMode::NEXT_LINE, 1);
+}
+
+void ComplxFrame::OnBackOver(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    InfoLog("Stepping back over Subroutines/Traps.");
+    PreExecute();
+    Execute(RunMode::PREV_LINE, 1);
+}
+
+void ComplxFrame::OnStepOut(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    InfoLog("Stepping out of current Subroutine/Trap.");
+    PreExecute();
+    Execute(RunMode::FINISH, 1, 1);
+}
+
+void ComplxFrame::OnRewind(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    InfoLog("Rewinding to start of program.");
+    PreExecute();
+    Execute(RunMode::REWIND, -1);
 }
 
 void ComplxFrame::OnStateChange(wxPropertyGridEvent& event)
@@ -341,7 +381,7 @@ void ComplxFrame::PreExecute()
     }
 }
 
-void ComplxFrame::Execute(RunMode mode, long instructions)
+void ComplxFrame::Execute(RunMode mode, long instructions, int depth)
 {
     if (execution)
         DFatalLog("Called execute twice? this shouldn't happen");
@@ -353,6 +393,7 @@ void ComplxFrame::Execute(RunMode mode, long instructions)
     opts.ips = GetIps();
 
     execution = ExecutionInfo(opts);
+    execution->depth = depth;
     timer.Start(1000 / opts.fps);
     watch.Start();
 }
@@ -438,11 +479,47 @@ void ComplxFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
 
     if (fcount > icount)
     {
-        VerboseLog("Running %d instructions", fcount - icount);
-        lc3_run(*state, fcount - icount);
+        unsigned long to_execute = fcount - icount;
+
+        VerboseLog("Running %d instructions", to_execute);
+
+        switch (execution->options.mode)
+        {
+            case RunMode::STEP:
+                [[fallthrough]];
+            case RunMode::RUN:
+                [[fallthrough]];
+            case RunMode::RUNX:
+                lc3_run(*state, to_execute);
+                break;
+
+            case RunMode::BACK:
+                [[fallthrough]];
+            case RunMode::REWIND:
+                lc3_rewind(*state, to_execute);
+                break;
+
+            case RunMode::FINISH:
+                [[fallthrough]];
+            case RunMode::NEXT_LINE:
+                execution->depth = lc3_next_line(*state, to_execute, execution->depth);
+                break;
+
+            case RunMode::PREV_LINE:
+                execution->depth = lc3_prev_line(*state, to_execute, execution->depth);
+                break;
+
+            default:
+                WarnLog("Invalid run mode %s set... Ending Execution", execution->options.mode);
+                EndExecution();
+                return;
+        }
     }
 
-    if ((execution && execution->count == execution->options.instructions) || state->halted)
+    // Halted or matched number of instructions or finished next/prev line / finish.
+    if (state->halted ||
+        (execution && execution->count == execution->options.instructions) ||
+        execution->depth == -1)
     {
         EndExecution();
         return;

@@ -27,6 +27,8 @@ struct ExecutionInfo
     ExecutionInfo(const ExecuteOptions& opts) : options(opts) {}
     ExecuteOptions options;
     double count = 0;
+    // Subroutine Depth for next_line/prev_line/finish.
+    int depth = 0;
 };
 
 #endif

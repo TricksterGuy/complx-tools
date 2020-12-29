@@ -40,6 +40,11 @@ public:
     void OnCycleSpeedCustom(wxCommandEvent& event) override;
     void OnStep(wxCommandEvent& event) override;
     void OnBack(wxCommandEvent& event) override;
+	void OnRun(wxCommandEvent& event) override;
+	void OnStepOver(wxCommandEvent& event) override;
+	void OnBackOver(wxCommandEvent& event) override;
+    void OnStepOut(wxCommandEvent& event) override;
+	void OnRewind(wxCommandEvent& event) override;
 
     // State Event Handling
     void OnStateChange(wxPropertyGridEvent& event) override;
@@ -66,7 +71,7 @@ private:
     /** Called to read data from textctrls before executing instructions. */
     void PreExecute();
     /** Called to setup execution of instructions */
-    void Execute(RunMode mode, long instructions);
+    void Execute(RunMode mode, long instructions, int depth = 0);
     /** Called when the display needs to be updated after executing instructions. */
     void PostExecute();
     /** Called when execution is over */
