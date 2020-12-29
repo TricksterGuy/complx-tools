@@ -386,6 +386,8 @@ void ComplxFrame::Execute(RunMode mode, long instructions, int depth)
     if (execution)
         DFatalLog("Called execute twice? this shouldn't happen");
 
+    state->halted = false;
+
     ExecuteOptions opts;
     opts.mode = mode;
     opts.instructions = instructions;
