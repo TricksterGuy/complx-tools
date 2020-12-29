@@ -14,17 +14,17 @@ complx-tools is a suite of educational tools for learning lc3 assembly. It inclu
 
 ### Linux (apt-based distros)
 
-`sudo add-apt-repository ppa:tricksterguy87/complx2-release`
-`sudo apt update`
-`sudo apt install complx-tools`
+1. `sudo add-apt-repository ppa:tricksterguy87/complx2-release`
+2. `sudo apt update`
+3. `sudo apt install complx-tools`
 
 ## Installing nightly build
 
 ### Linux (apt-based distros)
 
-`sudo add-apt-repository ppa:tricksterguy87/complx2-release`
-`sudo apt update`
-`sudo apt install complx-tools`
+1. `sudo add-apt-repository ppa:tricksterguy87/complx2-release`
+2. `sudo apt update`
+3. `sudo apt install complx-tools`
 
 
 ## Manual Build from source
