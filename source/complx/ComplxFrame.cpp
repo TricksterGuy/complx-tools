@@ -421,7 +421,7 @@ int ComplxFrame::ConsolePeek(lc3_state& state, std::istream&)
     return consoleInput[0];
 }
 
-void ComplxFrame::OnTimer(wxTimerEvent& event)
+void ComplxFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
 
