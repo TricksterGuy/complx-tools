@@ -13,13 +13,15 @@ namespace {
 
 const wxChar* bases[] = {
     wxT("Decimal"),
-    wxT("Hexadecimal")
+    wxT("Hexadecimal"),
+    nullptr,
 };
 
 const long values[] =
 {
     RegisterProperty::Decimal,
     RegisterProperty::Hexadecimal,
+    0
 };
 
 wxString GetAllowedCharacters(unsigned int flags)
