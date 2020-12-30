@@ -25,7 +25,7 @@ public:
     ComplxFrame();
     ~ComplxFrame() override;
 
-    void OnClose(wxCloseEvent& event);
+    void OnClose(wxCloseEvent& event) override;
     void OnExit(wxCommandEvent& event) override;
 
     // File Menu Event Handlers
