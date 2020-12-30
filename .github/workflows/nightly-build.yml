@@ -29,14 +29,14 @@ jobs:
           cd build
           make pack
 
-       - name: Deploy Windows release
-         uses: WebFreak001/deploy-nightly@v1.1.0
-         env:
-           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
-         with:
-           upload_url: https://uploads.github.com/repos/TricksterGuy/complx-tools/releases/35827040/assets{?name,label}
-           release_id: 35827040
-           asset_path: build/complx-tools-1.0.0-runtime.zip
-           asset_name: complx-tools-nightly-$$.zip
-           asset_content_type: application/zip
-           max_releases: 1
+      - name: Deploy Windows release
+        uses: WebFreak001/deploy-nightly@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+        with:
+          upload_url: https://uploads.github.com/repos/TricksterGuy/complx-tools/releases/35827040/assets{?name,label}
+          release_id: 35827040
+          asset_path: build/complx-tools-1.0.0-runtime.zip
+          asset_name: complx-tools-nightly-$$.zip
+          asset_content_type: application/zip
+          max_releases: 1
