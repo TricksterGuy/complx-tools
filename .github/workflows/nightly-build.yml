@@ -5,7 +5,67 @@ on:
     - cron: '0 10 * * *' # run at 10 AM UTC
 
 jobs:
-  nightly:
+  nightly-linux:
+    name: Deploy Nightly (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Test Dependencies (Linux)
+        run: sudo apt install -y libwxgtk3.0-gtk3-dev libglib2.0-dev libboost-serialization-dev
+
+      - name: Create Local Config
+        run: ./configure nightly
+
+      - name: Configure CMake
+        run: ./configure nightly
+
+      - name: Build and Install
+        run: sudo cmake --build build --target pack
+
+      - name: Deploy Linux release
+        uses: WebFreak001/deploy-nightly@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+        with:
+          upload_url: https://uploads.github.com/repos/TricksterGuy/complx-tools/releases/35827040/assets{?name,label}
+          release_id: 35827040
+          asset_path: build/complx-tools-nightly-runtime.deb
+          asset_name: complx-tools-nightly-linux-$$.deb
+          asset_content_type: application/x-debian-package
+          max_releases: 1
+
+  nightly-macos:
+    name: Deploy Nightly (Macos)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Test Dependencies (Linux)
+        run: brew install boost wxmac glib
+
+      - name: Create Local Config
+        run: ./configure nightly
+
+      - name: Configure CMake
+        run: ./configure nightly
+
+      - name: Build
+        run: cmake --build build --target pack
+
+      - name: Deploy Macos release
+        uses: WebFreak001/deploy-nightly@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+        with:
+          upload_url: https://uploads.github.com/repos/TricksterGuy/complx-tools/releases/35827040/assets{?name,label}
+          release_id: 35827040
+          asset_path: build/complx-tools-nightly-runtime.tar.gz
+          asset_name: complx-tools-nightly-macos-$$.tar.gz
+          asset_content_type: application/gzip
+          max_releases: 1
+
+  nightly-windows:
     name: Deploy Nightly (Windows)
     runs-on: windows-latest
     defaults:
@@ -38,6 +98,6 @@ jobs:
           upload_url: https://uploads.github.com/repos/TricksterGuy/complx-tools/releases/35827040/assets{?name,label}
           release_id: 35827040
           asset_path: build/complx-tools-nightly-runtime.zip
-          asset_name: complx-tools-nightly-$$.zip
+          asset_name: complx-tools-nightly-windows-$$.zip
           asset_content_type: application/zip
           max_releases: 1
