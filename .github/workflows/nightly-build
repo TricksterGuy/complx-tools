@@ -1,0 +1,42 @@
+name: Deploy Nightly
+on:
+  schedule:
+    - cron: '0 10 * * *' # run at 10 AM UTC
+
+jobs:
+  nightly:
+    name: Deploy Nightly (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup MSYS2
+        # You may pin to the exact commit or the version.
+        # uses: msys2/setup-msys2@e00cc7ca871a28b4d575714454769e57342da3da
+        uses: msys2/setup-msys2@v2
+        with:
+          # Install packages after installation through pacman
+          install: mingw-w64-x86_64-boost mingw-w64-x86_64-wxWidgets mingw-w64-x86_64-dlfcn mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc make
+
+      - name: Build and Run Tests
+        run: |
+          ./configure pack
+          ./configure pack
+          cd build
+          make pack
+
+       - name: Deploy Windows release
+         uses: WebFreak001/deploy-nightly@v1.1.0
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+         with:
+           upload_url: https://uploads.github.com/repos/TricksterGuy/complx-tools/releases/35827040/assets{?name,label}
+           release_id: 35827040
+           asset_path: build/complx-tools-1.0.0-runtime.zip
+           asset_name: complx-tools-nightly-$$.zip
+           asset_content_type: application/zip
+           max_releases: 1
