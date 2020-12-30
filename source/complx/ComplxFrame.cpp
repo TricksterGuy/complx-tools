@@ -410,7 +410,6 @@ long ComplxFrame::GetIps() const
             speed = item_speed;
         item_speed = item_speed << 1;
     }
-    InfoLog("Ips: %ld", speed);
     return speed;
 }
 
