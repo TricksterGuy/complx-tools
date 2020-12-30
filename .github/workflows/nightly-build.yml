@@ -25,8 +25,8 @@ jobs:
 
       - name: Build and Run Tests
         run: |
-          ./configure pack
-          ./configure pack
+          ./configure nightly
+          ./configure nightly
           cd build
           make pack
 
@@ -37,7 +37,7 @@ jobs:
         with:
           upload_url: https://uploads.github.com/repos/TricksterGuy/complx-tools/releases/35827040/assets{?name,label}
           release_id: 35827040
-          asset_path: build/complx-tools-1.0.0-runtime.zip
+          asset_path: build/complx-tools-nightly-runtime.zip
           asset_name: complx-tools-nightly-$$.zip
           asset_content_type: application/zip
           max_releases: 1
