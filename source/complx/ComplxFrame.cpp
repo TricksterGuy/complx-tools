@@ -323,7 +323,7 @@ void ComplxFrame::OnRun(wxCommandEvent& WXUNUSED(event))
 void ComplxFrame::OnStepOver(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
-    InfoLog("Stepping over Subroutines/Traps.");
+    InfoLog("Stepping over subroutines/traps.");
     PreExecute();
     Execute(RunMode::NEXT_LINE, -1);
 }
@@ -331,7 +331,7 @@ void ComplxFrame::OnStepOver(wxCommandEvent& WXUNUSED(event))
 void ComplxFrame::OnBackOver(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
-    InfoLog("Stepping back over Subroutines/Traps.");
+    InfoLog("Stepping back over subroutines/traps.");
     PreExecute();
     Execute(RunMode::PREV_LINE, -1);
 }
@@ -350,6 +350,13 @@ void ComplxFrame::OnRewind(wxCommandEvent& WXUNUSED(event))
     InfoLog("Rewinding to start of program.");
     PreExecute();
     Execute(RunMode::REWIND, -1);
+}
+
+void ComplxFrame::OnStop(wxCommandEvent& event)
+{
+    EventLog l(__func__);
+    InfoLog("Stopping execution.");
+    EndExecution();
 }
 
 void ComplxFrame::OnStateChange(wxPropertyGridEvent& event)
@@ -408,6 +415,8 @@ void ComplxFrame::Execute(RunMode mode, long instructions, int depth)
     execution->depth = depth;
     timer.Start(1000 / opts.fps);
     watch.Start();
+
+    stopButton->Enable();
 }
 
 long ComplxFrame::GetIps() const
@@ -450,6 +459,7 @@ void ComplxFrame::EndExecution()
     timer.Stop();
 
     InfoLog("Finished previous execution command");
+    stopButton->Disable();
 }
 
 int ComplxFrame::ConsoleRead(lc3_state& state, std::istream&)

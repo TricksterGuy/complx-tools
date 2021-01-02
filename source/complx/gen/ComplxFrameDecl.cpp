@@ -308,10 +308,10 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 	m_auiToolBar1->AddControl( m_button6 );
 	m_button7 = new wxButton( m_auiToolBar1, wxID_ANY, wxT("Rewind"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_auiToolBar1->AddControl( m_button7 );
-	m_button11 = new wxButton( m_auiToolBar1, wxID_ANY, wxT("Stop"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_button11->Enable( false );
+	stopButton = new wxButton( m_auiToolBar1, wxID_ANY, wxT("Stop"), wxDefaultPosition, wxDefaultSize, 0 );
+	stopButton->Enable( false );
 
-	m_auiToolBar1->AddControl( m_button11 );
+	m_auiToolBar1->AddControl( stopButton );
 	m_auiToolBar1->Realize();
 
 	bSizer111->Add( m_auiToolBar1, 1, wxALL|wxEXPAND, 5 );
@@ -481,7 +481,7 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 	m_button5->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnBackOver ), NULL, this );
 	m_button6->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnStepOut ), NULL, this );
 	m_button7->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnRewind ), NULL, this );
-	m_button11->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnStop ), NULL, this );
+	stopButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnStop ), NULL, this );
 	statePropGridManager->Connect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( ComplxFrameDecl::OnStateChange ), NULL, this );
 }
 
@@ -496,7 +496,7 @@ ComplxFrameDecl::~ComplxFrameDecl()
 	m_button5->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnBackOver ), NULL, this );
 	m_button6->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnStepOut ), NULL, this );
 	m_button7->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnRewind ), NULL, this );
-	m_button11->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnStop ), NULL, this );
+	stopButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( ComplxFrameDecl::OnStop ), NULL, this );
 	statePropGridManager->Disconnect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( ComplxFrameDecl::OnStateChange ), NULL, this );
 
 	m_mgr.UnInit();

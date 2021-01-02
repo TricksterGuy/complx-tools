@@ -45,6 +45,7 @@ public:
 	void OnBackOver(wxCommandEvent& event) override;
     void OnStepOut(wxCommandEvent& event) override;
 	void OnRewind(wxCommandEvent& event) override;
+	void OnStop(wxCommandEvent& event) override;
 
     // State Event Handling
     void OnStateChange(wxPropertyGridEvent& event) override;

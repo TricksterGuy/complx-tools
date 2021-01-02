@@ -131,7 +131,7 @@ class ComplxFrameDecl : public wxFrame
 		wxButton* m_button5;
 		wxButton* m_button6;
 		wxButton* m_button7;
-		wxButton* m_button11;
+		wxButton* stopButton;
 		wxAuiToolBar* m_auiToolBar2;
 		wxButton* m_button8;
 		wxButton* m_button9;
