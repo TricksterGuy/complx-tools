@@ -315,7 +315,7 @@ void ComplxFrame::OnStepOver(wxCommandEvent& WXUNUSED(event))
     EventLog l(__func__);
     InfoLog("Stepping over Subroutines/Traps.");
     PreExecute();
-    Execute(RunMode::NEXT_LINE, 1);
+    Execute(RunMode::NEXT_LINE, -1);
 }
 
 void ComplxFrame::OnBackOver(wxCommandEvent& WXUNUSED(event))
@@ -323,7 +323,7 @@ void ComplxFrame::OnBackOver(wxCommandEvent& WXUNUSED(event))
     EventLog l(__func__);
     InfoLog("Stepping back over Subroutines/Traps.");
     PreExecute();
-    Execute(RunMode::PREV_LINE, 1);
+    Execute(RunMode::PREV_LINE, -1);
 }
 
 void ComplxFrame::OnStepOut(wxCommandEvent& WXUNUSED(event))
@@ -331,7 +331,7 @@ void ComplxFrame::OnStepOut(wxCommandEvent& WXUNUSED(event))
     EventLog l(__func__);
     InfoLog("Stepping out of current Subroutine/Trap.");
     PreExecute();
-    Execute(RunMode::FINISH, 1, 1);
+    Execute(RunMode::FINISH, -1, 1);
 }
 
 void ComplxFrame::OnRewind(wxCommandEvent& WXUNUSED(event))
@@ -480,6 +480,7 @@ void ComplxFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
     double execute = execution->options.ips * time_elapsed_ms / 1000.0;
     execution->count = std::min(execution->count + execute, static_cast<double>(execution->options.instructions));
     unsigned long fcount = static_cast<unsigned long>(execution->count);
+    bool ended = false;
 
     if (fcount > icount)
     {
@@ -495,22 +496,26 @@ void ComplxFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
                 [[fallthrough]];
             case RunMode::RUNX:
                 lc3_run(*state, to_execute);
+                ended = state->halted;
                 break;
 
             case RunMode::BACK:
                 [[fallthrough]];
             case RunMode::REWIND:
                 lc3_rewind(*state, to_execute);
+                ended = state->undo_stack.empty();
                 break;
 
             case RunMode::FINISH:
                 [[fallthrough]];
             case RunMode::NEXT_LINE:
                 execution->depth = lc3_next_line(*state, to_execute, execution->depth);
+                ended = state->halted || execution->depth == -1;
                 break;
 
             case RunMode::PREV_LINE:
                 execution->depth = lc3_prev_line(*state, to_execute, execution->depth);
+                ended = state->undo_stack.empty() || execution->depth == -1;
                 break;
 
             default:
@@ -521,9 +526,7 @@ void ComplxFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
     }
 
     // Halted or matched number of instructions or finished next/prev line / finish.
-    if (state->halted ||
-        (execution && execution->count == execution->options.instructions) ||
-        execution->depth == -1)
+    if (ended || (execution && execution->count == execution->options.instructions))
     {
         EndExecution();
         return;
