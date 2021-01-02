@@ -131,6 +131,7 @@ class ComplxFrameDecl : public wxFrame
 		wxButton* m_button5;
 		wxButton* m_button6;
 		wxButton* m_button7;
+		wxButton* m_button11;
 		wxAuiToolBar* m_auiToolBar2;
 		wxButton* m_button8;
 		wxButton* m_button9;
@@ -150,7 +151,7 @@ class ComplxFrameDecl : public wxFrame
 		wxTextCtrl* traceText;
 		wxPanel* loggingPanel;
 		wxTextCtrl* loggingText;
-		wxStatusBar* m_statusBar2;
+		wxStatusBar* statusBar;
 
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
@@ -201,6 +202,7 @@ class ComplxFrameDecl : public wxFrame
 		virtual void OnStepOver( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnBackOver( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStepOut( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnStop( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnStateChange( wxPropertyGridEvent& event ) { event.Skip(); }
 
 

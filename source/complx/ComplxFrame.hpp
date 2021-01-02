@@ -59,6 +59,7 @@ private:
     void InitializeLC3State();
     void InitializeMemoryView();
     void InitializeStatePropGrid();
+    void InitializeStatusBar();
     void InitializeOutput();
 
     void DoExit();

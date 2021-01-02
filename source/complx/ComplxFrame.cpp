@@ -31,6 +31,7 @@ ComplxFrame::ComplxFrame() : ComplxFrameDecl(nullptr), state(new lc3_state()), m
     InitializeLC3State();
     InitializeMemoryView();
     InitializeStatePropGrid();
+    InitializeStatusBar();
     Connect(timer.GetId(), wxEVT_TIMER, wxTimerEventHandler(ComplxFrame::OnTimer), nullptr, this);
 }
 
@@ -79,6 +80,7 @@ void ComplxFrame::InitializeLC3State()
     // TODO change back to false, false
     lc3_init(*state, false, false, 0x1000, 0x1000);
 
+    // TODO need to do this each time a file is loaded.
     state->output = output.get();
     state->warning = warning.get();
     //state->trace = trace.get();
@@ -134,6 +136,14 @@ void ComplxFrame::InitializeOutput()
     const auto& old = dynamic_cast<const std::stringstream&>(logger->GetLogTarget());
     *logging << (old.str());
     logger->SetLogTarget(*logging);
+}
+
+void ComplxFrame::InitializeStatusBar()
+{
+    int widths[5] = {-6, -2, -2, -2, -2};
+    int styles[5] = {wxSB_NORMAL, wxSB_NORMAL, wxSB_NORMAL, wxSB_NORMAL, wxSB_NORMAL};
+    statusBar->SetStatusWidths(5, widths);
+    statusBar->SetStatusStyles(5, styles);
 }
 
 void ComplxFrame::OnLoad(wxCommandEvent& WXUNUSED(event))
@@ -422,6 +432,11 @@ void ComplxFrame::PostExecute()
         property->RefreshDisplayedValue();
     pc_property->RefreshDisplayedValue();
     cc_property->RefreshDisplayedValue();
+
+    statusBar->SetStatusText(wxString::Format(_("Executed: %d"), state->executions), 1);
+    statusBar->SetStatusText(wxString::Format(_("Warnings: %d"), state->warnings), 2);
+    statusBar->SetStatusText(wxString::Format(_("True Traps: %s"), state->true_traps ? "ON" : "OFF"), 3);
+    statusBar->SetStatusText(wxString::Format(_("Interrupts: %s"), state->interrupt_enabled ? "ON" : "OFF"), 4);
 
     for (auto* plugin : state->plugins)
         plugin->Refresh(*state);
