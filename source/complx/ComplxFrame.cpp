@@ -422,6 +422,9 @@ void ComplxFrame::PostExecute()
         property->RefreshDisplayedValue();
     pc_property->RefreshDisplayedValue();
     cc_property->RefreshDisplayedValue();
+
+    for (auto* plugin : state->plugins)
+        plugin->Refresh(*state);
 }
 
 void ComplxFrame::EndExecution()
@@ -527,4 +530,5 @@ void ComplxFrame::OnTimer(wxTimerEvent& WXUNUSED(event))
     }
 
     watch.Start();
+    PostExecute();
 }
