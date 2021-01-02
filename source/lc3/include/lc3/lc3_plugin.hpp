@@ -97,7 +97,13 @@ public:
       * @param state LC3State object.
       */
     virtual void OnTock(lc3_state&) {}
-
+    /** Refresh
+      *
+      * This function is called periodically by the application (60 times a second).
+      * You should do any updating / redrawing of GUI components here.
+      * @param state LC3State object.
+      */
+    virtual void Refresh(lc3_state&) {}
     /** Commit
       *
       * Users should not call this function directly.

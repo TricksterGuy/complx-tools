@@ -1,11 +1,6 @@
 #include "bwlcd.hpp"
 
 #include <cstdlib>
-#include <memory>
-#include <sstream>
-
-wxDEFINE_EVENT(wxEVT_COMMAND_CREATE_DISPLAY, wxThreadEvent);
-wxDEFINE_EVENT(wxEVT_COMMAND_DESTROY_DISPLAY, wxThreadEvent);
 
 static std::unique_ptr<Plugin> instance;
 
@@ -44,32 +39,10 @@ void destroy_plugin(Plugin* ptr)
 BWLCDPlugin::BWLCDPlugin(uint16_t _width, uint16_t _height, uint16_t _initaddr,
                          uint16_t _startaddr, unsigned int _offcolor, unsigned int _oncolor) :
     Plugin(BWLCD_MAJOR_VERSION, BWLCD_MINOR_VERSION, LC3_OTHER, "Black & White LCD Display"), width(_width),
-    height(_height), initaddr(_initaddr), startaddr(_startaddr), offcolor(_offcolor), oncolor(_oncolor), lcd(nullptr),
-    lcd_initializing(false)
+    height(_height), initaddr(_initaddr), startaddr(_startaddr), offcolor(_offcolor), oncolor(_oncolor), lcd(nullptr)
 {
     BindAddress(initaddr);
     BindNAddresses(startaddr, width * height);
-    Connect(wxID_ANY, wxEVT_COMMAND_CREATE_DISPLAY, wxThreadEventHandler(BWLCDPlugin::InitDisplay));
-    Connect(wxID_ANY, wxEVT_COMMAND_DESTROY_DISPLAY, wxThreadEventHandler(BWLCDPlugin::DestroyDisplay));
-}
-
-BWLCDPlugin::~BWLCDPlugin()
-{
-    if (lcd)
-        delete lcd;
-}
-
-void BWLCDPlugin::InitDisplay(wxThreadEvent& WXUNUSED(event))
-{
-    lcd = new BWLCD(wxTheApp->GetTopWindow(), width, height, startaddr, offcolor, oncolor);
-    lcd_initializing = false;
-    lcd->Show();
-}
-
-void BWLCDPlugin::DestroyDisplay(wxThreadEvent& WXUNUSED(event))
-{
-    delete lcd;
-    lcd = nullptr;
 }
 
 void BWLCDPlugin::OnWrite(lc3_state& state, uint16_t address, int16_t value)
@@ -77,65 +50,61 @@ void BWLCDPlugin::OnWrite(lc3_state& state, uint16_t address, int16_t value)
     if (address == initaddr)
     {
         uint16_t data = value;
-        if (data == 0x8000U && lcd == nullptr)
+        if (data == 0x8000U)
         {
-            wxThreadEvent* evt = new wxThreadEvent(wxEVT_COMMAND_CREATE_DISPLAY);
-            evt->SetPayload<lc3_state*>(&state);
-            wxQueueEvent(this, evt);
-            lcd_initializing = true;
+            if (!lcd)
+            {
+                lcd = std::make_unique<BWLCD>(wxTheApp->GetTopWindow(), width, height, startaddr, offcolor, oncolor);
+                lcd->Show();
+            }
+            else
+            {
+                lc3_warning(state, "LCD is already initialized.");
+            }
         }
-        else if (data == 0x8000U && (lcd != nullptr || lcd_initializing))
+        else if (data == 0)
         {
-            lc3_warning(state, "BWLCD already initialized!");
-        }
-        else if (data == 0 && lcd == nullptr)
-        {
-            lc3_warning(state, "BWLCD is destroyed already!");
-        }
-        else if (data == 0 && (lcd != nullptr || lcd_initializing))
-        {
-            wxQueueEvent(this, new wxThreadEvent(wxEVT_COMMAND_DESTROY_DISPLAY));
-        }
-        else if (static_cast<uint16_t>(state.mem[address]) == 0x8000U && data != 0x8000U && (lcd != nullptr || lcd_initializing))
-        {
-            wxQueueEvent(this, new wxThreadEvent(wxEVT_COMMAND_DESTROY_DISPLAY));
+            if (!lcd)
+            {
+                lc3_warning(state, "LCD is already destroyed / not initialized.");
+            }
+            else
+            {
+                lcd.reset();
+            }
         }
         else
         {
-            lc3_warning(state, "Incorrect value written to BWLCD");
+            lc3_warning(state, "Incorrect value written to LCD");
         }
     }
-    else if (address >= startaddr && address < startaddr + width * height && !lcd_initializing)
+    else if (address >= startaddr && address < startaddr + width * height && !lcd)
     {
-        if (lcd == nullptr)
+        if (!lcd)
             lc3_warning(state, "Writing to LCD while its not initialized!");
     }
 
     state.mem[address] = value;
 }
 
+void BWLCDPlugin::Refresh(lc3_state& state)
+{
+    if (lcd)
+        lcd->Refresh(state);
+}
+
 
 BWLCD::BWLCD(wxWindow* top, int _width, int _height, uint16_t _startaddr, unsigned int _off, unsigned int _on) :
-    BWLCDGUI(top), state(nullptr), width(_width), height(_height), startaddr(_startaddr), off(_off), on(_on)
+    BWLCDGUI(top), width(_width), height(_height), startaddr(_startaddr), off(_off), on(_on)
 {
     int x, y;
     GetParent()->GetScreenPosition(&x, &y);
     Move(x - GetSize().GetX(), y);
 }
 
-
-void BWLCD::OnUpdate(wxThreadEvent& event)
+void BWLCD::Refresh(lc3_state& state)
 {
-    /// @todo there has to be a better way of doing this than just storing the lc3_state object!
-    state = event.GetPayload<lc3_state*>();
-    Refresh();
-}
-
-void BWLCD::OnPaint(wxPaintEvent& WXUNUSED(event))
-{
-    if (state == nullptr) return;
-
-    wxPaintDC dc(displayPanel);
+    wxClientDC dc(displayPanel);
     dc.SetPen(wxNullPen);
 
     wxColour oncolor(on);
@@ -154,7 +123,7 @@ void BWLCD::OnPaint(wxPaintEvent& WXUNUSED(event))
     {
         for (int j = 0; j < width; j++)
         {
-            if (state->mem[startaddr + j + i * width])
+            if (state.mem[startaddr + j + i * width])
                 dc.SetBrush(onBrush);
             else
                 dc.SetBrush(offBrush);
