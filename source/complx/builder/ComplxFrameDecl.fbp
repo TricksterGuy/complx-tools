@@ -77,11 +77,11 @@
                 <property name="window_extra_style"></property>
                 <property name="window_name"></property>
                 <property name="window_style"></property>
-                <object class="wxMenu" expanded="1">
+                <object class="wxMenu" expanded="0">
                     <property name="label">File</property>
                     <property name="name">menuFile</property>
                     <property name="permission">protected</property>
-                    <object class="wxMenuItem" expanded="1">
+                    <object class="wxMenuItem" expanded="0">
                         <property name="bitmap"></property>
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
@@ -95,7 +95,7 @@
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">OnLoad</event>
                     </object>
-                    <object class="wxMenuItem" expanded="1">
+                    <object class="wxMenuItem" expanded="0">
                         <property name="bitmap"></property>
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
@@ -109,7 +109,7 @@
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">OnReload</event>
                     </object>
-                    <object class="wxMenuItem" expanded="1">
+                    <object class="wxMenuItem" expanded="0">
                         <property name="bitmap"></property>
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
@@ -122,7 +122,7 @@
                         <property name="shortcut"></property>
                         <property name="unchecked_bitmap"></property>
                     </object>
-                    <object class="wxMenuItem" expanded="1">
+                    <object class="wxMenuItem" expanded="0">
                         <property name="bitmap"></property>
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
@@ -137,16 +137,170 @@
                         <event name="OnMenuSelection">OnExit</event>
                     </object>
                 </object>
-                <object class="wxMenu" expanded="1">
+                <object class="wxMenu" expanded="0">
                     <property name="label">View</property>
                     <property name="name">menuView</property>
                     <property name="permission">protected</property>
-                    <object class="submenu" expanded="1">
+                    <object class="wxMenuItem" expanded="0">
                         <property name="bitmap"></property>
-                        <property name="label">Log Level</property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Shows a new view of main memory.</property>
+                        <property name="id">ID_NEW_VIEW</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;New View</property>
+                        <property name="name">menuViewNew</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">Ctrl+V</property>
+                        <property name="unchecked_bitmap"></property>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Moves memory to a specific address.</property>
+                        <property name="id">ID_GOTO_ADDRESS</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Goto Address</property>
+                        <property name="name">menuViewGoto</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">Ctrl+G</property>
+                        <property name="unchecked_bitmap"></property>
+                    </object>
+                    <object class="submenu" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="label">Hide Addresses</property>
+                        <property name="name">menuViewShowAddresses</property>
+                        <property name="permission">protected</property>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">1</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Shows all memory addresses</property>
+                            <property name="id">ID_SHOW_ALL</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Show All</property>
+                            <property name="name">menuViewShowAddressesShowAll</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnUpdateShowAddresses</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Show all memory addresses that have a value other than 0</property>
+                            <property name="id">ID_SHOW_NON_ZERO</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Show Non Zero</property>
+                            <property name="name">menuViewShowAddressesShowNonZero</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnUpdateShowAddresses</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Shows addresses modified when your program was loaded.</property>
+                            <property name="id">ID_SHOW_ONLY_CODEDATA</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Show Only Code/Data</property>
+                            <property name="name">menuViewShowAddressesShowOnlyCodeData</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnUpdateShowAddresses</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Allows you to show/hide memory address ranges</property>
+                            <property name="id">ID_CUSTOM</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Custom...</property>
+                            <property name="name">menuViewShowAddressesCustom</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut">Ctrl+H</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnShowAddressesCustom</event>
+                        </object>
+                    </object>
+                    <object class="submenu" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="label">Disassemble</property>
+                        <property name="name">menuViewDisassemble</property>
+                        <property name="permission">protected</property>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Disassembles ignoring symbols</property>
+                            <property name="id">ID_BASIC</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Basic</property>
+                            <property name="name">menuViewBasic</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnDisassemble</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">1</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Disassembles with symbol info.</property>
+                            <property name="id">ID_NORMAL</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Normal</property>
+                            <property name="name">menuViewNormal</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnNormalDisassemble</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Disassembles into C-like statements</property>
+                            <property name="id">ID_HIGH_LEVEL</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">High Level</property>
+                            <property name="name">menuViewHighLevel</property>
+                            <property name="permission">protected</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnCDisassemble</event>
+                        </object>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Highlights bits of the instruction.</property>
+                        <property name="id">ID_INSTRUCTION_HIGHLIGHTING</property>
+                        <property name="kind">wxITEM_CHECK</property>
+                        <property name="label">&amp;Instruction Highlighting</property>
+                        <property name="name">menuViewInstructionHighlighting</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnInstructionHighlighting</event>
+                    </object>
+                    <object class="separator" expanded="0">
+                        <property name="name">m_separator1</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="submenu" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="label">&amp;Log Level</property>
                         <property name="name">menuViewLogLevel</property>
                         <property name="permission">protected</property>
-                        <object class="wxMenuItem" expanded="1">
+                        <object class="wxMenuItem" expanded="0">
                             <property name="bitmap"></property>
                             <property name="checked">0</property>
                             <property name="enabled">1</property>
@@ -160,7 +314,7 @@
                             <property name="unchecked_bitmap"></property>
                             <event name="OnMenuSelection">OnLogLevel</event>
                         </object>
-                        <object class="wxMenuItem" expanded="1">
+                        <object class="wxMenuItem" expanded="0">
                             <property name="bitmap"></property>
                             <property name="checked">0</property>
                             <property name="enabled">1</property>
@@ -174,7 +328,7 @@
                             <property name="unchecked_bitmap"></property>
                             <event name="OnMenuSelection">OnLogLevel</event>
                         </object>
-                        <object class="wxMenuItem" expanded="1">
+                        <object class="wxMenuItem" expanded="0">
                             <property name="bitmap"></property>
                             <property name="checked">0</property>
                             <property name="enabled">1</property>
@@ -188,7 +342,7 @@
                             <property name="unchecked_bitmap"></property>
                             <event name="OnMenuSelection">OnLogLevel</event>
                         </object>
-                        <object class="wxMenuItem" expanded="1">
+                        <object class="wxMenuItem" expanded="0">
                             <property name="bitmap"></property>
                             <property name="checked">0</property>
                             <property name="enabled">1</property>
@@ -202,7 +356,7 @@
                             <property name="unchecked_bitmap"></property>
                             <event name="OnMenuSelection">OnLogLevel</event>
                         </object>
-                        <object class="wxMenuItem" expanded="1">
+                        <object class="wxMenuItem" expanded="0">
                             <property name="bitmap"></property>
                             <property name="checked">1</property>
                             <property name="enabled">1</property>
@@ -222,12 +376,12 @@
                     <property name="label">Control</property>
                     <property name="name">menuControl</property>
                     <property name="permission">protected</property>
-                    <object class="submenu" expanded="1">
+                    <object class="submenu" expanded="0">
                         <property name="bitmap"></property>
                         <property name="label">Cycle Speed</property>
                         <property name="name">menuCycleSpeed</property>
                         <property name="permission">protected</property>
-                        <object class="wxMenuItem" expanded="1">
+                        <object class="wxMenuItem" expanded="0">
                             <property name="bitmap"></property>
                             <property name="checked">0</property>
                             <property name="enabled">1</property>
@@ -275,21 +429,514 @@
                     <property name="label">State</property>
                     <property name="name">menuState</property>
                     <property name="permission">protected</property>
+                    <object class="submenu" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="label">Control</property>
+                        <property name="name">menuStateControl</property>
+                        <property name="permission">protected</property>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Runs one instruction</property>
+                            <property name="id">ID_STEP</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Step</property>
+                            <property name="name">menuStateControlStep</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">F2</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnStep</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Undoes one instruction</property>
+                            <property name="id">ID_BACK</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Back</property>
+                            <property name="name">menuStateControlBack</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">Shift+F2</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnBackStep</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Steps over the next instruction.</property>
+                            <property name="id">ID_NEXT_LINE</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Next Line</property>
+                            <property name="name">menuStateControlNextLine</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">F3</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnNextLine</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Steps over the previous instruction.</property>
+                            <property name="id">ID_PREVIOUS_LINE</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Previous Line</property>
+                            <property name="name">menuStateControlPreviousLine</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">Shift+F3</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnPrevLine</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Runs until program halts.</property>
+                            <property name="id">ID_RUN</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Run</property>
+                            <property name="name">menuStateControlRun</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">F4</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnRun</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Runs for a specified number of steps</property>
+                            <property name="id">ID_RUN_FOR</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Run For...</property>
+                            <property name="name">menuStateControlRunFor</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">Ctrl+F4</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnRunFor</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Runs the default number of instructions (see RunFor)</property>
+                            <property name="id">ID_RUN_AGAIN</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Run Again...</property>
+                            <property name="name">menuStateControlRunAgain</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">Ctrl+Space</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnRunAgain</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Undoes all instructions.</property>
+                            <property name="id">ID_REWIND</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Rewind</property>
+                            <property name="name">menuStateControlRewind</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">Shift+F4</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnRewind</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Finishes current subroutine.</property>
+                            <property name="id">ID_FINISH</property>
+                            <property name="kind">wxITEM_NORMAL</property>
+                            <property name="label">Finish</property>
+                            <property name="name">menuStateControlFinish</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut">Shift+F5</property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnFinish</event>
+                        </object>
+                    </object>
+                    <object class="submenu" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="label">Control Mode</property>
+                        <property name="name">menuStateControlMode</property>
+                        <property name="permission">protected</property>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Show commonly used control buttons.</property>
+                            <property name="id">ID_SIMPLE</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Simple</property>
+                            <property name="name">menuStateControlModeSimple</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnControlModeSimple</event>
+                        </object>
+                        <object class="wxMenuItem" expanded="0">
+                            <property name="bitmap"></property>
+                            <property name="checked">0</property>
+                            <property name="enabled">1</property>
+                            <property name="help">Show control buttons related to subroutines.</property>
+                            <property name="id">ID_ADVANCED</property>
+                            <property name="kind">wxITEM_RADIO</property>
+                            <property name="label">Advanced</property>
+                            <property name="name">menuStateControlModeAdvanced</property>
+                            <property name="permission">none</property>
+                            <property name="shortcut"></property>
+                            <property name="unchecked_bitmap"></property>
+                            <event name="OnMenuSelection">OnControlModeAdvanced</event>
+                        </object>
+                    </object>
+                    <object class="separator" expanded="0">
+                        <property name="name">m_separator31</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Enables True Traps</property>
+                        <property name="id">ID_TRUE_TRAPS</property>
+                        <property name="kind">wxITEM_CHECK</property>
+                        <property name="label">&amp;True Traps</property>
+                        <property name="name">menuStateTrueTraps</property>
+                        <property name="permission">protected</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnTrueTraps</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Enables Interrupts</property>
+                        <property name="id">ID_INTERRUPTS</property>
+                        <property name="kind">wxITEM_CHECK</property>
+                        <property name="label">&amp;Interrupts</property>
+                        <property name="name">menuStateInterrupts</property>
+                        <property name="permission">protected</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnInterrupts</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">1</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Enables strict execution mode.</property>
+                        <property name="id">ID_STRICT_EXECUTION_MODE</property>
+                        <property name="kind">wxITEM_CHECK</property>
+                        <property name="label">&amp;Strict Execution Mode</property>
+                        <property name="name">menuStateStrictExecution</property>
+                        <property name="permission">protected</property>
+                        <property name="shortcut">Ctrl+S</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnStrictExecution</event>
+                    </object>
+                    <object class="separator" expanded="0">
+                        <property name="name">m_separator6</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Clears the console output.</property>
+                        <property name="id">ID_CLEAR_CONSOLE</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Clear Console</property>
+                        <property name="name">menuStateClearConsole</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnClearConsole</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Clears the console input.</property>
+                        <property name="id">wxID_ANY</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Clear Console Input</property>
+                        <property name="name">menuStateClearConsoleInput</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnClearConsoleInput</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Clears the warning output.</property>
+                        <property name="id">ID_CLEAR_WARNINGS</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Clear Warnings</property>
+                        <property name="name">menuStateClearWarnings</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                    </object>
                 </object>
                 <object class="wxMenu" expanded="1">
                     <property name="label">Debug</property>
                     <property name="name">menuDebug</property>
                     <property name="permission">protected</property>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Modifies the undo stack size</property>
+                        <property name="id">ID_UNDO_STACK</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Undo Stack</property>
+                        <property name="name">menuDebugUndoStack</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">F6</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnUndoStack</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Views the call stack.</property>
+                        <property name="id">ID_CALL_STACK</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Call Stack</property>
+                        <property name="name">menuDebugCallStack</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnCallStack</event>
+                    </object>
+                    <object class="separator" expanded="0">
+                        <property name="name">m_separator5</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Simulates a subroutine call.</property>
+                        <property name="id">ID_SIMULATE_SUBROUTINE_CALL</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Simulate Subroutine &amp;Call...</property>
+                        <property name="name">menuDebugSimulateSubroutineCall</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnSubroutineCall</event>
+                    </object>
+                    <object class="separator" expanded="0">
+                        <property name="name">m_separator4</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">View all breakpoints and watchpoints</property>
+                        <property name="id">ID_BREAKPOINTS_AND_WATCHPOINTS</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Breakpoints &amp;and Watchpoints</property>
+                        <property name="name">menuDebugBreakWatchpoints</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">F7</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnBreakAndWatchpoints</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Adds/Removes a one time breakpoint</property>
+                        <property name="id">ID_ADD_TEMPORARY_BREAKPOINT</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Add &amp;Temporary Breakpoint</property>
+                        <property name="name">menuDebugTemporary</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">F8</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnTemppoint</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Adds/Removes a breakpoint</property>
+                        <property name="id">ID_ADD_BREAKPOINT</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Add &amp;Breakpoint</property>
+                        <property name="name">menuDebugBreakpoint</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">F9</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnBreakpoint</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Adds a watchpoint.</property>
+                        <property name="id">ID_ADD_WATCHPOINT</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Add &amp;Watchpoint</property>
+                        <property name="name">menuDebugWatchpoint</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">F11</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnWatchpoint</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Adds a customizable breakpoint.</property>
+                        <property name="id">ID_ADVANCED_BREAKPOINT</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Ad&amp;vanced Breakpoint</property>
+                        <property name="name">menuDebugAdvanced</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">F12</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnAdvancedBreakpoint</event>
+                    </object>
+                    <object class="separator" expanded="1">
+                        <property name="name">m_separator6</property>
+                        <property name="permission">none</property>
+                    </object>
+                    <object class="wxMenuItem" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Enable trace logging.</property>
+                        <property name="id">ID_TRACE_LOGGING</property>
+                        <property name="kind">wxITEM_CHECK</property>
+                        <property name="label">Trace Logging</property>
+                        <property name="name">menuDebugTraceLogging</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnTraceFile</event>
+                    </object>
                 </object>
                 <object class="wxMenu" expanded="1">
                     <property name="label">Test</property>
                     <property name="name">menuTest</property>
                     <property name="permission">protected</property>
+                    <object class="wxMenuItem" expanded="1">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Loads a replay string from the pylc3 unit test framework.</property>
+                        <property name="id">ID_SETUP_REPLAY_STRING</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Setup Replay String...</property>
+                        <property name="name">setupReplayString</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">Ctrl+T</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnSetupReplayString</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Reloads a replay string from the pylc3 unit test framework.</property>
+                        <property name="id">ID_RELOAD_REPLAY_STRING</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Reload Replay String</property>
+                        <property name="name">menuTestReloadReplayString</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">Ctrl+Alt+T</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnReloadReplayString</event>
+                    </object>
                 </object>
                 <object class="wxMenu" expanded="1">
                     <property name="label">Help</property>
                     <property name="name">menuHelp</property>
                     <property name="permission">protected</property>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Opens up the Complx Documentation.</property>
+                        <property name="id">wxID_ANY</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Documentation</property>
+                        <property name="name">menuHelpDocs</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut">F1</property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnDocs</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Shows the change log</property>
+                        <property name="id">ID_CHANGE_LOG</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;Change Log</property>
+                        <property name="name">menuHelpChangeLog</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnChangeLog</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Create a bug report</property>
+                        <property name="id">ID_CREATE_BUG_REPORT</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Create &amp;Bug Report</property>
+                        <property name="name">menuHelpCreateBugReport</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnCreateBugReport</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Displays the tips</property>
+                        <property name="id">ID_TIPS</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">Tips</property>
+                        <property name="name">menuHelpTips</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnTips</event>
+                    </object>
+                    <object class="wxMenuItem" expanded="0">
+                        <property name="bitmap"></property>
+                        <property name="checked">0</property>
+                        <property name="enabled">1</property>
+                        <property name="help">Shows info about this program</property>
+                        <property name="id">ID_ABOUT</property>
+                        <property name="kind">wxITEM_NORMAL</property>
+                        <property name="label">&amp;About</property>
+                        <property name="name">menuHelpAbout</property>
+                        <property name="permission">none</property>
+                        <property name="shortcut"></property>
+                        <property name="unchecked_bitmap"></property>
+                        <event name="OnMenuSelection">OnAbout</event>
+                    </object>
                 </object>
             </object>
             <object class="wxPanel" expanded="1">
