@@ -123,7 +123,7 @@ bool MemoryViewDataModel::SetValueByRow(const wxVariant& variant, unsigned int r
                 WarnLog("Invalid hex value given %s.", static_cast<const char*>(value));
                 return false;
             }
-            num = ParseValueOrDie(value);
+            num = ParseIntegralValueOrDie(value);
             break;
         case MemoryDecimal:
             value = variant.GetString();
@@ -132,7 +132,7 @@ bool MemoryViewDataModel::SetValueByRow(const wxVariant& variant, unsigned int r
                 WarnLog("Invalid decimal value given %s.", static_cast<const char*>(value));
                 return false;
             }
-            num = ParseValueOrDie(value);
+            num = ParseIntegralValueOrDie(value);
             break;
         case MemoryInstruction:
             value = variant.GetString();

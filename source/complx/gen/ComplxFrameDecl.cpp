@@ -425,6 +425,7 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( ComplxFrameDecl::OnClose ) );
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnLoad ), this, menuFileLoad->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnReload ), this, menuFileReload->GetId());
+	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnAdvancedLoad ), this, menuFileAdvancedLoad->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnExit ), this, menuFileExit->GetId());
 	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowAll->GetId());
 	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowNonZero->GetId());
@@ -500,5 +501,193 @@ ComplxFrameDecl::~ComplxFrameDecl()
 	statePropGridManager->Disconnect( wxEVT_PG_CHANGED, wxPropertyGridEventHandler( ComplxFrameDecl::OnStateChange ), NULL, this );
 
 	m_mgr.UnInit();
+
+}
+
+AdvancedLoadDialogDecl::AdvancedLoadDialogDecl( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	this->SetExtraStyle( this->GetExtraStyle() | wxWS_EX_VALIDATE_RECURSIVELY );
+
+	wxBoxSizer* bSizer6;
+	bSizer6 = new wxBoxSizer( wxVERTICAL );
+
+	m_panel2 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer7;
+	bSizer7 = new wxBoxSizer( wxVERTICAL );
+
+	wxFlexGridSizer* fgSizer1;
+	fgSizer1 = new wxFlexGridSizer( 9, 2, 0, 0 );
+	fgSizer1->AddGrowableCol( 1 );
+	fgSizer1->SetFlexibleDirection( wxBOTH );
+	fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+	m_staticText1 = new wxStaticText( m_panel2, wxID_ANY, wxT("Assembly File:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1->Wrap( -1 );
+	m_staticText1->SetForegroundColour( wxColour( 255, 0, 0 ) );
+
+	fgSizer1->Add( m_staticText1, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	assemblyFileCtrl = new wxFilePickerCtrl( m_panel2, wxID_ANY, wxEmptyString, wxT("Select an assembly file"), wxT("*.asm"), wxDefaultPosition, wxDefaultSize, wxFLP_DEFAULT_STYLE|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_SMALL|wxFLP_USE_TEXTCTRL );
+	assemblyFileCtrl->SetToolTip( wxT("(Required) Assembly File to load.") );
+
+	fgSizer1->Add( assemblyFileCtrl, 1, wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT, 5 );
+
+	m_staticText9 = new wxStaticText( m_panel2, wxID_ANY, wxT("Replay (Test) String:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText9->Wrap( -1 );
+	fgSizer1->Add( m_staticText9, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	replayStringCtrl = new wxTextCtrl( m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	replayStringCtrl->SetToolTip( wxT("Replay string given by pyLC3.  Note that setting this may override other settings.") );
+
+	replayStringCtrl->SetValidator( wxTextValidator( wxFILTER_INCLUDE_CHAR_LIST, &replayString ) );
+
+	fgSizer1->Add( replayStringCtrl, 1, wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT, 5 );
+
+	m_staticText6 = new wxStaticText( m_panel2, wxID_ANY, wxT("Console Input:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText6->Wrap( -1 );
+	fgSizer1->Add( m_staticText6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+	consoleInputCtrl = new wxTextCtrl( m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	consoleInputCtrl->SetToolTip( wxT("Input present in LC3 console when program is loaded") );
+
+	consoleInputCtrl->SetValidator( wxTextValidator( wxFILTER_ASCII, &consoleInput ) );
+
+	fgSizer1->Add( consoleInputCtrl, 1, wxEXPAND|wxTOP|wxBOTTOM|wxRIGHT, 5 );
+
+	m_staticText0 = new wxStaticText( m_panel2, wxID_ANY, wxT("Registers?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText0->Wrap( -1 );
+	fgSizer1->Add( m_staticText0, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	wxBoxSizer* bSizer5;
+	bSizer5 = new wxBoxSizer( wxHORIZONTAL );
+
+	wxString regInitializerCtrlChoices[] = { wxT("RANDOMIZE"), wxT("ZERO"), wxT("FILL WITH...") };
+	int regInitializerCtrlNChoices = sizeof( regInitializerCtrlChoices ) / sizeof( wxString );
+	regInitializerCtrl = new wxChoice( m_panel2, wxID_ANY, wxDefaultPosition, wxDefaultSize, regInitializerCtrlNChoices, regInitializerCtrlChoices, 0 );
+	regInitializerCtrl->SetSelection( 0 );
+	regInitializerCtrl->SetToolTip( wxT("Whether to randomize, zero out, or fill with a specific value") );
+
+	regInitializerCtrl->SetValidator( wxGenericValidator( &regInitializer ) );
+
+	bSizer5->Add( regInitializerCtrl, 0, wxTOP|wxBOTTOM|wxRIGHT, 5 );
+
+	regFillCtrl = new wxTextCtrl( m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	regFillCtrl->Enable( false );
+
+	regFillCtrl->SetValidator( wxTextValidator( wxFILTER_INCLUDE_CHAR_LIST, &regFill ) );
+
+	bSizer5->Add( regFillCtrl, 0, wxALL, 5 );
+
+
+	fgSizer1->Add( bSizer5, 1, wxEXPAND, 5 );
+
+	m_staticText4 = new wxStaticText( m_panel2, wxID_ANY, wxT("Memory?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText4->Wrap( -1 );
+	fgSizer1->Add( m_staticText4, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	wxBoxSizer* bSizer51;
+	bSizer51 = new wxBoxSizer( wxHORIZONTAL );
+
+	wxString memInitializerCtrlChoices[] = { wxT("RANDOMIZE"), wxT("ZERO"), wxT("FILL WITH...") };
+	int memInitializerCtrlNChoices = sizeof( memInitializerCtrlChoices ) / sizeof( wxString );
+	memInitializerCtrl = new wxChoice( m_panel2, wxID_ANY, wxDefaultPosition, wxDefaultSize, memInitializerCtrlNChoices, memInitializerCtrlChoices, 0 );
+	memInitializerCtrl->SetSelection( 0 );
+	memInitializerCtrl->SetToolTip( wxT("Whether to randomize, zero out, or fill with a specific value") );
+
+	memInitializerCtrl->SetValidator( wxGenericValidator( &memInitializer ) );
+
+	bSizer51->Add( memInitializerCtrl, 0, wxTOP|wxBOTTOM|wxRIGHT, 5 );
+
+	memFillCtrl = new wxTextCtrl( m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	memFillCtrl->Enable( false );
+
+	memFillCtrl->SetValidator( wxTextValidator( wxFILTER_INCLUDE_CHAR_LIST, &memFill ) );
+
+	bSizer51->Add( memFillCtrl, 0, wxALL, 5 );
+
+
+	fgSizer1->Add( bSizer51, 1, wxEXPAND, 5 );
+
+	m_staticText5 = new wxStaticText( m_panel2, wxID_ANY, wxT("PC"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText5->Wrap( -1 );
+	fgSizer1->Add( m_staticText5, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	pcCtrl = new wxTextCtrl( m_panel2, wxID_ANY, wxT("x3000"), wxDefaultPosition, wxDefaultSize, wxTE_RIGHT );
+	pcCtrl->SetValidator( wxTextValidator( wxFILTER_INCLUDE_CHAR_LIST, &pc ) );
+
+	fgSizer1->Add( pcCtrl, 0, wxTOP|wxBOTTOM|wxRIGHT, 5 );
+
+	m_staticText7 = new wxStaticText( m_panel2, wxID_ANY, wxT("True Traps?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText7->Wrap( -1 );
+	fgSizer1->Add( m_staticText7, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	trueTrapsCtrl = new wxCheckBox( m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	trueTrapsCtrl->SetToolTip( wxT("Enable executing of trap handler routines in asssembly instead of C.  (This is automatically determined by your assembly code).") );
+
+	trueTrapsCtrl->SetValidator( wxGenericValidator( &trueTraps ) );
+
+	fgSizer1->Add( trueTrapsCtrl, 0, wxTOP|wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL, 5 );
+
+	m_staticText8 = new wxStaticText( m_panel2, wxID_ANY, wxT("Interrupts?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText8->Wrap( -1 );
+	fgSizer1->Add( m_staticText8, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	interruptsCtrl = new wxCheckBox( m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	interruptsCtrl->SetToolTip( wxT("Enable processing of lc3 interrupts.  This is automatically configued based on your assembly code.") );
+
+	interruptsCtrl->SetValidator( wxGenericValidator( &interrupts ) );
+
+	fgSizer1->Add( interruptsCtrl, 0, wxTOP|wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL, 5 );
+
+	m_staticText81 = new wxStaticText( m_panel2, wxID_ANY, wxT("Strict Execution?"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText81->Wrap( -1 );
+	fgSizer1->Add( m_staticText81, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	strictExecutionCtrl = new wxCheckBox( m_panel2, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	strictExecutionCtrl->SetValue(true);
+	strictExecutionCtrl->SetToolTip( wxT("Enables strict execution mode. Instructions that are malformed will immediately halt the simulator.") );
+
+	strictExecutionCtrl->SetValidator( wxGenericValidator( &strictExecution ) );
+
+	fgSizer1->Add( strictExecutionCtrl, 0, wxTOP|wxBOTTOM|wxRIGHT|wxALIGN_CENTER_VERTICAL, 5 );
+
+
+	bSizer7->Add( fgSizer1, 1, wxEXPAND, 5 );
+
+	wxBoxSizer* bSizer9;
+	bSizer9 = new wxBoxSizer( wxHORIZONTAL );
+
+	m_button1 = new wxButton( m_panel2, wxID_OK, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer9->Add( m_button1, 0, wxALL, 5 );
+
+	m_button2 = new wxButton( m_panel2, wxID_CANCEL, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer9->Add( m_button2, 0, wxALL, 5 );
+
+
+	bSizer7->Add( bSizer9, 0, wxALIGN_RIGHT, 5 );
+
+
+	m_panel2->SetSizer( bSizer7 );
+	m_panel2->Layout();
+	bSizer7->Fit( m_panel2 );
+	bSizer6->Add( m_panel2, 1, wxEXPAND | wxALL, 5 );
+
+
+	this->SetSizer( bSizer6 );
+	this->Layout();
+
+	this->Centre( wxBOTH );
+
+	// Connect Events
+	regInitializerCtrl->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( AdvancedLoadDialogDecl::OnRegChoice ), NULL, this );
+	memInitializerCtrl->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( AdvancedLoadDialogDecl::OnMemChoice ), NULL, this );
+}
+
+AdvancedLoadDialogDecl::~AdvancedLoadDialogDecl()
+{
+	// Disconnect Events
+	regInitializerCtrl->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( AdvancedLoadDialogDecl::OnRegChoice ), NULL, this );
+	memInitializerCtrl->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( AdvancedLoadDialogDecl::OnMemChoice ), NULL, this );
 
 }

@@ -75,7 +75,7 @@ void ProcessStatusRegisterProperty::UpdateRegisterValue()
     else if (mode == DisplayAsPSR)
     {
         uint16_t old = (state.privilege << 15) | (state.priority << 8) | (state.n << 2) | (state.z << 1) | state.p;
-        uint16_t psr = ParseValueOrDie(str);
+        uint16_t psr = ParseIntegralValueOrDie(str);
         state.privilege = (psr >> 16) & 1;
         state.priority = (psr >> 8) & 7;
         state.n = (psr >> 2) & 1;

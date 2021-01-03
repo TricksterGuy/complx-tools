@@ -30,6 +30,7 @@ include(${wxWidgets_USE_FILE})
 #
 
 set(sources
+    AdvancedLoadDialog.cpp
     ComplxFrame.cpp
     MemoryView.cpp
     data/Lc3BinaryDisplayData.cpp
@@ -48,6 +49,7 @@ set(sources
 #
 
 set(headers
+    AdvancedLoadDialog.hpp
     ComplxFrame.hpp
     MemoryView.hpp
     LoadingOptions.hpp

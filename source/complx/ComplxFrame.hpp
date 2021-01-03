@@ -31,6 +31,7 @@ public:
     // File Menu Event Handlers
     void OnLoad(wxCommandEvent& event) override;
     void OnReload(wxCommandEvent& event) override;
+    void OnAdvancedLoad(wxCommandEvent& event) override;
 
     // View Menu Event Handlers
     void OnLogLevel(wxCommandEvent& event) override;
@@ -70,6 +71,7 @@ private:
     /** Updates all objects referring to the now stale lc3_state object */
     void PostLoadFile();
 
+    void CancelRunningExecution();
     /** Called to read data from textctrls before executing instructions. */
     void PreExecute();
     /** Called to setup execution of instructions */

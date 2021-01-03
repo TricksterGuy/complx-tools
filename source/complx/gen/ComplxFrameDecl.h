@@ -34,6 +34,12 @@ class MemoryView;
 #include <wx/aui/auibook.h>
 #include <wx/statusbr.h>
 #include <wx/frame.h>
+#include <wx/stattext.h>
+#include <wx/filepicker.h>
+#include <wx/choice.h>
+#include <wx/valgen.h>
+#include <wx/checkbox.h>
+#include <wx/dialog.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -157,6 +163,7 @@ class ComplxFrameDecl : public wxFrame
 		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnLoad( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnReload( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnAdvancedLoad( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExit( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnUpdateShowAddresses( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnShowAddressesCustom( wxCommandEvent& event ) { event.Skip(); }
@@ -213,6 +220,60 @@ class ComplxFrameDecl : public wxFrame
 		wxAuiManager m_mgr;
 
 		~ComplxFrameDecl();
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class AdvancedLoadDialogDecl
+///////////////////////////////////////////////////////////////////////////////
+class AdvancedLoadDialogDecl : public wxDialog
+{
+	private:
+
+	protected:
+		wxPanel* m_panel2;
+		wxStaticText* m_staticText1;
+		wxFilePickerCtrl* assemblyFileCtrl;
+		wxStaticText* m_staticText9;
+		wxTextCtrl* replayStringCtrl;
+		wxStaticText* m_staticText6;
+		wxTextCtrl* consoleInputCtrl;
+		wxStaticText* m_staticText0;
+		wxChoice* regInitializerCtrl;
+		wxTextCtrl* regFillCtrl;
+		wxStaticText* m_staticText4;
+		wxChoice* memInitializerCtrl;
+		wxTextCtrl* memFillCtrl;
+		wxStaticText* m_staticText5;
+		wxTextCtrl* pcCtrl;
+		wxStaticText* m_staticText7;
+		wxCheckBox* trueTrapsCtrl;
+		wxStaticText* m_staticText8;
+		wxCheckBox* interruptsCtrl;
+		wxStaticText* m_staticText81;
+		wxCheckBox* strictExecutionCtrl;
+		wxButton* m_button1;
+		wxButton* m_button2;
+
+		// Virtual event handlers, overide them in your derived class
+		virtual void OnRegChoice( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnMemChoice( wxCommandEvent& event ) { event.Skip(); }
+
+
+	public:
+		wxString replayString;
+		wxString consoleInput;
+		int regInitializer;
+		wxString regFill;
+		int memInitializer;
+		wxString memFill;
+		wxString pc;
+		bool trueTraps;
+		bool interrupts;
+		bool strictExecution;
+
+		AdvancedLoadDialogDecl( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Advanced Load"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 540,420 ), long style = wxDEFAULT_DIALOG_STYLE );
+		~AdvancedLoadDialogDecl();
 
 };
 

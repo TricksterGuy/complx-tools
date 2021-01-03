@@ -1,4 +1,10 @@
 #include "ValidationHelper.hpp"
+#include <wx/base64.h>
+
+const wxString IntegralChars = "0123456789ABCDEFabcdefx-";
+const wxString HexadecimalChars = "0123456789ABCDEFabcdefx";
+const wxString DecimalChars = "0123456789-";
+const wxString Base64Chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=";
 
 bool ValidateHexValue(const wxString& str)
 {
@@ -40,7 +46,15 @@ bool ValidateDecimalValue(const wxString& str)
     return true;
 }
 
-int16_t ParseValueOrDie(const wxString& str)
+bool ValidateBase64Value(const wxString& str)
+{
+    size_t err = -1;
+	auto buffer = wxBase64Decode(str, wxBase64DecodeMode_Strict, &err);
+
+	return (buffer.IsEmpty() || err != static_cast<size_t>(-1));
+}
+
+int16_t ParseIntegralValueOrDie(const wxString& str)
 {
     long convert;
     if (str[0] == 'x')

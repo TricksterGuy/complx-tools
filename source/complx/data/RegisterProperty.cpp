@@ -26,13 +26,15 @@ const long values[] =
 
 wxString GetAllowedCharacters(unsigned int flags)
 {
-    wxString ret = "";
+    wxString ret;
     if ((flags & RegisterProperty::AllowDecimal) && (flags & RegisterProperty::AllowHexadecimal))
-        ret = "0123456789ABCDEFabcdefx-";
+        ret = IntegralChars;
     else if (flags & RegisterProperty::AllowHexadecimal)
-        ret = "0123456789ABCDEFabcdefx";
+        ret = HexadecimalChars;
     else if (flags & RegisterProperty::AllowDecimal)
-        ret = "0123456789-";
+        ret = DecimalChars;
+    else
+        DFatalLog("Invalid flags given %d", flags);
     return ret;
 }
 
@@ -107,7 +109,7 @@ void RegisterProperty::UpdateRegisterValue()
 
     int16_t old = reg;
 
-    reg = ParseValueOrDie(GetValueAsString());
+    reg = ParseIntegralValueOrDie(GetValueAsString());
 
     InfoLog("Updated %s from (%d x%04x) to (%d x%04x)", static_cast<const char*>(GetName()), old, static_cast<uint16_t>(old), reg, static_cast<uint16_t>(reg));
 }

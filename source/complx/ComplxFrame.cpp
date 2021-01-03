@@ -1,4 +1,6 @@
 #include "ComplxFrame.hpp"
+
+#include "AdvancedLoadDialog.hpp"
 #include "data/PropertyTypes.hpp"
 
 #include <sstream>
@@ -149,12 +151,7 @@ void ComplxFrame::InitializeStatusBar()
 void ComplxFrame::OnLoad(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
-    if (execution)
-    {
-        WarnLog("Currently executing instructions, please stop execution first.");
-        return;
-    }
-
+    CancelRunningExecution();
     wxString file = AskForAssemblyFile();
     if (file.IsEmpty())
     {
@@ -175,11 +172,7 @@ void ComplxFrame::OnLoad(wxCommandEvent& WXUNUSED(event))
 void ComplxFrame::OnReload(wxCommandEvent& event)
 {
     EventLog l(__func__);
-    if (execution)
-    {
-        WarnLog("Currently executing instructions, please stop execution first.");
-        return;
-    }
+    CancelRunningExecution();
 
     if (reload_options.file.IsEmpty())
     {
@@ -189,6 +182,25 @@ void ComplxFrame::OnReload(wxCommandEvent& event)
 
     InfoLog("Reloading: %s", static_cast<const char*>(reload_options.file));
     DoLoadFile(reload_options);
+}
+
+void ComplxFrame::OnAdvancedLoad(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    CancelRunningExecution();
+
+    auto dialog = std::make_unique<AdvancedLoadDialog>(this, reload_options);
+    if (dialog->ShowModal() != wxID_OK)
+    {
+        WarnLog("User canceled dialog, not loading file");
+        return;
+    }
+
+    LoadingOptions options = dialog->GetOptions();
+    if (DoLoadFile(options))
+        reload_options = options;
+    //if (!reload_options.replay_string.empty())
+    //    DoSetupReplayString(reload_options.replay_string);
 }
 
 bool ComplxFrame::DoLoadFile(const LoadingOptions& opts)
@@ -352,7 +364,7 @@ void ComplxFrame::OnRewind(wxCommandEvent& WXUNUSED(event))
     Execute(RunMode::REWIND, -1);
 }
 
-void ComplxFrame::OnStop(wxCommandEvent& event)
+void ComplxFrame::OnStop(wxCommandEvent& WXUNUSED(event))
 {
     EventLog l(__func__);
     InfoLog("Stopping execution.");
@@ -385,6 +397,15 @@ void ComplxFrame::OnStateChange(wxPropertyGridEvent& event)
 
     if (property == cc_property)
         cc_property->UpdateRegisterValue();
+}
+
+void ComplxFrame::CancelRunningExecution()
+{
+    if (execution)
+    {
+        WarnLog("Currently executing instructions, ending execution.");
+        EndExecution();
+    }
 }
 
 void ComplxFrame::PreExecute()
