@@ -252,10 +252,31 @@ void ComplxFrame::PostLoadFile()
     memoryView->UpdateRef(std::ref(*state));
     cc_property->UpdateRef(std::ref(*state));
     pc_property->UpdateRef(std::ref(reinterpret_cast<int16_t&>(state->pc)));
+    for (auto* view : memory_views)
+        view->UpdateRef(std::ref(*state));
     for (unsigned int i = 0; i < 8; i++)
         register_properties[i]->UpdateRef(std::ref(state->regs[i]));
     memoryView->Refresh();
     memoryView->ScrollTo(state->pc);
+}
+
+void ComplxFrame::OnNewView(wxCommandEvent& WXUNUSED(event))
+{
+    EventLog l(__func__);
+    auto* frame = new MemoryViewFrame(this, std::ref(*state), memory_view_model.get());
+    memory_views.push_back(frame);
+    frame->Show();
+    frame->Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(ComplxFrame::OnDestroyView), NULL, this);
+    frame->Raise();
+}
+
+void ComplxFrame::OnDestroyView(wxCloseEvent& event)
+{
+    EventLog l(__func__);
+    auto* frame = dynamic_cast<MemoryViewFrame*>(event.GetEventObject());
+    memory_views.erase(std::find(memory_views.begin(), memory_views.end(), frame));
+    frame->Disconnect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(ComplxFrame::OnDestroyView), NULL, this);
+    frame->Destroy();
 }
 
 void ComplxFrame::OnLogLevel(wxCommandEvent& WXUNUSED(event))
@@ -470,6 +491,9 @@ void ComplxFrame::PostExecute()
 
     for (auto* plugin : state->plugins)
         plugin->Refresh(*state);
+
+    for (auto* view : memory_views)
+        view->Refresh();
 }
 
 void ComplxFrame::EndExecution()

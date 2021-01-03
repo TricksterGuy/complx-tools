@@ -10,6 +10,7 @@
 #include "ExecuteOptions.hpp"
 #include "LoadingOptions.hpp"
 #include "MemoryView.hpp"
+#include "MemoryViewFrame.hpp"
 #include "data/MemoryViewDataModel.hpp"
 #include "data/RegisterProperty.hpp"
 #include "data/ProcessStatusRegisterProperty.hpp"
@@ -34,6 +35,8 @@ public:
     void OnAdvancedLoad(wxCommandEvent& event) override;
 
     // View Menu Event Handlers
+    void OnNewView(wxCommandEvent& event) override;
+    void OnDestroyView(wxCloseEvent& event);
     void OnLogLevel(wxCommandEvent& event) override;
 
     // Control Menu Event Handlers
@@ -89,6 +92,8 @@ private:
     long GetIps() const;
 
     std::unique_ptr<lc3_state> state;
+
+    std::list<MemoryViewFrame*> memory_views;
 
     /** Options used when reloading assembly files */
     LoadingOptions reload_options;

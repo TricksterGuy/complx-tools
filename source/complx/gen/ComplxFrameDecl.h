@@ -165,6 +165,7 @@ class ComplxFrameDecl : public wxFrame
 		virtual void OnReload( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAdvancedLoad( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExit( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnNewView( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnUpdateShowAddresses( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnShowAddressesCustom( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDisassemble( wxCommandEvent& event ) { event.Skip(); }
@@ -274,6 +275,54 @@ class AdvancedLoadDialogDecl : public wxDialog
 
 		AdvancedLoadDialogDecl( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Advanced Load"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 540,420 ), long style = wxDEFAULT_DIALOG_STYLE );
 		~AdvancedLoadDialogDecl();
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class MemoryViewFrameDecl
+///////////////////////////////////////////////////////////////////////////////
+class MemoryViewFrameDecl : public wxFrame
+{
+	private:
+
+	protected:
+		wxMenuBar* menu;
+		wxMenu* menuView;
+		wxMenu* menuViewShowAddresses;
+		wxMenuItem* menuViewShowAddressesShowAll;
+		wxMenuItem* menuViewShowAddressesShowNonZero;
+		wxMenuItem* menuViewShowAddressesShowOnlyCodeData;
+		wxMenuItem* menuViewShowAddressesCustom;
+		wxMenu* menuViewDisassemble;
+		wxMenuItem* menuViewBasic;
+		wxMenuItem* menuViewNormal;
+		wxMenuItem* menuViewHighLevel;
+		wxPanel* memoryPanel;
+		wxPanel* m_panel12;
+		wxStaticText* m_staticText11;
+		wxTextCtrl* m_textCtrl11;
+		wxStaticText* m_staticText10;
+		wxChoice* m_choice3;
+		MemoryView* memoryView;
+
+		// Virtual event handlers, overide them in your derived class
+		virtual void OnUpdateShowAddresses( wxCommandEvent& event ) = 0;
+		virtual void OnShowAddressesCustom( wxCommandEvent& event ) = 0;
+		virtual void OnDisassemble( wxCommandEvent& event ) = 0;
+		virtual void OnNormalDisassemble( wxCommandEvent& event ) = 0;
+		virtual void OnCDisassemble( wxCommandEvent& event ) = 0;
+		virtual void OnInstructionHighlighting( wxCommandEvent& event ) = 0;
+		virtual void OnName( wxCommandEvent& event ) = 0;
+		virtual void OnTracking( wxCommandEvent& event ) = 0;
+
+
+	public:
+		wxString name;
+		int tracking;
+
+		MemoryViewFrameDecl( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Memory View"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 640,480 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+
+		~MemoryViewFrameDecl();
 
 };
 

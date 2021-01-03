@@ -13,8 +13,6 @@
 #include <wx/settings.h>
 #include <wx/version.h>
 
-
-
 MemoryView::MemoryView(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, int64_t style, const wxValidator& validator, const wxString& name) :
     wxDataViewCtrl(parent, id, pos, size, style, validator, name)
 {

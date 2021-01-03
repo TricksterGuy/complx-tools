@@ -33,6 +33,7 @@ set(sources
     AdvancedLoadDialog.cpp
     ComplxFrame.cpp
     MemoryView.cpp
+    MemoryViewFrame.cpp
     data/Lc3BinaryDisplayData.cpp
     data/MemoryViewBinaryDataRenderer.cpp
     data/MemoryViewInfoDataRenderer.cpp
@@ -52,6 +53,7 @@ set(headers
     AdvancedLoadDialog.hpp
     ComplxFrame.hpp
     MemoryView.hpp
+    MemoryViewFrame.hpp
     LoadingOptions.hpp
     ExecuteOptions.hpp
     data/Lc3BinaryDisplayData.hpp
@@ -212,7 +214,6 @@ target_include_directories(${target}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
     $<INSTALL_INTERFACE:include>
 )
-
 
 #
 # Libraries

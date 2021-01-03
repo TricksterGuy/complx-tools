@@ -427,6 +427,7 @@ ComplxFrameDecl::ComplxFrameDecl( wxWindow* parent, wxWindowID id, const wxStrin
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnReload ), this, menuFileReload->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnAdvancedLoad ), this, menuFileAdvancedLoad->GetId());
 	menuFile->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnExit ), this, menuFileExit->GetId());
+	menuView->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnNewView ), this, menuViewNew->GetId());
 	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowAll->GetId());
 	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowNonZero->GetId());
 	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( ComplxFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowOnlyCodeData->GetId());
@@ -689,5 +690,128 @@ AdvancedLoadDialogDecl::~AdvancedLoadDialogDecl()
 	// Disconnect Events
 	regInitializerCtrl->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( AdvancedLoadDialogDecl::OnRegChoice ), NULL, this );
 	memInitializerCtrl->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( AdvancedLoadDialogDecl::OnMemChoice ), NULL, this );
+
+}
+
+MemoryViewFrameDecl::MemoryViewFrameDecl( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+
+	menu = new wxMenuBar( 0 );
+	menuView = new wxMenu();
+	wxMenuItem* menuViewGoto;
+	menuViewGoto = new wxMenuItem( menuView, ID_GOTO_ADDRESS, wxString( wxT("&Goto Address") ) + wxT('\t') + wxT("Ctrl+G"), wxT("Moves memory to a specific address."), wxITEM_NORMAL );
+	menuView->Append( menuViewGoto );
+
+	menuViewShowAddresses = new wxMenu();
+	wxMenuItem* menuViewShowAddressesItem = new wxMenuItem( menuView, wxID_ANY, wxT("Hide Addresses"), wxEmptyString, wxITEM_NORMAL, menuViewShowAddresses );
+	menuViewShowAddressesShowAll = new wxMenuItem( menuViewShowAddresses, ID_SHOW_ALL, wxString( wxT("Show All") ) , wxT("Shows all memory addresses"), wxITEM_RADIO );
+	menuViewShowAddresses->Append( menuViewShowAddressesShowAll );
+	menuViewShowAddressesShowAll->Check( true );
+
+	menuViewShowAddressesShowNonZero = new wxMenuItem( menuViewShowAddresses, ID_SHOW_NON_ZERO, wxString( wxT("Show Non Zero") ) , wxT("Show all memory addresses that have a value other than 0"), wxITEM_RADIO );
+	menuViewShowAddresses->Append( menuViewShowAddressesShowNonZero );
+
+	menuViewShowAddressesShowOnlyCodeData = new wxMenuItem( menuViewShowAddresses, ID_SHOW_ONLY_CODEDATA, wxString( wxT("Show Only Code/Data") ) , wxT("Shows addresses modified when your program was loaded."), wxITEM_RADIO );
+	menuViewShowAddresses->Append( menuViewShowAddressesShowOnlyCodeData );
+
+	menuViewShowAddressesCustom = new wxMenuItem( menuViewShowAddresses, ID_CUSTOM, wxString( wxT("Custom...") ) + wxT('\t') + wxT("Ctrl+H"), wxT("Allows you to show/hide memory address ranges"), wxITEM_RADIO );
+	menuViewShowAddresses->Append( menuViewShowAddressesCustom );
+
+	menuView->Append( menuViewShowAddressesItem );
+
+	menuViewDisassemble = new wxMenu();
+	wxMenuItem* menuViewDisassembleItem = new wxMenuItem( menuView, wxID_ANY, wxT("Disassemble"), wxEmptyString, wxITEM_NORMAL, menuViewDisassemble );
+	menuViewBasic = new wxMenuItem( menuViewDisassemble, ID_BASIC, wxString( wxT("Basic") ) , wxT("Disassembles ignoring symbols"), wxITEM_RADIO );
+	menuViewDisassemble->Append( menuViewBasic );
+
+	menuViewNormal = new wxMenuItem( menuViewDisassemble, ID_NORMAL, wxString( wxT("Normal") ) , wxT("Disassembles with symbol info."), wxITEM_RADIO );
+	menuViewDisassemble->Append( menuViewNormal );
+	menuViewNormal->Check( true );
+
+	menuViewHighLevel = new wxMenuItem( menuViewDisassemble, ID_HIGH_LEVEL, wxString( wxT("High Level") ) , wxT("Disassembles into C-like statements"), wxITEM_RADIO );
+	menuViewDisassemble->Append( menuViewHighLevel );
+
+	menuView->Append( menuViewDisassembleItem );
+
+	wxMenuItem* menuViewInstructionHighlighting;
+	menuViewInstructionHighlighting = new wxMenuItem( menuView, ID_INSTRUCTION_HIGHLIGHTING, wxString( wxT("&Instruction Highlighting") ) , wxT("Highlights bits of the instruction."), wxITEM_CHECK );
+	menuView->Append( menuViewInstructionHighlighting );
+
+	menu->Append( menuView, wxT("View") );
+
+	this->SetMenuBar( menu );
+
+	wxBoxSizer* bSizer13;
+	bSizer13 = new wxBoxSizer( wxVERTICAL );
+
+	memoryPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer6;
+	bSizer6 = new wxBoxSizer( wxVERTICAL );
+
+	m_panel12 = new wxPanel( memoryPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer16;
+	bSizer16 = new wxBoxSizer( wxHORIZONTAL );
+
+	m_staticText11 = new wxStaticText( m_panel12, wxID_ANY, wxT("Name:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText11->Wrap( -1 );
+	bSizer16->Add( m_staticText11, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	m_textCtrl11 = new wxTextCtrl( m_panel12, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_textCtrl11->SetValidator( wxTextValidator( wxFILTER_ASCII, &name ) );
+
+	bSizer16->Add( m_textCtrl11, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	m_staticText10 = new wxStaticText( m_panel12, wxID_ANY, wxT("Tracking:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText10->Wrap( -1 );
+	bSizer16->Add( m_staticText10, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	wxString m_choice3Choices[] = { wxT("NONE"), wxT("R0"), wxT("R1"), wxT("R2"), wxT("R3"), wxT("R4"), wxT("R5"), wxT("R6"), wxT("R7"), wxT("USP"), wxT("SSP") };
+	int m_choice3NChoices = sizeof( m_choice3Choices ) / sizeof( wxString );
+	m_choice3 = new wxChoice( m_panel12, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_choice3NChoices, m_choice3Choices, 0 );
+	m_choice3->SetSelection( 0 );
+	m_choice3->SetValidator( wxGenericValidator( &tracking ) );
+
+	bSizer16->Add( m_choice3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_VERTICAL, 5 );
+
+
+	m_panel12->SetSizer( bSizer16 );
+	m_panel12->Layout();
+	bSizer16->Fit( m_panel12 );
+	bSizer6->Add( m_panel12, 0, wxALL, 5 );
+
+	memoryView = new MemoryView( memoryPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_HORIZ_RULES|wxDV_ROW_LINES|wxDV_SINGLE|wxDV_VERT_RULES );
+	bSizer6->Add( memoryView, 1, wxEXPAND, 5 );
+
+
+	memoryPanel->SetSizer( bSizer6 );
+	memoryPanel->Layout();
+	bSizer6->Fit( memoryPanel );
+	bSizer13->Add( memoryPanel, 1, wxEXPAND, 5 );
+
+
+	this->SetSizer( bSizer13 );
+	this->Layout();
+
+	this->Centre( wxBOTH );
+
+	// Connect Events
+	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowAll->GetId());
+	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowNonZero->GetId());
+	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnUpdateShowAddresses ), this, menuViewShowAddressesShowOnlyCodeData->GetId());
+	menuViewShowAddresses->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnShowAddressesCustom ), this, menuViewShowAddressesCustom->GetId());
+	menuViewDisassemble->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnDisassemble ), this, menuViewBasic->GetId());
+	menuViewDisassemble->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnNormalDisassemble ), this, menuViewNormal->GetId());
+	menuViewDisassemble->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnCDisassemble ), this, menuViewHighLevel->GetId());
+	menuView->Bind(wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnInstructionHighlighting ), this, menuViewInstructionHighlighting->GetId());
+	m_textCtrl11->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( MemoryViewFrameDecl::OnName ), NULL, this );
+	m_choice3->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnTracking ), NULL, this );
+}
+
+MemoryViewFrameDecl::~MemoryViewFrameDecl()
+{
+	// Disconnect Events
+	m_textCtrl11->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( MemoryViewFrameDecl::OnName ), NULL, this );
+	m_choice3->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( MemoryViewFrameDecl::OnTracking ), NULL, this );
 
 }
