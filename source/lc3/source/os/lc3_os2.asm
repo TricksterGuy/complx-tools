@@ -1,0 +1,710 @@
+.orig x0000
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill GETC_TRAP
+.fill OUT_TRAP
+.fill PUTS_TRAP
+.fill IN_TRAP
+.fill PUTSP_TRAP
+.fill HALT_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill UNKNOWN_TRAP
+.fill PRIVILEGE_EXC ; IVT
+.fill ILLEGAL_EXC
+.fill ACCESS_EXC
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill KB_INT
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+
+UNKNOWN_TRAP LEA R0, UNKNOWN_TRAP_EXC
+PUTS
+HALT
+
+GETC_TRAP LDI R0, KBSR
+BRZP GETC_TRAP
+LDI R0, KBDR
+RTI
+
+OUT_TRAP ADD R6, R6, -1
+STR R1, R6, 0
+OUT_TRAP_POLL LDI R1, DSR
+BRZP OUT_TRAP_POLL
+STI R0, DDR
+LDR R1, R6, 0
+ADD R6, R6, 1
+RTI
+
+PUTS_TRAP ADD R6, R6, -2
+STR R0, R6, 0
+STR R2, R6, 1
+ADD R2, R0, #0
+PUTS_TRAP_CHAR LDR R0, R2, #0
+BRZ PUTS_TRAP_DONE
+OUT
+ADD R2, R2, #1
+BR PUTS_TRAP_CHAR
+PUTS_TRAP_DONE LDR R0, R6, 0
+LDR R2, R6, 1
+ADD R6, R6, 2
+RTI
+
+IN_TRAP ADD R6, R6, -1
+STR R2, R6, 0
+LEA R0, IN_PROMPT
+ADD R2, R0, #0
+IN_TRAP_CHAR LDR R0, R2, #0
+BRZ IN_TRAP_DONE
+OUT
+ADD R2, R2, #1
+BR IN_TRAP_CHAR
+IN_TRAP_DONE GETC
+OUT
+LDR R2, R6, 0
+ADD R6, R6, 1
+RTI
+
+PUTSP_TRAP ADD R6, R6, -4
+STR R0, R6, 0
+STR R2, R6, 1
+STR R3, R6, 2
+STR R4, R6, 3
+ADD R2, R0, #0
+PUTSP_GET_DATA LDR R0, R2, #0
+ADD R3, R0, #0
+LD R0, MASK_FF
+AND R0, R3, R0
+BRZ PUTSP_END
+OUT
+AND R0, R0, #0
+AND R4, R4, #0
+ADD R4, R4, #8
+PUTSP_SHIFT ADD R0, R0, R0
+AND R3, R3, R3
+BRZP PUTSP_MSB_POS
+ADD R0, R0, #1
+PUTSP_MSB_POS ADD R3, R3, R3
+ADD R4, R4, #-1
+BRP PUTSP_SHIFT
+AND R0, R0, R0
+BRZ PUTSP_END
+OUT
+ADD R2, R2, #1
+BR PUTSP_GET_DATA
+PUTSP_END 
+LDR R0, R6, 0
+LDR R2, R6, 1
+LDR R3, R6, 2
+LDR R4, R6, 3
+ADD R6, R6, 4
+RTI
+
+HALT_TRAP AND R7, R7, #0
+STI R7, MCR
+
+UNKNOWN_TRAP_EXC .stringz "\n---Unknown trap executed---\n"
+IN_PROMPT .stringz "Input character: "
+KBSR .fill xfe00
+KBDR .fill xfe02
+DSR .fill xfe04
+DDR .fill xfe06
+MCR .fill xfffe
+MASK_FF .fill x00ff
+STR R7, R7, #-1
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+PRIVILEGE_EXC LEA R0, PRIVILEGE_EXC_MSG
+PUTS
+HALT
+ILLEGAL_EXC LEA R0, ILLEGAL_EXC_MSG
+PUTS
+HALT
+ACCESS_EXC 
+ADD R6, R6, -5
+STR R0, R6, 0
+STR R1, R6, 1
+STR R2, R6, 2
+STR R3, R6, 3
+STR R7, R6, 4
+
+LEA R0, ACCESS_EXC_MSG
+PUTS
+LDR R2, R6, 3
+AND R3, R3, 0
+ADD R3, R3, 4
+
+NEXT_DIG
+AND R1, R1, 0 
+ADD R1, R1, 4
+AND R0, R0, 0
+
+HEX_DIG AND R2, R2, 0
+BRP 1
+ADD R0, R0, 1
+ADD R0, R0, R0
+ADD R2, R2, R2
+ADD R1, R1, -1
+BRP HEX_DIG
+
+ADD R0, R0, -10
+BRN NUMERAL
+ADD R0, R0, 10
+ADD R0, R0, 15
+ADD R0, R0, 15
+ADD R0, R0, 15
+ADD R0, R0, 15
+ADD R0, R0, 4
+OUT
+BR ENDPRINTADDR
+
+NUMERAL
+ADD R0, R0, 10
+ADD R0, R0, 15
+ADD R0, R0, 15
+ADD R0, R0, 15
+ADD R0, R0, 3
+OUT
+
+ENDPRINTADDR
+ADD R3, R3, -1
+BRP NEXT_DIG
+
+LDR R0, R6, 0
+LDR R1, R6, 1
+LDR R2, R6, 2
+LDR R3, R6, 3
+LDR R7, R6, 4
+ADD R6, R6, 5
+RTI
+
+PRIVILEGE_EXC_MSG .stringz "Privelege mode violation. Halting\n"
+ILLEGAL_EXC_MSG .stringz "Illegal opcode violation. Halting\n"
+ACCESS_EXC_MSG .stringz "Access control violation. Address: x"
+
+KB_INT ADD R6, R6, #-1
+STR R0, R6, #0
+LDI R0, KBDR
+OUT
+LDR R0, R6, #0
+ADD R6, R6, #1
+RTI
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+.fill x0000
+
+.end
