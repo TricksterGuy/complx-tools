@@ -4,7 +4,8 @@
 #include <array>
 #include <cstdint>
 
-extern std::array<uint16_t, 0x300> lc3_os;
-extern std::array<uint16_t, 0x300> lc3_osv2;
+#include "lc3/lc3.hpp"
+
+void lc3_load_os(lc3_state& state, int lc3_version = -1);
 
 #endif

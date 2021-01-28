@@ -1,6 +1,6 @@
 #include "lc3/lc3_os.hpp"
 
-std::array<uint16_t, 0x2e3> lc3os
+std::array<uint16_t, 0x2e3> lc3_osv1
 {{
     0x0200,
     0x0200,

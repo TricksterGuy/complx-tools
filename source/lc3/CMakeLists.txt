@@ -10,7 +10,7 @@ if (WIN32)
     else()
         set(CMAKE_DL_LIBS dlfcn-win32::dl)
     endif()
-    
+
 endif()
 
 #
@@ -64,6 +64,7 @@ set(sources
     ${source_path}/lc3_execute.cpp
     ${source_path}/lc3_expressions.cpp
     ${source_path}/lc3_os.cpp
+    ${source_path}/lc3_osv1.cpp
     ${source_path}/lc3_osv2.cpp
     ${source_path}/lc3_params.cpp
     ${source_path}/lc3_parser.cpp

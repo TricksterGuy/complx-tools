@@ -86,7 +86,7 @@ void lc3_init(lc3_state& state, bool randomize_registers, bool randomize_memory,
         std::fill(state.mem, state.mem + 65536, memory_fill_value);
 
     // Add LC3 OS
-    std::copy(lc3_osv2.begin(), lc3_osv2.end(), state.mem);
+    lc3_load_os(state);
 
     // Clear plugins
     lc3_remove_plugins(state);
@@ -126,8 +126,7 @@ void lc3_set_version(lc3_state& state, int version)
     if (version >= 0 && version <= 1)
     {
         state.lc3_version = version;
-        const std::array<uint16_t, 0x300>& os = (version == 0) ? lc3_os : lc3_osv2;
-        std::copy(os.begin(), os.end(), state.mem);
+        lc3_load_os(state, version);
     }
     else
     {
@@ -870,17 +869,11 @@ int32_t lc3_write_str(lc3_state& state, const std::function<int32_t(lc3_state&, 
 
 void lc3_randomize(lc3_state& state)
 {
-    const std::array<uint16_t, 0x300>& os = (state.lc3_version == 0) ? lc3_os : lc3_osv2;
-    // If true traps is set overwrite overwrite overwrite!
-    if (state.true_traps)
-    {
-        // Add LC3 OS
-        memcpy(state.mem, os.data(), os.size() * sizeof(uint16_t));
-    }
-
-    // Stage 3 write over it all (even device registers).
-    for (uint32_t i = os.size(); i <= 0xFFFF; i++)
+    for (uint32_t i = 0; i <= 0xFFFF; i++)
         state.mem[i] = lc3_random(state);
+
+    if (state.true_traps)
+        lc3_load_os(state);
 }
 
 void lc3_trace(lc3_state& state)

@@ -693,18 +693,5 @@ LDI R0, KBDR
 OUT
 LDR R0, R6, #0
 ADD R6, R6, #1
-RTI
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-.fill x0000
-
+END RTI
 .end
