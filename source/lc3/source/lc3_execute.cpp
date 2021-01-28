@@ -546,7 +546,7 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
 
         if (state.lc3_version > 0)
         {
-            int16_t psr = (state.privilege << 15) | (state.priority << 8) | (state.n << 2) | (state.z << 1) | state.p;
+            int16_t psr = lc3_psr(state);
             // If we are in user mode we must switch usp/ssp
             if (state.privilege)
             {
@@ -736,7 +736,7 @@ int16_t lc3_mem_read(lc3_state& state, uint16_t addr, bool privileged)
         case DEV_PSR:
             if (state.lc3_version > 0)
             {
-                state.mem[DEV_PSR] = (state.privilege << 15) | (state.priority << 8) | (state.n << 2) | (state.z << 1) | state.p;
+                state.mem[DEV_PSR] = lc3_psr(state);
             } else
             {
                 if (addr >= 0xFE00U && state.address_plugins.find(addr) != state.address_plugins.end())
@@ -839,9 +839,33 @@ void lc3_mem_write(lc3_state& state, uint16_t addr, int16_t value, bool privileg
 
 void lc3_warning(lc3_state& state, uint32_t warn_id, int16_t arg1, int16_t arg2)
 {
+    state.warn_stats[warn_id] += 1;
+
+    if (state.true_traps)
+    {
+        // Trigger an exception for these warnings.
+        if ((warn_id == LC3_RESERVED_MEM_READ || warn_id == LC3_RESERVED_MEM_WRITE) && state.lc3_version >= 1)
+        {
+            // This happens in other overload that takes a message below.
+            state.warnings++;
+            lc3_signal_exception(state, INTERRUPT_ACCCESS_CONTROL_VIOLATION);
+            return;
+        }
+        else if (warn_id == LC3_UNSUPPORTED_INSTRUCTION)
+        {
+            state.warnings++;
+            lc3_signal_exception(state, INTERRUPT_ACCCESS_CONTROL_VIOLATION);
+        }
+        else if (warn_id == LC3_USER_RTI)
+        {
+            state.warnings++;
+            lc3_signal_exception(state, INTERRUPT_PRIVILEGE);
+        }
+    }
+
     if (state.warn_limits.find(warn_id) != state.warn_limits.end() && state.warn_limits[warn_id] <= state.warn_stats[warn_id])
     {
-        state.warn_stats[warn_id] += 1;
+        // This happens in other overload that takes a message below.
         state.warnings++;
         return;
     }
@@ -853,7 +877,7 @@ void lc3_warning(lc3_state& state, uint32_t warn_id, int16_t arg1, int16_t arg2)
     msg = warning;
 
     lc3_warning(state, msg);
-    state.warn_stats[warn_id] += 1;
+
     if (state.warn_limits.find(warn_id) != state.warn_limits.end() && state.warn_limits[warn_id] <= state.warn_stats[warn_id])
     {
         lc3_warning(state, "Limit for previous warning has been reached will no longer output messages of this type");

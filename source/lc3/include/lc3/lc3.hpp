@@ -53,7 +53,7 @@ enum LC3_API lc3_instruction_t
 };
 
 /** Predefined traps provided by LC3 OS */
-enum LC3_API TRAPS
+enum LC3_API TRAP_VECTORS
 {
     TRAP_GETC  = 0x20,
     TRAP_OUT   = 0x21,
@@ -73,6 +73,13 @@ enum LC3_API DEVICES
     // LC3 revision 2019.
     DEV_PSR = 0xFFFC,
     DEV_MCR  = 0xFFFE
+};
+
+enum LC3_API INTERRUPT_VECTORS
+{
+    INTERRUPT_PRIVILEGE = 0x00,
+    INTERRUPT_ILLEGAL_OPCODE = 0x01,
+    INTERRUPT_ACCCESS_CONTROL_VIOLATION = 0x02,
 };
 
 /** Runtime warning types */
@@ -717,6 +724,8 @@ int32_t lc3_write_str(lc3_state& state, const std::function<int32_t(lc3_state&, 
 inline void lc3_set_true_traps(lc3_state& state, bool value) {state.true_traps = value;}
 /** Generate a random number LC-3 */
 inline uint16_t lc3_random(lc3_state& state) { return state.dist(state.rng); }
+/** Get the value of the PSR */
+inline uint16_t lc3_psr(lc3_state& state) { return (state.privilege << 15) | (state.priority << 8) | (state.n << 2) | (state.z << 1) | state.p; }
 /** lc3_randomize
   *
   * Randomizes LC3 Memory

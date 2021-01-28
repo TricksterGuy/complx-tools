@@ -288,6 +288,34 @@ int lc3_prev_line(lc3_state& state, unsigned int num, int depth)
     return -1;
 }
 
+void lc3_do_interrupt(lc3_state& state, int priority, int vector)
+{
+    // HEY PROCESS I'M REALLY HAPPY FOR YOU AND IMMA LET YOU FINISH BUT THIS INTERRUPT HANDLER IS THE BEST HANDLER OF ALL TIME...  OF ALL TIME.
+    if (state.privilege) // in user mode
+    {
+        state.savedusp = state.regs[6];
+        state.regs[6] = static_cast<int16_t>(state.savedssp);
+    }
+    // push PSR&PC to STACK
+    int psr = lc3_psr(state);
+    state.regs[6] -= 2;
+    state.mem[state.regs[6] + 1] = static_cast<int16_t>(psr);
+    state.mem[state.regs[6]] = static_cast<int16_t>(state.pc);
+
+    // Set up new PSR
+    state.privilege = 0;
+    state.priority = priority;
+    state.n = 0;
+    state.z = 0;
+    state.p = 0;
+
+    // Get interrupt vector address contents
+    state.pc = state.mem[0x0100 | vector];
+    if (state.interrupt_vector != -1)
+        state.interrupt_vector_stack.push_back(state.interrupt_vector);
+    state.interrupt_vector = vector;
+}
+
 bool lc3_interrupt(lc3_state& state)
 {
     // No interrupts? return.
@@ -321,30 +349,7 @@ bool lc3_interrupt(lc3_state& state)
     // Interrupt acknowledged.
     state.interrupts.erase(max_pos);
 
-    // HEY PROCESS I'M REALLY HAPPY FOR YOU AND IMMA LET YOU FINISH BUT THIS INTERRUPT HANDLER IS THE BEST HANDLER OF ALL TIME...  OF ALL TIME.
-    if (state.privilege) // in user mode
-    {
-        state.savedusp = state.regs[6];
-        state.regs[6] = static_cast<int16_t>(state.savedssp);
-    }
-    // push PSR&PC to STACK
-    int psr = (state.privilege << 15) | (state.priority << 8) | (state.n << 2) | (state.z << 1) | state.p;
-    state.regs[6] -= 2;
-    state.mem[state.regs[6] + 1] = static_cast<int16_t>(psr);
-    state.mem[state.regs[6]] = static_cast<int16_t>(state.pc);
-
-    // Set up new PSR
-    state.privilege = 0;
-    state.priority = max_priority;
-    state.n = 0;
-    state.z = 0;
-    state.p = 0;
-
-    // Get interrupt vector address contents
-    state.pc = state.mem[0x0100 | max_vector];
-    if (state.interrupt_vector != -1)
-        state.interrupt_vector_stack.push_back(state.interrupt_vector);
-    state.interrupt_vector = max_vector;
+    lc3_do_interrupt(state, max_priority, max_vector);
 
     return true;
 }
@@ -388,6 +393,11 @@ bool lc3_signal_interrupt_once(lc3_state& state, int priority, int vector)
     }
     lc3_signal_interrupt(state, priority, vector);
     return true;
+}
+
+void lc3_signal_exception(lc3_state& state, int vector)
+{
+    lc3_do_interrupt(state, state.priority, vector);
 }
 
 void lc3_tick_plugins(lc3_state& state)
