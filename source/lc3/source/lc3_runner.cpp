@@ -306,7 +306,7 @@ void lc3_do_interrupt(lc3_state& state, int priority, int vector)
     state.privilege = 0;
     state.priority = priority;
     state.n = 0;
-    state.z = 0;
+    state.z = 1;
     state.p = 0;
 
     // Get interrupt vector address contents

@@ -319,8 +319,11 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
                 {
                     // Warning
                     lc3_warning(state, LC3_USER_RTI, 0);
-                    state.halted = 1;
-                    state.pc--;
+                    if (!state.true_traps)
+                    {
+                        state.halted = 1;
+                        state.pc--;
+                    }
                 }
             }
             else
@@ -485,15 +488,10 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             }
             else
             {
-                if (state.interrupt_enabled)
+                // Warning
+                lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data);
+                if (!state.true_traps)
                 {
-                    // Cause an interrupt
-                    lc3_signal_interrupt(state, state.priority, 0x01);
-                }
-                else
-                {
-                    // Warning
-                    lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data);
                     state.halted = 1;
                     state.pc--;
                 }
@@ -502,8 +500,11 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
         default:
             // shouldn't happen.
             lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data);
-            state.halted = 1;
-            state.pc--;
+            if (!state.true_traps)
+            {
+                state.halted = 1;
+                state.pc--;
+            }
             break;
     }
 
@@ -666,11 +667,11 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
                 else
                 {
                     lc3_warning(state, LC3_UNSUPPORTED_TRAP, trap.vector);
-                    state.halted = 1;
-                    state.pc--;
-                    // In case anyone writes a bad interrupt and bad traps.
-                    state.privilege = 1;
-                    state.priority = 0;
+                    if (!state.true_traps)
+                    {
+                        state.halted = 1;
+                        state.pc--;
+                    }
                 }
             }
         }
@@ -854,7 +855,7 @@ void lc3_warning(lc3_state& state, uint32_t warn_id, int16_t arg1, int16_t arg2)
         else if (warn_id == LC3_UNSUPPORTED_INSTRUCTION)
         {
             state.warnings++;
-            lc3_signal_exception(state, INTERRUPT_ACCCESS_CONTROL_VIOLATION);
+            lc3_signal_exception(state, INTERRUPT_ILLEGAL_OPCODE);
         }
         else if (warn_id == LC3_USER_RTI)
         {

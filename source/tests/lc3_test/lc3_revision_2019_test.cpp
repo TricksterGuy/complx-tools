@@ -343,6 +343,97 @@ BOOST_FIXTURE_TEST_CASE(TestTrueTrapsV2, LC3Revision2019Test)
     BOOST_CHECK_EQUAL(val, answers[2]);
 }
 
+BOOST_FIXTURE_TEST_CASE(LC3PrivilegeTest, LC3Revision2019Test)
+{
+    std::istringstream file(
+        ";@version 1\n"
+        ".orig x3000\n"
+        "RTI\n"
+        ".end"
+    );
+
+    lc3_assemble(state, file, options);
+    lc3_set_true_traps(state, true);
+    uint16_t psr = lc3_psr(state);
+
+    state.mem[0x2FFD] = 0;
+    state.regs[6] = static_cast<int16_t>(0xF000);
+
+    lc3_step(state);
+    BOOST_CHECK_EQUAL(state.pc, state.mem[0x0100]);
+    BOOST_CHECK_EQUAL(state.regs[6], 0x2FFE);
+    BOOST_CHECK_EQUAL(static_cast<uint16_t>(state.savedusp), 0xF000);
+    BOOST_CHECK_EQUAL(state.mem[0x2FFE], 0x3001);
+    BOOST_CHECK_EQUAL(static_cast<uint16_t>(state.mem[0x2FFF]), psr);
+    BOOST_CHECK_EQUAL(state.privilege, 0);
+    BOOST_CHECK_EQUAL(state.priority, 0);
+    BOOST_CHECK_EQUAL(state.n, 0);
+    BOOST_CHECK_EQUAL(state.z, 1);
+    BOOST_CHECK_EQUAL(state.p, 0);
+
+}
+
+BOOST_FIXTURE_TEST_CASE(LC3IllegalOpcodeTest, LC3Revision2019Test)
+{
+    std::istringstream file(
+        ";@version 1\n"
+        ".orig x3000\n"
+        ".fill xD000\n"
+        ".end"
+    );
+
+    lc3_assemble(state, file, options);
+    lc3_set_true_traps(state, true);
+    uint16_t psr = lc3_psr(state);
+
+    state.mem[0x2FFD] = 0;
+    state.regs[6] = static_cast<int16_t>(0xF000);
+
+    lc3_step(state);
+    BOOST_CHECK_EQUAL(state.pc, state.mem[0x0101]);
+    BOOST_CHECK_EQUAL(state.regs[6], 0x2FFE);
+    BOOST_CHECK_EQUAL(static_cast<uint16_t>(state.savedusp), 0xF000);
+    BOOST_CHECK_EQUAL(state.mem[0x2FFE], 0x3001);
+    BOOST_CHECK_EQUAL(static_cast<uint16_t>(state.mem[0x2FFF]), psr);
+    BOOST_CHECK_EQUAL(state.privilege, 0);
+    BOOST_CHECK_EQUAL(state.priority, 0);
+    BOOST_CHECK_EQUAL(state.n, 0);
+    BOOST_CHECK_EQUAL(state.z, 1);
+    BOOST_CHECK_EQUAL(state.p, 0);
+
+}
+
+
+BOOST_FIXTURE_TEST_CASE(LC3AccessControlViolationTest, LC3Revision2019Test)
+{
+    std::istringstream file(
+        ";@version 1\n"
+        ".orig x3000\n"
+        "LD R0, -4\n"
+        ".end"
+    );
+
+    lc3_assemble(state, file, options);
+    lc3_set_true_traps(state, true);
+    uint16_t psr = lc3_psr(state);
+
+    state.mem[0x2FFD] = 0;
+    state.regs[6] = static_cast<int16_t>(0xF000);
+
+    lc3_step(state);
+    BOOST_CHECK_EQUAL(state.pc, state.mem[0x0102]);
+    BOOST_CHECK_EQUAL(state.regs[6], 0x2FFE);
+    BOOST_CHECK_EQUAL(static_cast<uint16_t>(state.savedusp), 0xF000);
+    BOOST_CHECK_EQUAL(state.mem[0x2FFE], 0x3001);
+    BOOST_CHECK_EQUAL(static_cast<uint16_t>(state.mem[0x2FFF]), psr);
+    BOOST_CHECK_EQUAL(state.privilege, 0);
+    BOOST_CHECK_EQUAL(state.priority, 0);
+    BOOST_CHECK_EQUAL(state.n, 0);
+    BOOST_CHECK_EQUAL(state.z, 1);
+    BOOST_CHECK_EQUAL(state.p, 0);
+
+}
+
 BOOST_FIXTURE_TEST_CASE(LC3DefaultVersionTest, LC3Revision2019Test)
 {
     std::istringstream file(
