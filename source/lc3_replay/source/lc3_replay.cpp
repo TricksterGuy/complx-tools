@@ -10,12 +10,18 @@
 #include <boost/archive/iterators/insert_linebreaks.hpp>
 #include <boost/archive/iterators/remove_whitespace.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
+#include <boost/crc.hpp>
 
 
 
 void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& replay_string, std::stringstream& newinput);
 
-enum PreconditionFlag
+const size_t HEADER_SIZE = 20;
+const size_t MAGIC = 0x332d636c; // lc-3
+const int MAJOR = 0;
+const int MINOR = 1;
+
+enum class PreconditionFlag
 {
     // True Traps Setting Flag. Default OFF
     TRUE_TRAPS = 1,
@@ -155,6 +161,37 @@ std::string base64_decode(const std::string& str)
     }
 }
 
+uint32_t get_crc(const char* data, size_t length)
+{
+    boost::crc_32_type result;
+    result.process_bytes(data, length);
+    return result.checksum();
+}
+
+std::pair<uint32_t, uint32_t> decode_header(const std::string& header)
+{
+    std::istringstream header_stream(header);
+    BinaryStreamReader hbstream(header_stream);
+
+    unsigned int magic;
+    hbstream >> magic;
+    if (magic != MAGIC)
+        throw "Failed to parse replay string. Header data is not present.";
+
+    unsigned int major, minor;
+    hbstream >> major;
+    hbstream >> minor;
+    if (major != MAJOR)
+        throw "Failed to parse replay string. Replay string version doesn't match.";
+    if (minor > MINOR)
+        throw "Failed to parse replay string. Replay string version is newer.";
+
+    unsigned int size, crc;
+    hbstream >> size;
+    hbstream >> crc;
+    return std::make_pair(size, crc);
+}
+
 std::pair<uint16_t, int> write_data(lc3_state& state, uint16_t address, const std::vector<int16_t>& params, int i = 0)
 {
     while (static_cast<size_t>(i) < params.size())
@@ -286,10 +323,22 @@ void lc3_setup_replay(lc3_state& state, const std::string& filename, const std::
 void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& replay_string, std::stringstream& newinput)
 {
     std::string decoded = base64_decode(replay_string);
+    std::stringstream error;
     if (decoded.empty())
         throw "Failed to parse replay string: " + replay_string;
 
-    std::istringstream stream(decoded);
+    std::string header(decoded.data(), decoded.data() + HEADER_SIZE);
+    auto size_crc = decode_header(header);
+
+    if (decoded.size() != size_crc.first + HEADER_SIZE)
+    {
+        error << "Failed to parse replay string. Internal size doesn't match. Got: " << decoded.size() << " Expected: " << size_crc.first;
+        throw error.str();
+    }
+    if (get_crc(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE) != size_crc.second)
+        throw "Failed to parse replay string. Internal crc doesn't match.";
+
+    std::istringstream stream(std::string(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE));
     BinaryStreamReader bstream(stream);
     bstream.SetMaxStringSize(65536);
     bstream.SetMaxVectorSize(65536);
@@ -302,8 +351,6 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
     bool plugins = true;
     unsigned int break_address = -1;
     int version = 1;
-
-    std::stringstream error;
 
     while (bstream.Ok())
     {
@@ -516,11 +563,23 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
 std::string lc3_describe_replay(const std::string& replay_string)
 {
     std::string decoded = base64_decode(replay_string);
+
     if (decoded.empty())
         throw "Failed to parse replay string: " + replay_string;
 
-    std::istringstream stream(decoded);
+    std::string header(decoded.data(), decoded.data() + HEADER_SIZE);
+    auto size_crc = decode_header(header);
+
+    if (decoded.size() != size_crc.first + HEADER_SIZE)
+        throw "Failed to parse replay string. Internal size doesn't match.";
+    if (get_crc(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE) != size_crc.second)
+        throw "Failed to parse replay string. Internal crc doesn't match.";
+
+    std::istringstream stream(std::string(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE));
     BinaryStreamReader bstream(stream);
+    bstream.SetMaxStringSize(65536);
+    bstream.SetMaxVectorSize(65536);
+
     std::stringstream description;
 
     std::stringstream error;
