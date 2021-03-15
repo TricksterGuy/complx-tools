@@ -13,7 +13,6 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/${META_PROJECT_N
 
 option(OPTION_BUILD_PLUGINS "Build LC-3 Plugins" ON)
 option(OPTION_BUILD_COMPLX "Build complx" ON)
-option(OPTION_BUILD_PYLC3 "Build pyLC3" ON)
 option(OPTION_BUILD_LC3AS "Build lc3as" ON)
 
 # Libraries
@@ -39,11 +38,6 @@ endif(OPTION_BUILD_LC3EDIT)
 if(OPTION_BUILD_COMPLX)
     add_subdirectory(complx)
 endif(OPTION_BUILD_COMPLX)
-
-# Bindings
-if(OPTION_BUILD_PYLC3)
-    add_subdirectory(pylc3)
-endif(OPTION_BUILD_PYLC3)
 
 # Tests
 if(OPTION_BUILD_TESTS)
