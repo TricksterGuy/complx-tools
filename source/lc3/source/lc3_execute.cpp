@@ -8,23 +8,23 @@
 
 const char* WARNING_MESSAGES[LC3_WARNINGS] =
 {
-    "Reading beyond end of input. Halting.",
-    "Writing x%04x to reserved memory at x%04x.",
-    "Reading from reserved memory at x%04x.",
-    "Unsupported Trap x%02x. Assuming Halt.",
-    "Unsupported Instruction x%04x. Halting.",
-    "Malformed Instruction x%04x. Halting.",
-    "RTI executed in user mode. Halting.",
-    "Trying to write invalid character x%04x.",
-    "PUTS called with invalid address x%04x.",
-    "Trying to write to the display when its not ready.",
-    "Trying to read from the keyboard when its not ready.",
-    "Turning off machine via the MCR register.",
-    "PUTSP called with invalid address x%04x",
-    "PUTSP found an unexpected NUL byte at address x%04x.",
-    "Invalid value x%04x loaded into the PSR.",
-    "Executing trap vector table address x%04x.",
-    "Executing interrupt vector table address x%04x."
+    "W%03d: ""Reading beyond end of input. Halting.",
+    "W%03d: ""Writing x%04x to reserved memory at x%04x.",
+    "W%03d: ""Reading from reserved memory at x%04x.",
+    "W%03d: ""Unsupported Trap x%02x. Assuming Halt.",
+    "W%03d: ""Unsupported Instruction x%04x. Halting.",
+    "W%03d: ""Malformed Instruction x%04x. Halting.",
+    "W%03d: ""RTI executed in user mode. Halting.",
+    "W%03d: ""Trying to write invalid character x%04x.",
+    "W%03d: ""PUTS called with invalid address x%04x.",
+    "W%03d: ""Trying to write to the display when its not ready.",
+    "W%03d: ""Trying to read from the keyboard when its not ready.",
+    "W%03d: ""Turning off machine via the MCR register.",
+    "W%03d: ""PUTSP called with invalid address x%04x",
+    "W%03d: ""PUTSP found an unexpected NUL byte at address x%04x.",
+    "W%03d: ""Invalid value x%04x loaded into the PSR.",
+    "W%03d: ""Executing trap vector table address x%04x.",
+    "W%03d: ""Executing interrupt vector table address x%04x.",
 };
 
 lc3_instr lc3_decode(lc3_state& state, uint16_t data)
@@ -328,7 +328,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             }
             else
             {
-                const char bits[8] = {0, 1, 1, 0, 1, 0, 0, 0};
+                const bool bits[8] = {0, 1, 1, 0, 1, 0, 0, 0};
                 // Pop PC and psr
                 state.pc = state.mem[state.regs[6]];
                 uint16_t psr = state.mem[state.regs[6] + 1];
@@ -538,6 +538,12 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
     // Declarations
     uint16_t r0 = state.regs[0];
     bool kernel_mode = (state.pc >= 0x200 && state.pc < 0x3000) || (state.privilege == 0);
+
+    // The only nice thing about the revision is that traps now set PSR[15] to 0 for us.
+    // No need to check the PC's location.
+    if (state.lc3_version != 0)
+        kernel_mode = state.privilege == 0;
+
     // If we are doing true traps.
     if (state.true_traps)
     {
@@ -872,10 +878,8 @@ void lc3_warning(lc3_state& state, uint32_t warn_id, int16_t arg1, int16_t arg2)
     }
 
     char warning[128];
-    std::string msg;
-
-    sprintf(warning, WARNING_MESSAGES[warn_id], static_cast<uint16_t>(arg1), static_cast<uint16_t>(arg2));
-    msg = warning;
+    sprintf(warning, WARNING_MESSAGES[warn_id], warn_id, static_cast<uint16_t>(arg1), static_cast<uint16_t>(arg2));
+    std::string msg = warning;
 
     lc3_warning(state, msg);
 

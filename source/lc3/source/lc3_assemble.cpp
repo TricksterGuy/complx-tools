@@ -74,6 +74,10 @@ std::string LC3AssembleException::form_exception_message() const noexcept
     std::stringstream stream;
     std::string line_str;
 
+    char buf[16];
+    snprintf(buf, 7, "E%03d: ", id);
+    stream << buf;
+
     if (lineno != -1)
     {
         std::stringstream line_stream;
@@ -167,7 +171,7 @@ std::string LC3AssembleException::form_exception_message() const noexcept
                 stream << ex.what() << "\n";
             break;
         case UNKNOWN_ERROR:
-            // fall through
+            [[fallthrough]];
         default:
             stream << "Unknown error found" << line;
             break;
