@@ -13,13 +13,14 @@
 #include <boost/crc.hpp>
 
 
-
 void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& replay_string, std::stringstream& newinput);
 
 const size_t HEADER_SIZE = 20;
 const size_t MAGIC = 0x332d636c; // lc-3
 const int MAJOR = 0;
 const int MINOR = 1;
+
+#define CONTACT " Please verify that you copied the string correctly. Contact course staff for assistance."
 
 enum class PreconditionFlag
 {
@@ -157,7 +158,7 @@ std::string base64_decode(const std::string& str)
     }
     catch (std::exception const& e)
     {
-        return "";
+        throw LC3ReplayStringException(str, "Failed to parse replay string. String is not a valid base64 encoded string. Make sure you copy the full string from the autograder properly.");
     }
 }
 
@@ -176,15 +177,15 @@ std::pair<uint32_t, uint32_t> decode_header(const std::string& header)
     unsigned int magic;
     hbstream >> magic;
     if (magic != MAGIC)
-        throw "Failed to parse replay string. Header data is not present.";
+        throw LC3ReplayStringException(header, "Failed to parse replay string. Header data is not present." CONTACT);
 
     unsigned int major, minor;
     hbstream >> major;
     hbstream >> minor;
     if (major != MAJOR)
-        throw "Failed to parse replay string. Replay string version doesn't match.";
+        throw LC3ReplayStringException(header, "Failed to parse replay string. Replay string version doesn't match." CONTACT);
     if (minor > MINOR)
-        throw "Failed to parse replay string. Replay string version is newer.";
+        throw LC3ReplayStringException(header, "Failed to parse replay string. Replay string version is newer." CONTACT);
 
     unsigned int size, crc;
     hbstream >> size;
@@ -315,7 +316,7 @@ void lc3_setup_replay(lc3_state& state, const std::string& filename, const std::
 
     std::ifstream file(filename.c_str());
     if (!file.good())
-        throw "Could not open " + filename + " for reading";
+        throw LC3ReplayStringException(replay_string, "Could not open " + filename + " for reading");
 
     lc3_setup_replay(state, file, replay_string, newinput);
 }
@@ -324,19 +325,14 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
 {
     std::string decoded = base64_decode(replay_string);
     std::stringstream error;
-    if (decoded.empty())
-        throw "Failed to parse replay string: " + replay_string;
 
     std::string header(decoded.data(), decoded.data() + HEADER_SIZE);
     auto size_crc = decode_header(header);
 
     if (decoded.size() != size_crc.first + HEADER_SIZE)
-    {
-        error << "Failed to parse replay string. Internal size doesn't match. Got: " << decoded.size() << " Expected: " << size_crc.first;
-        throw error.str();
-    }
+        throw LC3ReplayStringException(replay_string, "Failed to parse replay string. Internal size doesn't match." CONTACT);
     if (get_crc(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE) != size_crc.second)
-        throw "Failed to parse replay string. Internal crc doesn't match.";
+        throw LC3ReplayStringException(replay_string, "Failed to parse replay string. Internal crc doesn't match." CONTACT);
 
     std::istringstream stream(std::string(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE));
     BinaryStreamReader bstream(stream);
@@ -361,14 +357,14 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
         auto id = static_cast<PreconditionFlag>(raw_id);
 
         if (!bstream.Ok())
-            throw "Error reading replay string.";
+            throw LC3ReplayStringException(replay_string, "Error reading replay string. Unknown Parse Error" CONTACT);
 
         if (id == PreconditionFlag::END_OF_ENVIRONMENT)
             break;
 
         bstream >> value;
         if (!bstream.Ok())
-            throw "Error reading replay string.";
+            throw LC3ReplayStringException(replay_string, "Error reading replay string. Unknown Parse Error" CONTACT);
 
         switch (id)
         {
@@ -397,8 +393,8 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
                 version = value;
                 break;
             default:
-                error << "Unknown tag found id: " << static_cast<int>(id);
-                throw error.str();
+                error << "Unknown tag found id: " << static_cast<int>(id) << CONTACT;
+                throw LC3ReplayStringException(replay_string, error.str());
         }
     }
 
@@ -424,8 +420,8 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
 
     if (version < 0 || version > 1)
     {
-        error << "Invalid LC-3 Version found version: " << version;
-        throw error.str();
+        error << "Invalid LC-3 Version found version: " << version << CONTACT;
+        throw LC3ReplayStringException(replay_string, error.str());
     }
 
     lc3_set_true_traps(state, true_traps);
@@ -453,17 +449,18 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
         auto id = static_cast<PreconditionFlag>(raw_id);
 
         if (!bstream.Ok())
-            throw "Error reading replay string.";
+            throw LC3ReplayStringException(replay_string, "Error reading replay string. Unknown Parse Error" CONTACT);
 
         if (id == PreconditionFlag::END_OF_INPUT)
             break;
 
         bstream >> label;
         if (!bstream.Ok())
-            throw "Error reading replay string.";
+            throw LC3ReplayStringException(replay_string, "Error reading replay string. Unknown Parse Error" CONTACT);
+
         bstream >> params;
         if (!bstream.Ok())
-            throw "Error reading replay string.";
+            throw LC3ReplayStringException(replay_string, "Error reading replay string. Unknown Parse Error" CONTACT);
 
         uint16_t address;
         int address_calc;
@@ -478,8 +475,8 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
                 address_calc = lc3_sym_lookup(state, label);
                 if (address_calc == -1)
                 {
-                    error << "Symbol " << label << " not found, perhaps you don't have the correct file loaded?";
-                    throw error.str();
+                    error << "Symbol " << label << " was not present in the asm file. Perhaps you don't have the correct file loaded?";
+                    throw LC3ReplayStringException(replay_string, error.str());
                 }
                 address = static_cast<uint16_t>(address_calc);
                 break;
@@ -491,8 +488,8 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
                 address_calc = strtoul(label.c_str(), nullptr, 16);
                 if (address_calc > 0x10000 || address_calc < 0)
                 {
-                    error << "Address " << label << " not inside range for an address.";
-                    throw error.str();
+                    error << "Internal Error: Address " << label << " was not inside range for an address." << CONTACT;
+                    throw LC3ReplayStringException(replay_string, error.str());
                 }
                 address = static_cast<uint16_t>(address_calc);
                 break;
@@ -554,8 +551,8 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
                 write_data(state, address, params);
                 break;
             default:
-                error << "Unknown tag found id: " << static_cast<int>(id);
-                throw error.str();
+                error << "Internal Error: Unknown tag found id: " << static_cast<int>(id) << CONTACT;
+                throw LC3ReplayStringException(replay_string, error.str());
         }
     }
 }
@@ -563,26 +560,21 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
 std::string lc3_describe_replay(const std::string& replay_string)
 {
     std::string decoded = base64_decode(replay_string);
-
-    if (decoded.empty())
-        throw "Failed to parse replay string: " + replay_string;
+    std::stringstream error;
+    std::stringstream description;
 
     std::string header(decoded.data(), decoded.data() + HEADER_SIZE);
     auto size_crc = decode_header(header);
 
     if (decoded.size() != size_crc.first + HEADER_SIZE)
-        throw "Failed to parse replay string. Internal size doesn't match.";
+        throw LC3ReplayStringException(replay_string, "Failed to parse replay string. Internal size doesn't match." CONTACT);
     if (get_crc(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE) != size_crc.second)
-        throw "Failed to parse replay string. Internal crc doesn't match.";
+        throw LC3ReplayStringException(replay_string, "Failed to parse replay string. Internal crc doesn't match." CONTACT);
 
     std::istringstream stream(std::string(decoded.data() + HEADER_SIZE, decoded.size() - HEADER_SIZE));
     BinaryStreamReader bstream(stream);
     bstream.SetMaxStringSize(65536);
     bstream.SetMaxVectorSize(65536);
-
-    std::stringstream description;
-
-    std::stringstream error;
 
     while (bstream.Ok())
     {
@@ -624,8 +616,8 @@ std::string lc3_describe_replay(const std::string& replay_string)
                 description << "LC-3 version: " << value << std::endl;
                 break;
             default:
-                error << "Unknown tag found id: " << static_cast<int>(id);
-                throw error.str();
+                error << "Unknown tag found id: " << static_cast<int>(id) << CONTACT;
+                throw LC3ReplayStringException(replay_string, error.str());
         }
     }
 
@@ -731,8 +723,8 @@ std::string lc3_describe_replay(const std::string& replay_string)
                 description << describe_data(params).first << std::endl;
                 break;
             default:
-                error << "Unknown tag found id: " << static_cast<int>(id);
-                throw error.str();
+                error << "Unknown tag found id: " << static_cast<int>(id) << CONTACT;
+                throw LC3ReplayStringException(replay_string, error.str());
         }
     }
 

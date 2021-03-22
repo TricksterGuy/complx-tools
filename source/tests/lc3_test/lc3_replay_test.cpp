@@ -217,8 +217,6 @@ BOOST_FIXTURE_TEST_CASE(DescribeReplayTestPBR, LC3ReplayTest)
 
     for (unsigned int i = 0; i < lines.size(); i++)
         BOOST_CHECK_EQUAL(lines[i], REPLAY_DESCRIPTIONS_PBR[i]);
-
-
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectMagic, LC3ReplayTest)
@@ -231,7 +229,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectMagic, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), const char*);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion, LC3ReplayTest)
@@ -244,7 +242,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), const char*);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion2, LC3ReplayTest)
@@ -257,7 +255,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion2, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), const char*);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidSize, LC3ReplayTest)
@@ -270,7 +268,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidSize, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), const char*);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidChecksum, LC3ReplayTest)
@@ -283,5 +281,5 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidChecksum, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), const char*);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
 }
