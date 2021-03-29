@@ -1500,9 +1500,9 @@ BOOST_FIXTURE_TEST_CASE(TestBreakpoints, LC3BasicTest)
 {
     state.strict_execution = 0;
     lc3_add_break(state, 0x3012);
-    lc3_add_break(state, 0x3016, "", "1");
-    lc3_add_break(state, 0x3020, "", "0");
-    lc3_add_break(state, 0x3040, "", "1", 3);
+    lc3_add_break(state, 0x3016, "", "", "1");
+    lc3_add_break(state, 0x3020, "", "", "0");
+    lc3_add_break(state, 0x3040, "", "", "1", 3);
     state.mem[0x3060] = (short)0xF025;
 
     lc3_run(state);

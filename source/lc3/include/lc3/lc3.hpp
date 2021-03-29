@@ -359,6 +359,7 @@ struct LC3_API lc3_breakpoint_info
     int32_t hit_count;
     std::string label;
     std::string condition;
+    std::string message;
     bool operator==(const lc3_breakpoint_info& other) const
     {
         return addr == other.addr && condition == other.condition;
@@ -375,6 +376,7 @@ struct LC3_API lc3_watchpoint_info
     int32_t hit_count;
     std::string label;
     std::string condition;
+    std::string message;
     bool operator==(const lc3_watchpoint_info& other) const
     {
         return is_reg == other.is_reg && data == other.data && condition == other.condition;

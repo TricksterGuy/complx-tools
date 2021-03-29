@@ -9,22 +9,24 @@
   * @param state LC3State object.
   * @param symbol Symbol to add breakpoint to.
   * @param label The name for this breakpoint.
+  * @param message The message to print out when the breakpoint is triggered.
   * @param condition If condition evaluates to true, then the breakpoint will stop execution.
   * @param times Hit count. After the breakpoint is hit this number of times it disappears.
   * @return True if there was an error adding the breakpoint false otherwise.
   */
-bool LC3_API lc3_add_break(lc3_state& state, const std::string& symbol, const std::string& label = "", const std::string& condition = "1", int times = -1);
+bool LC3_API lc3_add_break(lc3_state& state, const std::string& symbol, const std::string& label = "", const std::string& message = "", const std::string& condition = "1", int times = -1);
 /** lc3_add_break
   *
   * Adds a breakpoint at the given address.
   * @param state LC3State object.
   * @param addr Address to place the breakpoint.
   * @param label The name for this breakpoint.
+  * @param message The message to print out when the breakpoint is triggered.
   * @param condition If condition evaluates to true, then the breakpoint will stop execution.
   * @param times Hit count. After the breakpoint is hit this number of times it disappears
   * @return True if there was an error adding the breakpoint false otherwise.
   */
-bool LC3_API lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label = "", const std::string& condition = "1", int times = -1);
+bool LC3_API lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label = "", const std::string& message = "", const std::string& condition = "1", int times = -1);
 /** lc3_has_breakpoint
   *
   * Checks if there is a breakpoint at the given symbol.
@@ -49,22 +51,25 @@ bool LC3_API lc3_has_breakpoint(lc3_state& state, uint16_t addr);
   * @param is_reg True if data is referring to a register, otherwise false for a memory address
   * @param data Register number or memory address.
   * @param condition If condition evaluates to true, then the watchpoint will stop execution.
+  * @param label The name for this watchpoint.
+  * @param message The message to print out when the watchpoint is triggered.
   * @param times Hit count. After the watchpoint is hit this number of times it disappears.
   * @return True if there was an error adding the watchpoint false otherwise.
   */
-bool LC3_API lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label = "", int times = -1);
+bool LC3_API lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label = "", const std::string& message = "", int times = -1);
 /** lc3_add_watch
   *
   * Adds a watchpoint at the given symbol.
   * A watch point is a breakpoint on stores to addresses/registers.
   * @param state LC3State object.
   * @param symbol Symbol to associate with the watchpoint.
-  * @param label The name for this watchpoint.
   * @param condition If condition evaluates to true, then the watchpoint will stop execution.
+  * @param label The name for this watchpoint.
+  * @param message The message to print out when the watchpoint is triggered.
   * @param times Hit count. After the watchpoint is hit this number of times it disappears.
   * @return True if there was an error adding the watchpoint false otherwise.
   */
-bool LC3_API lc3_add_watch(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label = "", int times = -1);
+bool LC3_API lc3_add_watch(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label = "", const std::string& message = "", int times = -1);
 /** lc3_has_watch
   *
   * Checks if there is a watchpoint at the given symbol.

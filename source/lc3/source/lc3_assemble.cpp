@@ -1031,10 +1031,10 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
     if (equal_sign_mode)
         parse_params(debug_params, params);
 
-    // break[point] address=address name=label condition=1 times=-1
-    // break[point] address name condition times
-    // watch[point] target=??? name=label condition="0" times=-1
-    // watch[point] target name condition times
+    // break[point] address=address name=label message=msg condition=1 times=-1
+    // break[point] address name message condition times
+    // watch[point] target=??? name=label message=msg condition="0" times=-1
+    // watch[point] target name message condition times
     // subroutine address=address name=label num_params=0
     if (type == std::string("break") && enable_debug_statements)
     {
@@ -1049,6 +1049,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
         {
             uint16_t address;
             std::string name = params.find("name") == params.end() ? "" : params["name"];
+            std::string message = params.find("message") == params.end() ? "" : params["message"];
             std::string condition = params.find("condition") == params.end() ? "1" : params["condition"];
             int times = params.find("times") == params.end() ? -1 : atoi(params["times"].c_str());
 
@@ -1062,27 +1063,32 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             {
                 address = get_sym_imm(params["address"], 16, dummy, true);
             }
-            lc3_add_break(state, address, name, condition, times);
+            lc3_add_break(state, address, name, message, condition, times);
         }
         // If using function call mode
         else
         {
             uint16_t address;
             std::string name;
+            std::string message;
             std::string condition = "1";
             int times = -1;
 
+            ///TODO handle strings. This isn't a simple tokenize function call anymore.
             std::vector<std::string> pieces;
             tokenize(debug_params, pieces, " \t");
-            if (pieces.size() > 4) pieces.resize(4);
+            if (pieces.size() > 5) pieces.resize(5);
 
             switch (pieces.size())
             {
+            case 5:
+                times = atoi(pieces[4].c_str());
+                [[fallthrough]];
             case 4:
-                times = atoi(pieces[3].c_str());
+                condition = pieces[3];
                 [[fallthrough]];
             case 3:
-                condition = pieces[2];
+                message = pieces[2];
                 [[fallthrough]];
             case 2:
                 name = pieces[1];
@@ -1098,7 +1104,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
                 return;
             }
 
-            lc3_add_break(state, address, name, condition, times);
+            lc3_add_break(state, address, name, message, condition, times);
         }
     }
     else if (type == std::string("watch") && enable_debug_statements)
@@ -1116,6 +1122,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             uint16_t data;
             std::string condition = params.find("condition") == params.end() ? "0" : params["condition"];
             std::string name = params.find("name") == params.end() ? "" : params["name"];
+            std::string message = params.find("message") == params.end() ? "" : params["message"];
             int times = params.find("times") == params.end() ? -1 : atoi(params["times"].c_str());
 
             // Address calculation
@@ -1136,7 +1143,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
                 is_reg = false;
                 data = get_sym_imm(params["target"], 16, dummy, true);
             }
-            lc3_add_watch(state, is_reg, data, condition, name, times);
+            lc3_add_watch(state, is_reg, data, condition, name, message, times);
         }
         // If using function call mode
         else
@@ -1145,22 +1152,26 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             uint16_t data = 0;
             std::string condition = "0";
             std::string name;
+            std::string message;
             int times = -1;
 
             std::vector<std::string> pieces;
             tokenize(debug_params, pieces, " \t");
-            if (pieces.size() > 4) pieces.resize(4);
+            if (pieces.size() > 5) pieces.resize(5);
 
             switch (pieces.size())
             {
+            case 5:
+                times = atoi(pieces[4].c_str());
+                [[fallthrough]];
             case 4:
-                times = atoi(pieces[3].c_str());
+                message = pieces[3];
                 [[fallthrough]];
             case 3:
-                name = pieces[1];
+                name = pieces[2];
                 [[fallthrough]];
             case 2:
-                condition = pieces[2];
+                condition = pieces[1];
                 [[fallthrough]];
             case 1:
                 if (pieces[0].size() == 2 && ((pieces[0][0] == 'R' || pieces[0][0] == 'r') &&
@@ -1185,7 +1196,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
                 return;
             }
 
-            lc3_add_watch(state, is_reg, data, condition, name, times);
+            lc3_add_watch(state, is_reg, data, condition, name, message, times);
         }
     }
     else if (type == std::string("subro"))
@@ -1272,6 +1283,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
 void parse_params(const std::string& line, std::unordered_map<std::string, std::string>& params)
 {
     std::vector<std::string> pieces;
+    ///TODO handle string parameters. This isn't a simple tokenize call.
     tokenize(line, pieces, " \t");
     for (const auto& piece : pieces)
     {

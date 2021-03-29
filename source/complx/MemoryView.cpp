@@ -136,7 +136,7 @@ void MemoryView::OnTemporaryBreakpoint(wxCommandEvent& WXUNUSED(event))
     if (!lc3_has_breakpoint(state, address))
     {
         InfoLog("Adding temporary breakpoint at x%04x", address);
-        lc3_add_break(state, address, "", "1", 1);
+        lc3_add_break(state, address, "", "", "1", 1);
     }
     else
     {

@@ -38,15 +38,15 @@ bool lc3_has_watch(lc3_state& state, bool is_reg, uint16_t data)
         return state.mem_watchpoints.find(data) != state.mem_watchpoints.end();
 }
 
-bool lc3_add_break(lc3_state& state, const std::string& symbol, const std::string& label, const std::string& condition, int times)
+bool lc3_add_break(lc3_state& state, const std::string& symbol, const std::string& label, const std::string& message, const std::string& condition, int times)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    return lc3_add_break(state, addr, label, condition, times);
+    return lc3_add_break(state, addr, label, message, condition, times);
 }
 
-bool lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label, const std::string& condition, int times)
+bool lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label, const std::string& message, const std::string& condition, int times)
 {
     if (state.breakpoints.find(addr) != state.breakpoints.end()) return true;
 
@@ -56,6 +56,7 @@ bool lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label, co
     info.max_hits = times;
     info.hit_count = 0;
     info.label = label;
+    info.message = message;
     info.condition = condition;
 
     state.breakpoints[addr] = info;
@@ -63,15 +64,15 @@ bool lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label, co
     return false;
 }
 
-bool lc3_add_watch(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label, int times)
+bool lc3_add_watch(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label, const std::string& message, int times)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    return lc3_add_watch(state, false, addr, condition, label, times);
+    return lc3_add_watch(state, false, addr, condition, label, message, times);
 }
 
-bool lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label, int times)
+bool lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label, const std::string& message, int times)
 {
     if (is_reg)
     {
@@ -91,6 +92,7 @@ bool lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const std::stri
     info.hit_count = 0;
     info.label = label;
     info.condition = condition;
+    info.message = message;
 
     if (is_reg)
         state.reg_watchpoints[data] = info;
