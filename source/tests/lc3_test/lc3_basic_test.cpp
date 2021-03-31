@@ -1499,10 +1499,10 @@ BOOST_FIXTURE_TEST_CASE(TestSymbolTable, LC3BasicTest)
 BOOST_FIXTURE_TEST_CASE(TestBreakpoints, LC3BasicTest)
 {
     state.strict_execution = 0;
-    lc3_add_break(state, 0x3012);
-    lc3_add_break(state, 0x3016, "", "", "1");
-    lc3_add_break(state, 0x3020, "", "", "0");
-    lc3_add_break(state, 0x3040, "", "", "1", 3);
+    lc3_add_breakpoint(state, 0x3012);
+    lc3_add_breakpoint(state, 0x3016, "", "", "1");
+    lc3_add_breakpoint(state, 0x3020, "", "", "0");
+    lc3_add_breakpoint(state, 0x3040, "", "", "1", 3);
     state.mem[0x3060] = (short)0xF025;
 
     lc3_run(state);
@@ -1524,7 +1524,7 @@ BOOST_FIXTURE_TEST_CASE(TestBreakpoints, LC3BasicTest)
         state.pc = 0x3025;
     }
 
-    BOOST_CHECK(lc3_remove_break(state, 0x3040));
+    BOOST_CHECK(lc3_remove_breakpoint(state, 0x3040));
 }
 
 BOOST_FIXTURE_TEST_CASE(InstructionBasicAssembleTest, LC3BasicTest)

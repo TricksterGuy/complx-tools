@@ -436,7 +436,7 @@ void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& r
     options.disable_plugins = !plugins;
     lc3_assemble(state, file, options);
     if (break_address != 0xFFFFFFFF)
-        lc3_add_break(state, break_address);
+        lc3_add_breakpoint(state, break_address);
 
     while (bstream.Ok())
     {

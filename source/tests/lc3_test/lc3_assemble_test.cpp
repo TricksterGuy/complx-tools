@@ -266,6 +266,7 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsBreakpointTest, LC3AssembleTest)
     BOOST_CHECK_EQUAL(first.addr, 0x3000);
     BOOST_CHECK_EQUAL(first.label, "");
     BOOST_CHECK_EQUAL(first.condition, "1");
+    BOOST_CHECK_EQUAL(first.max_hits, -1);
     BOOST_CHECK_EQUAL(first.message, "");
 
     BOOST_CHECK(second.enabled);
@@ -274,6 +275,54 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsBreakpointTest, LC3AssembleTest)
     BOOST_CHECK_EQUAL(second.condition, "R0==3");
     BOOST_CHECK_EQUAL(second.max_hits, 6);
     BOOST_CHECK_EQUAL(second.message, "hey_triggered");
+}
+
+BOOST_FIXTURE_TEST_CASE(DebugCommentsWatchpointTest, LC3AssembleTest)
+{
+    std::istringstream file(
+        ".orig x3000\n"
+        ";@watch"
+        "HALT\n"
+        ";@watch target=R0 condition=R0==3 name=R0three message=R0_is_3 times=6\n"
+        ";@watch target=x3030 condition=1\n"
+        ".end"
+    );
+    lc3_assemble(state, file, options);
+
+    BOOST_REQUIRE(lc3_has_watchpoint(state, false, 0x3000));
+    BOOST_REQUIRE(lc3_has_watchpoint(state, false, 0x3030));
+    BOOST_REQUIRE(lc3_has_watchpoint(state, true, 0));
+
+    BOOST_REQUIRE_EQUAL(state.reg_watchpoints.size(), 1);
+    BOOST_REQUIRE_EQUAL(state.mem_watchpoints.size(), 2);
+
+    const auto& first = state.mem_watchpoints[0x3000];
+    const auto& second = state.mem_watchpoints[0x3030];
+    const auto& third = state.reg_watchpoints[0];
+
+    BOOST_CHECK(first.enabled);
+    BOOST_CHECK_EQUAL(first.is_reg, false);
+    BOOST_CHECK_EQUAL(first.data, 0x3000);
+    BOOST_CHECK_EQUAL(first.label, "");
+    BOOST_CHECK_EQUAL(first.condition, "1");
+    BOOST_CHECK_EQUAL(first.max_hits, -1);
+    BOOST_CHECK_EQUAL(first.message, "");
+
+    BOOST_CHECK(second.enabled);
+    BOOST_CHECK_EQUAL(second.is_reg, false);
+    BOOST_CHECK_EQUAL(second.data, 0x3030);
+    BOOST_CHECK_EQUAL(second.label, "");
+    BOOST_CHECK_EQUAL(second.condition, "1");
+    BOOST_CHECK_EQUAL(second.max_hits, -1);
+    BOOST_CHECK_EQUAL(second.message, "");
+
+    BOOST_CHECK(third.enabled);
+    BOOST_CHECK_EQUAL(third.is_reg, true);
+    BOOST_CHECK_EQUAL(third.data, 0);
+    BOOST_CHECK_EQUAL(third.label, "R0three");
+    BOOST_CHECK_EQUAL(third.condition, "R0==3");
+    BOOST_CHECK_EQUAL(third.max_hits, 6);
+    BOOST_CHECK_EQUAL(third.message, "R0_is_3");
 }
 
 BOOST_FIXTURE_TEST_CASE(InvalidRegisterTest, LC3AssembleTest)

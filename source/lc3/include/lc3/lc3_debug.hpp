@@ -3,7 +3,7 @@
 
 #include "lc3/lc3.hpp"
 
-/** lc3_add_break
+/** lc3_add_breakpoint
   *
   * Adds a breakpoint at the given symbol.
   * @param state LC3State object.
@@ -14,8 +14,8 @@
   * @param times Hit count. After the breakpoint is hit this number of times it disappears.
   * @return True if there was an error adding the breakpoint false otherwise.
   */
-bool LC3_API lc3_add_break(lc3_state& state, const std::string& symbol, const std::string& label = "", const std::string& message = "", const std::string& condition = "1", int times = -1);
-/** lc3_add_break
+bool LC3_API lc3_add_breakpoint(lc3_state& state, const std::string& symbol, const std::string& label = "", const std::string& message = "", const std::string& condition = "1", int times = -1);
+/** lc3_add_breakpoint
   *
   * Adds a breakpoint at the given address.
   * @param state LC3State object.
@@ -26,7 +26,7 @@ bool LC3_API lc3_add_break(lc3_state& state, const std::string& symbol, const st
   * @param times Hit count. After the breakpoint is hit this number of times it disappears
   * @return True if there was an error adding the breakpoint false otherwise.
   */
-bool LC3_API lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label = "", const std::string& message = "", const std::string& condition = "1", int times = -1);
+bool LC3_API lc3_add_breakpoint(lc3_state& state, uint16_t addr, const std::string& label = "", const std::string& message = "", const std::string& condition = "1", int times = -1);
 /** lc3_has_breakpoint
   *
   * Checks if there is a breakpoint at the given symbol.
@@ -43,7 +43,7 @@ bool LC3_API lc3_has_breakpoint(lc3_state& state, const std::string& symbol);
   * @return True if there is a breakpoint at the given address.
   */
 bool LC3_API lc3_has_breakpoint(lc3_state& state, uint16_t addr);
-/** lc3_add_watch
+/** lc3_add_watchpoint
   *
   * Adds a watchpoint at the given address or register.
   * A watch point is a breakpoint on stores to addresses/registers.
@@ -56,8 +56,8 @@ bool LC3_API lc3_has_breakpoint(lc3_state& state, uint16_t addr);
   * @param times Hit count. After the watchpoint is hit this number of times it disappears.
   * @return True if there was an error adding the watchpoint false otherwise.
   */
-bool LC3_API lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label = "", const std::string& message = "", int times = -1);
-/** lc3_add_watch
+bool LC3_API lc3_add_watchpoint(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label = "", const std::string& message = "", int times = -1);
+/** lc3_add_watchpoint
   *
   * Adds a watchpoint at the given symbol.
   * A watch point is a breakpoint on stores to addresses/registers.
@@ -69,16 +69,16 @@ bool LC3_API lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const s
   * @param times Hit count. After the watchpoint is hit this number of times it disappears.
   * @return True if there was an error adding the watchpoint false otherwise.
   */
-bool LC3_API lc3_add_watch(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label = "", const std::string& message = "", int times = -1);
-/** lc3_has_watch
+bool LC3_API lc3_add_watchpoint(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label = "", const std::string& message = "", int times = -1);
+/** lc3_has_watchpoint
   *
   * Checks if there is a watchpoint at the given symbol.
   * @param state LC3State object.
   * @param symbol Symbol to associate with the watchpoint.
   * @return True if there is a watchpoint at the symbol false otherwise
   */
-bool LC3_API lc3_has_watch(lc3_state& state, const std::string& symbol);
-/** lc3_has_watch
+bool LC3_API lc3_has_watchpoint(lc3_state& state, const std::string& symbol);
+/** lc3_has_watchpoint
   *
   * Checks if there is a watchpoint at the given address or register.
   * @param state LC3State object.
@@ -86,7 +86,7 @@ bool LC3_API lc3_has_watch(lc3_state& state, const std::string& symbol);
   * @param data Register number or memory address.
   * @return True if there was a watchpoint at the given address/register false otherwise.
   */
-bool LC3_API lc3_has_watch(lc3_state& state, bool is_reg, uint16_t data);
+bool LC3_API lc3_has_watchpoint(lc3_state& state, bool is_reg, uint16_t data);
 
 /** lc3_add_subroutine
   *
@@ -128,37 +128,37 @@ bool LC3_API lc3_add_subroutine(lc3_state& state, uint16_t address, const std::s
   * @return True if there was an error adding the subroutine false otherwise.
   */
 bool LC3_API lc3_add_subroutine(lc3_state& state, uint16_t address, const std::string& name = "", int num_params = 0);
-/** lc3_remove_break
+/** lc3_remove_breakpoint
   *
   * Removes the breakpoints associated with the symbol.
   * @param state LC3State object.
   * @param symbol Symbol to remove breakpoint from.
   * @return True if there was an error removing the breakpoint false otherwise.
   */
-bool LC3_API lc3_remove_break(lc3_state& state, const std::string& symbol);
-/** lc3_remove_break
+bool LC3_API lc3_remove_breakpoint(lc3_state& state, const std::string& symbol);
+/** lc3_remove_breakpoint
   *
   * Removes the breakpoints associated with the address.
   * @param state LC3State object.
   * @param addr Address to remove breakpoint from.
   * @return True if there was an error removing the breakpoint false otherwise.
   */
-bool LC3_API lc3_remove_break(lc3_state& state, uint16_t addr);
-/** lc3_remove_watch
+bool LC3_API lc3_remove_breakpoint(lc3_state& state, uint16_t addr);
+/** lc3_remove_watchpoint
   *
   * Removes any watchpoints associated with the register/memory address.
   * @param state LC3State object.
   * @param is_reg True if data refers to a register otherwise false for a memory address.
   * @param data Register number or memory address.
   */
-bool LC3_API lc3_remove_watch(lc3_state& state, bool is_reg, uint16_t data);
-/** lc3_remove_watch
+bool LC3_API lc3_remove_watchpoint(lc3_state& state, bool is_reg, uint16_t data);
+/** lc3_remove_watchpoint
   *
   * Removes any watchpoints associated with the symbol.
   * @param state LC3State object.
   * @param symbol symbol to remove watchpoint from
   */
-bool LC3_API lc3_remove_watch(lc3_state& state, const std::string& symbol);
+bool LC3_API lc3_remove_watchpoint(lc3_state& state, const std::string& symbol);
 /** lc3_break_test
   *
   * Tests if we have hit a breakpoint or a watchpoint.

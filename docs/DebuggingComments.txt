@@ -7,44 +7,24 @@ You make comments in your assembly code and when complx loads your file breakpoi
 
 Breakpoints
 ===========
-;@break address=address/symbol name=label condition=1 times=-1
+;@break address=address/symbol name=label message=msg condition=1 times=-1
 
 You may omit one of the parameters if you don't need it defaults are shown these may also appear in any order.
-
-or you can type them in this form
-
-;@break address name condition times
-
-(They must appear exactly in this order.  You can think of this as an overloaded function call where everything is optional. ex if you want to specify times then you have to provide address, name, and condition)
-
 
 Watchpoints
 ===========
 Watch points have similar syntax
 
-;@watch target=address condition="0" name=label times=-1
+;@watch target=address condition="0" name=label message=msg times=-1
 
 Note that condition is most important here as you will always have to specify a condition if you do not then ti will default to false.
-
-;@watch target condition name times
-
-
-Blackboxes
-==========
-Blackboxes which allow you to step over a subroutine that you think its correct (say UDIV)
-you can do these as comments as well
-
-;@blackbox address=address name=label condition=1
-
-The parameters and behavior are the same as above.
-
 
 EXAMPLES
 ========
 ;@break
 
 Without any arguments this will put a normal breakpoint at the current address.
-(i.e. the defaults are address being the current address of where you put the breakpoint, the name is empty string, the condition is 1 for always break, times is -1 for infinite)
+(i.e. the defaults are address being the current address of where you put the breakpoint, the name is an empty string, message is an empty string, the condition is 1 for always break, times is -1 for infinite)
 
 ;@break address=x3010 times=3
 
@@ -57,7 +37,7 @@ This will put a break point at symbol LOL and it will only break if R0 is 25. (L
 ;@watch
 
 Without any arguments this will put a watchpoint at the current address. This is a special case and the condition will be 1 for always let me know. (note that @watch address=x3010 is invalid this will create a watchpoint that will never trigger).
-(i.e. the defaults are the address being the current address of where you put the watchpoint, the name is an empty string, the condition is 1 for always break, times is -1 for infinite).
+(i.e. the defaults are the address being the current address of where you put the watchpoint, the name is an empty string, message is an empty string, the condition is 1 for always break, times is -1 for infinite).
 
 ;@watch target=R0 condition=R0==3 times=3
 

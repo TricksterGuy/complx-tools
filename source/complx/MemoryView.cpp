@@ -136,12 +136,12 @@ void MemoryView::OnTemporaryBreakpoint(wxCommandEvent& WXUNUSED(event))
     if (!lc3_has_breakpoint(state, address))
     {
         InfoLog("Adding temporary breakpoint at x%04x", address);
-        lc3_add_break(state, address, "", "", "1", 1);
+        lc3_add_breakpoint(state, address, "", "", "1", 1);
     }
     else
     {
         InfoLog("Removing breakpoint at x%04x", address);
-        lc3_remove_break(state, address);
+        lc3_remove_breakpoint(state, address);
     }
 }
 
@@ -165,12 +165,12 @@ void MemoryView::OnBreakpoint(wxCommandEvent& WXUNUSED(event))
     if (!lc3_has_breakpoint(state, address))
     {
         InfoLog("Adding breakpoint at x%04x", address);
-        lc3_add_break(state, address);
+        lc3_add_breakpoint(state, address);
     }
     else
     {
         InfoLog("Removing breakpoint at x%04x", address);
-        lc3_remove_break(state, address);
+        lc3_remove_breakpoint(state, address);
     }
 }
 
@@ -190,15 +190,15 @@ void MemoryView::OnWatchpoint(wxCommandEvent& WXUNUSED(event))
 
     auto address = static_cast<uint16_t>(addr);
 
-    if (!lc3_has_watch(state, false, address))
+    if (!lc3_has_watchpoint(state, false, address))
     {
         InfoLog("Adding watchpoint at x%04x", address);
-        lc3_add_watch(state, false, address, "1");
+        lc3_add_watchpoint(state, false, address, "1");
     }
     else
     {
         InfoLog("Removing watchpoint at x%04x", address);
-        lc3_remove_watch(state, false, address);
+        lc3_remove_watchpoint(state, false, address);
     }
 }
 

@@ -994,10 +994,10 @@ void process_version_info(lc3_state& state, const LC3AssembleContext& context)
         THROW(LC3AssembleException(line, version, INVALID_LC3_VERSION, context.lineno));
 }
 
-bool lc3_add_break(const std::string& symbol, const std::string& label = "", const std::string& condition = "1", int times = -1);
-bool lc3_add_break(uint16_t addr, const std::string& label = "", const std::string& condition = "1", int times = -1);
-bool lc3_add_watch(bool is_reg, uint16_t data, const std::string& condition, const std::string& label = "", int times = -1);
-bool lc3_add_watch(const std::string& symbol, const std::string& condition, const std::string& label = "", int times = -1);
+bool lc3_add_breakpoint(const std::string& symbol, const std::string& label = "", const std::string& condition = "1", int times = -1);
+bool lc3_add_breakpoint(uint16_t addr, const std::string& label = "", const std::string& condition = "1", int times = -1);
+bool lc3_add_watchpoint(bool is_reg, uint16_t data, const std::string& condition, const std::string& label = "", int times = -1);
+bool lc3_add_watchpoint(const std::string& symbol, const std::string& condition, const std::string& label = "", int times = -1);
 
 /** process_debug_info
   *
@@ -1034,7 +1034,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
         if (debug_params.empty())
         {
             if (statement.address != 0)
-                lc3_add_break(state, statement.address);
+                lc3_add_breakpoint(state, statement.address);
             return;
         }
         uint16_t address;
@@ -1052,14 +1052,14 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
         else
             address = get_sym_imm(params["address"], 16, dummy, true);
 
-        lc3_add_break(state, address, name, message, condition, times);
+        lc3_add_breakpoint(state, address, name, message, condition, times);
     }
     else if (type == std::string("watch") && enable_debug_statements)
     {
         if (debug_params.empty())
         {
             if (statement.address != 0)
-                lc3_add_watch(state, false, statement.address, "1");
+                lc3_add_watchpoint(state, false, statement.address, "1");
             return;
         }
 
@@ -1088,7 +1088,7 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
             is_reg = false;
             data = get_sym_imm(params["target"], 16, dummy, true);
         }
-        lc3_add_watch(state, is_reg, data, condition, name, message, times);
+        lc3_add_watchpoint(state, is_reg, data, condition, name, message, times);
     }
     else if (type == std::string("subro"))
     {

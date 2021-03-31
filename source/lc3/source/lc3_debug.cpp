@@ -22,15 +22,15 @@ bool lc3_has_breakpoint(lc3_state& state, uint16_t addr)
     return state.breakpoints.find(addr) != state.breakpoints.end();
 }
 
-bool lc3_has_watch(lc3_state& state, const std::string& symbol)
+bool lc3_has_watchpoint(lc3_state& state, const std::string& symbol)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return false;
 
-    return lc3_has_watch(state, false, addr);
+    return lc3_has_watchpoint(state, false, addr);
 }
 
-bool lc3_has_watch(lc3_state& state, bool is_reg, uint16_t data)
+bool lc3_has_watchpoint(lc3_state& state, bool is_reg, uint16_t data)
 {
     if (is_reg)
         return state.reg_watchpoints.find(data) != state.reg_watchpoints.end();
@@ -38,15 +38,15 @@ bool lc3_has_watch(lc3_state& state, bool is_reg, uint16_t data)
         return state.mem_watchpoints.find(data) != state.mem_watchpoints.end();
 }
 
-bool lc3_add_break(lc3_state& state, const std::string& symbol, const std::string& label, const std::string& message, const std::string& condition, int times)
+bool lc3_add_breakpoint(lc3_state& state, const std::string& symbol, const std::string& label, const std::string& message, const std::string& condition, int times)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    return lc3_add_break(state, addr, label, message, condition, times);
+    return lc3_add_breakpoint(state, addr, label, message, condition, times);
 }
 
-bool lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label, const std::string& message, const std::string& condition, int times)
+bool lc3_add_breakpoint(lc3_state& state, uint16_t addr, const std::string& label, const std::string& message, const std::string& condition, int times)
 {
     if (state.breakpoints.find(addr) != state.breakpoints.end()) return true;
 
@@ -64,15 +64,15 @@ bool lc3_add_break(lc3_state& state, uint16_t addr, const std::string& label, co
     return false;
 }
 
-bool lc3_add_watch(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label, const std::string& message, int times)
+bool lc3_add_watchpoint(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label, const std::string& message, int times)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    return lc3_add_watch(state, false, addr, condition, label, message, times);
+    return lc3_add_watchpoint(state, false, addr, condition, label, message, times);
 }
 
-bool lc3_add_watch(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label, const std::string& message, int times)
+bool lc3_add_watchpoint(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label, const std::string& message, int times)
 {
     if (is_reg)
     {
@@ -142,15 +142,15 @@ bool lc3_add_subroutine(lc3_state& state, uint16_t address, const std::string& n
     return false;
 }
 
-bool lc3_remove_break(lc3_state& state, const std::string& symbol)
+bool lc3_remove_breakpoint(lc3_state& state, const std::string& symbol)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    return lc3_remove_break(state, addr);
+    return lc3_remove_breakpoint(state, addr);
 }
 
-bool lc3_remove_break(lc3_state& state, uint16_t addr)
+bool lc3_remove_breakpoint(lc3_state& state, uint16_t addr)
 {
     if (state.breakpoints.find(addr) == state.breakpoints.end()) return true;
 
@@ -159,16 +159,16 @@ bool lc3_remove_break(lc3_state& state, uint16_t addr)
     return false;
 }
 
-bool lc3_remove_watch(lc3_state& state, const std::string& symbol)
+bool lc3_remove_watchpoint(lc3_state& state, const std::string& symbol)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    lc3_remove_watch(state, false, addr);
+    lc3_remove_watchpoint(state, false, addr);
     return false;
 }
 
-bool lc3_remove_watch(lc3_state& state, bool is_reg, uint16_t data)
+bool lc3_remove_watchpoint(lc3_state& state, bool is_reg, uint16_t data)
 {
     if (is_reg)
     {
@@ -216,7 +216,7 @@ bool lc3_break_test(lc3_state& state, const lc3_state_change* changes)
                 if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
                     // Time to delete
                     /// TODO Just disable the breakpoint?
-                    lc3_remove_break(state, state.pc);
+                    lc3_remove_breakpoint(state, state.pc);
             }
         }
     }
@@ -255,7 +255,7 @@ bool lc3_break_test(lc3_state& state, const lc3_state_change* changes)
                     // If we are concerned about the number of times and we have surpassed the max.
                     if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
                         // Time to delete
-                        lc3_remove_watch(state, true, reg);
+                        lc3_remove_watchpoint(state, true, reg);
                 }
             }
         }
@@ -291,7 +291,7 @@ bool lc3_break_test(lc3_state& state, const lc3_state_change* changes)
                     // If we are concerned about the number of times and we have surpassed the max.
                     if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
                         // Time to delete
-                        lc3_remove_watch(state, false, mem);
+                        lc3_remove_watchpoint(state, false, mem);
                 }
             }
         }
@@ -328,7 +328,7 @@ bool lc3_break_test(lc3_state& state, const lc3_state_change* changes)
                     // If we are concerned about the number of times and we have surpassed the max.
                     if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
                         // Time to delete
-                        lc3_remove_watch(state, true, reg);
+                        lc3_remove_watchpoint(state, true, reg);
                 }
             }
         }
