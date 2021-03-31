@@ -45,6 +45,8 @@ public:
     void OnStep(wxCommandEvent& event) override;
     void OnBack(wxCommandEvent& event) override;
 	void OnRun(wxCommandEvent& event) override;
+    //void OnRunFor(wxCommandEvent& event) override;
+    //void OnRunAgain(wxCommandEvent& event) override;
 	void OnStepOver(wxCommandEvent& event) override;
 	void OnBackOver(wxCommandEvent& event) override;
     void OnStepOut(wxCommandEvent& event) override;
@@ -93,8 +95,6 @@ private:
 
     std::unique_ptr<lc3_state> state;
 
-    std::list<MemoryViewFrame*> memory_views;
-
     /** Options used when reloading assembly files */
     LoadingOptions reload_options;
     /** Current execution info*/
@@ -102,6 +102,7 @@ private:
 
     /** Backing data for Memory View */
     wxObjectDataPtr<MemoryViewDataModel> memory_view_model;
+    std::list<MemoryViewFrame*> memory_views;
 
     /** Extra Menu options */
     std::array<wxMenuItem*, 17> cycle_speed_menu_items;
