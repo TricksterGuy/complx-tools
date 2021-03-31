@@ -947,10 +947,10 @@ bool lc3_assemble(const std::string& filename, const std::string& output_prefix,
   */
 void process_plugin_info(lc3_state& state, const LC3AssembleContext& context)
 {
-    // plugin filename=??? vector=x00 address=xFFFF interrupt=x1FF
-    std::string line = context.line.substr(2);
-    size_t index = line.find_first_of(" \t");
-    std::string plugin_params = (index == std::string::npos) ? "" : context.line.substr(index + 1);
+    // ;@plugin filename=??? vector=x00 address=xFFFF interrupt=x1FF
+    std::string line = context.line.substr(8);
+    size_t index = line.find_first_not_of(" \t");
+    std::string plugin_params = (index == std::string::npos) ? "" : line.substr(index);
 
     std::unordered_map<std::string, std::string> params;
     parse_params(plugin_params, params);
@@ -993,11 +993,6 @@ void process_version_info(lc3_state& state, const LC3AssembleContext& context)
     else
         THROW(LC3AssembleException(line, version, INVALID_LC3_VERSION, context.lineno));
 }
-
-bool lc3_add_breakpoint(const std::string& symbol, const std::string& label = "", const std::string& condition = "1", int times = -1);
-bool lc3_add_breakpoint(uint16_t addr, const std::string& label = "", const std::string& condition = "1", int times = -1);
-bool lc3_add_watchpoint(bool is_reg, uint16_t data, const std::string& condition, const std::string& label = "", int times = -1);
-bool lc3_add_watchpoint(const std::string& symbol, const std::string& condition, const std::string& label = "", int times = -1);
 
 /** process_debug_info
   *
@@ -1129,15 +1124,36 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
   */
 void parse_params(const std::string& line, std::unordered_map<std::string, std::string>& params)
 {
-    std::vector<std::string> pieces;
-    ///TODO handle string parameters. This isn't a simple tokenize call.
-    tokenize(line, pieces, " \t");
-    for (const auto& piece : pieces)
+    size_t pos = 0;
+    while (pos != std::string::npos && pos < line.size())
     {
-        size_t index = piece.find('=');
-        if (index == std::string::npos) continue;
-        std::string key = piece.substr(0, index);
-        std::string value = piece.substr(index+1);
-        params[key]=value;
+        pos = line.find_first_not_of(" \t", pos);
+        size_t newpos = line.find_first_of('=', pos);
+
+        if (newpos == std::string::npos)
+            return;
+
+        std::string param = line.substr(pos, newpos - pos);
+
+        size_t endpos;
+        if (line[newpos + 1] == '"')
+        {
+            endpos = line.find_first_of('"', newpos + 2);
+            if (endpos == std::string::npos)
+                return;
+            params[param] = line.substr(newpos + 2, endpos - (newpos + 2));
+        }
+        else
+        {
+            endpos = line.find_first_of(' ', newpos + 1);
+            if (endpos == std::string::npos)
+            {
+                params[param] = line.substr(newpos + 1, std::string::npos);
+                return;
+            }
+            params[param] = line.substr(newpos + 1, endpos - (newpos + 1));
+        }
+
+        pos = endpos + 1;
     }
 }
