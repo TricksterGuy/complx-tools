@@ -1006,10 +1006,7 @@ bool lc3_add_watch(const std::string& symbol, const std::string& condition, cons
 void process_debug_info(lc3_state& state, const debug_statement& statement, bool enable_debug_statements)
 {
     // break[point] address=address name=label condition=1 times=-1
-    // break[point] address name condition times
     // watch[point] target=??? name=label condition="0" times=-1
-    // watch[point] target name condition times
-    // black[box] target=???
     // subro[utine] address=address name=name num_params=0
     // subro[utine] address name num_params
     std::string type = statement.line.substr(0, 5);
@@ -1027,14 +1024,10 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
     size_t index = statement.line.find_first_of(" \t");
     std::string debug_params = (index == std::string::npos) ? "" : statement.line.substr(index + 1);
     std::unordered_map<std::string, std::string> params;
-    bool equal_sign_mode = statement.line.find('=') != std::string::npos;
-    if (equal_sign_mode)
-        parse_params(debug_params, params);
+    parse_params(debug_params, params);
 
     // break[point] address=address name=label message=msg condition=1 times=-1
-    // break[point] address name message condition times
     // watch[point] target=??? name=label message=msg condition="0" times=-1
-    // watch[point] target name message condition times
     // subroutine address=address name=label num_params=0
     if (type == std::string("break") && enable_debug_statements)
     {
@@ -1044,68 +1037,22 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
                 lc3_add_break(state, statement.address);
             return;
         }
-        // If using = sign mode
-        if (equal_sign_mode)
-        {
-            uint16_t address;
-            std::string name = params.find("name") == params.end() ? "" : params["name"];
-            std::string message = params.find("message") == params.end() ? "" : params["message"];
-            std::string condition = params.find("condition") == params.end() ? "1" : params["condition"];
-            int times = params.find("times") == params.end() ? -1 : atoi(params["times"].c_str());
+        uint16_t address;
+        std::string name = params.find("name") == params.end() ? "" : params["name"];
+        std::string message = params.find("message") == params.end() ? "" : params["message"];
+        std::string condition = params.find("condition") == params.end() ? "1" : params["condition"];
+        int times = params.find("times") == params.end() ? -1 : atoi(params["times"].c_str());
 
-            // Address calculation
-            if (params.find("address") == params.end())
-            {
-                if (statement.address == 0) return;
-                address = statement.address;
-            }
-            else
-            {
-                address = get_sym_imm(params["address"], 16, dummy, true);
-            }
-            lc3_add_break(state, address, name, message, condition, times);
+        // Address calculation
+        if (params.find("address") == params.end())
+        {
+            if (statement.address == 0) return;
+            address = statement.address;
         }
-        // If using function call mode
         else
-        {
-            uint16_t address;
-            std::string name;
-            std::string message;
-            std::string condition = "1";
-            int times = -1;
+            address = get_sym_imm(params["address"], 16, dummy, true);
 
-            ///TODO handle strings. This isn't a simple tokenize function call anymore.
-            std::vector<std::string> pieces;
-            tokenize(debug_params, pieces, " \t");
-            if (pieces.size() > 5) pieces.resize(5);
-
-            switch (pieces.size())
-            {
-            case 5:
-                times = atoi(pieces[4].c_str());
-                [[fallthrough]];
-            case 4:
-                condition = pieces[3];
-                [[fallthrough]];
-            case 3:
-                message = pieces[2];
-                [[fallthrough]];
-            case 2:
-                name = pieces[1];
-                [[fallthrough]];
-            case 1:
-                address = get_sym_imm(pieces[0], 16, dummy, true);
-                break;
-            case 0:
-                if (statement.address == 0) return;
-                address = statement.address;
-                break;
-            default: // shouldn't happen
-                return;
-            }
-
-            lc3_add_break(state, address, name, message, condition, times);
-        }
+        lc3_add_break(state, address, name, message, condition, times);
     }
     else if (type == std::string("watch") && enable_debug_statements)
     {
@@ -1115,89 +1062,33 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
                 lc3_add_watch(state, false, statement.address, "1");
             return;
         }
-        // If using = sign mode
-        if (equal_sign_mode)
-        {
-            bool is_reg;
-            uint16_t data;
-            std::string condition = params.find("condition") == params.end() ? "0" : params["condition"];
-            std::string name = params.find("name") == params.end() ? "" : params["name"];
-            std::string message = params.find("message") == params.end() ? "" : params["message"];
-            int times = params.find("times") == params.end() ? -1 : atoi(params["times"].c_str());
 
-            // Address calculation
-            if (params.find("target") == params.end())
-            {
-                if (statement.address == 0) return;
-                data = statement.address;
-                is_reg = false;
-            }
-            else if (params["target"].size() == 2 && ((params["target"][0] == 'R' || params["target"][0] == 'r') &&
-                     params["target"][1] >= '0' && params["target"][1] <= '7'))
-            {
-                is_reg = true;
-                data = params["target"][1] - '0';
-            }
-            else
-            {
-                is_reg = false;
-                data = get_sym_imm(params["target"], 16, dummy, true);
-            }
-            lc3_add_watch(state, is_reg, data, condition, name, message, times);
+        bool is_reg;
+        uint16_t data;
+        std::string condition = params.find("condition") == params.end() ? "0" : params["condition"];
+        std::string name = params.find("name") == params.end() ? "" : params["name"];
+        std::string message = params.find("message") == params.end() ? "" : params["message"];
+        int times = params.find("times") == params.end() ? -1 : atoi(params["times"].c_str());
+
+        // Address calculation
+        if (params.find("target") == params.end())
+        {
+            if (statement.address == 0) return;
+            data = statement.address;
+            is_reg = false;
         }
-        // If using function call mode
+        else if (params["target"].size() == 2 && ((params["target"][0] == 'R' || params["target"][0] == 'r') &&
+                 params["target"][1] >= '0' && params["target"][1] <= '7'))
+        {
+            is_reg = true;
+            data = params["target"][1] - '0';
+        }
         else
         {
-            bool is_reg;
-            uint16_t data = 0;
-            std::string condition = "0";
-            std::string name;
-            std::string message;
-            int times = -1;
-
-            std::vector<std::string> pieces;
-            tokenize(debug_params, pieces, " \t");
-            if (pieces.size() > 5) pieces.resize(5);
-
-            switch (pieces.size())
-            {
-            case 5:
-                times = atoi(pieces[4].c_str());
-                [[fallthrough]];
-            case 4:
-                message = pieces[3];
-                [[fallthrough]];
-            case 3:
-                name = pieces[2];
-                [[fallthrough]];
-            case 2:
-                condition = pieces[1];
-                [[fallthrough]];
-            case 1:
-                if (pieces[0].size() == 2 && ((pieces[0][0] == 'R' || pieces[0][0] == 'r') &&
-                                              pieces[0][1] >= '0' && pieces[0][1] <= '7'))
-                {
-                    data = pieces[0][1] - '0';
-                    is_reg = true;
-                }
-                else
-                {
-                    data = get_sym_imm(pieces[0], 16, dummy, true);
-                    is_reg = false;
-                }
-                break;
-            case 0:
-                if (statement.address == 0) return;
-                data = statement.address;
-                is_reg = false;
-                condition = "1";
-                break;
-            default: // shouldn't happen
-                return;
-            }
-
-            lc3_add_watch(state, is_reg, data, condition, name, message, times);
+            is_reg = false;
+            data = get_sym_imm(params["target"], 16, dummy, true);
         }
+        lc3_add_watch(state, is_reg, data, condition, name, message, times);
     }
     else if (type == std::string("subro"))
     {
@@ -1207,72 +1098,28 @@ void process_debug_info(lc3_state& state, const debug_statement& statement, bool
                 lc3_add_subroutine(state, statement.address);
             return;
         }
-        // If using = sign mode
-        if (equal_sign_mode)
-        {
-            uint16_t address;
-            std::string name = params.find("name") == params.end() ? "" : params["name"];
-            int num_params = params.find("num_params") == params.end() ? 0 : atoi(params["num_params"].c_str());
-            std::string params_str = params.find("params") == params.end() ? "" : params["params"];
-            std::vector<std::string> subr_params;
-            tokenize(params_str, subr_params, ",");
 
-            // Address calculation
-            if (params.find("address") == params.end())
-            {
-                if (statement.address == 0) return;
-                address = statement.address;
-            }
-            else
-            {
-                address = get_sym_imm(params["address"], 16, dummy, true);
-            }
-            if (params_str.empty())
-                lc3_add_subroutine(state, address, name, num_params);
-            else
-                lc3_add_subroutine(state, address, name, subr_params);
+        uint16_t address;
+        std::string name = params.find("name") == params.end() ? "" : params["name"];
+        int num_params = params.find("num_params") == params.end() ? 0 : atoi(params["num_params"].c_str());
+        std::string params_str = params.find("params") == params.end() ? "" : params["params"];
+        std::vector<std::string> subr_params;
+        tokenize(params_str, subr_params, ",");
+
+        // Address calculation
+        if (params.find("address") == params.end())
+        {
+            if (statement.address == 0) return;
+            address = statement.address;
         }
-        // If using function call mode
         else
         {
-            uint16_t address;
-            std::string name;
-            std::string params_str;
-
-            std::vector<std::string> pieces;
-            tokenize(debug_params, pieces, " \t");
-            if (pieces.size() > 3) pieces.resize(3);
-
-            switch (pieces.size())
-            {
-            case 3:
-                params_str = pieces[2];
-                [[fallthrough]];
-            case 2:
-                name = pieces[1];
-                [[fallthrough]];
-            case 1:
-                address = get_sym_imm(pieces[0], 16, dummy, true);
-                break;
-            case 0:
-                if (statement.address == 0) return;
-                address = statement.address;
-                break;
-            default: // shouldn't happen
-                return;
-            }
-
-            if (params_str.empty())
-                lc3_add_subroutine(state, address, name, 0);
-            else if (params_str[0] >= '0' && params_str[0] <= '9')
-                lc3_add_subroutine(state, address, name, atoi(params_str.c_str()));
-            else
-            {
-                std::vector<std::string> subro_params;
-                tokenize(params_str, subro_params, ",");
-                lc3_add_subroutine(state, address, name, subro_params);
-            }
+            address = get_sym_imm(params["address"], 16, dummy, true);
         }
+        if (params_str.empty())
+            lc3_add_subroutine(state, address, name, num_params);
+        else
+            lc3_add_subroutine(state, address, name, subr_params);
     }
 }
 

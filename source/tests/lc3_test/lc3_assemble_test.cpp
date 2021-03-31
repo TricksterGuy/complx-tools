@@ -243,6 +243,39 @@ BOOST_FIXTURE_TEST_CASE(BinaryLiteralTest, LC3AssembleTest)
     BOOST_CHECK_EQUAL(state.mem[0x3006], 0x605F);
 }
 
+BOOST_FIXTURE_TEST_CASE(DebugCommentsBreakpointTest, LC3AssembleTest)
+{
+    std::istringstream file(
+        ".orig x3000\n"
+        ";@break"
+        "HALT\n"
+        ";@break address=x2fff name=backwards condition=R0==3 times=6 message=hey_triggered\n"
+        ".end"
+    );
+    lc3_assemble(state, file, options);
+
+    BOOST_REQUIRE(lc3_has_breakpoint(state, 0x3000));
+    BOOST_REQUIRE(lc3_has_breakpoint(state, 0x2fff));
+
+    BOOST_REQUIRE_EQUAL(state.breakpoints.size(), 2);
+
+    const auto& first = state.breakpoints[0x3000];
+    const auto& second = state.breakpoints[0x2fff];
+
+    BOOST_CHECK(first.enabled);
+    BOOST_CHECK_EQUAL(first.addr, 0x3000);
+    BOOST_CHECK_EQUAL(first.label, "");
+    BOOST_CHECK_EQUAL(first.condition, "1");
+    BOOST_CHECK_EQUAL(first.message, "");
+
+    BOOST_CHECK(second.enabled);
+    BOOST_CHECK_EQUAL(second.addr, 0x2fff);
+    BOOST_CHECK_EQUAL(second.label, "backwards");
+    BOOST_CHECK_EQUAL(second.condition, "R0==3");
+    BOOST_CHECK_EQUAL(second.max_hits, 6);
+    BOOST_CHECK_EQUAL(second.message, "hey_triggered");
+}
+
 BOOST_FIXTURE_TEST_CASE(InvalidRegisterTest, LC3AssembleTest)
 {
     std::istringstream file(
