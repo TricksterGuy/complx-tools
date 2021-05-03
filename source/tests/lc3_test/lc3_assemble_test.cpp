@@ -249,7 +249,7 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsBreakpointTest, LC3AssembleTest)
         ".orig x3000\n"
         ";@break"
         "HALT\n"
-        ";@break address=x2fff name=backwards condition=R0==3 times=6 message=hey_triggered\n"
+        ";@break address=x2fff name=backwards condition=R0==3 times=6 message=\"hey triggered\"\n"
         ".end"
     );
     lc3_assemble(state, file, options);
@@ -274,7 +274,7 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsBreakpointTest, LC3AssembleTest)
     BOOST_CHECK_EQUAL(second.label, "backwards");
     BOOST_CHECK_EQUAL(second.condition, "R0==3");
     BOOST_CHECK_EQUAL(second.max_hits, 6);
-    BOOST_CHECK_EQUAL(second.message, "hey_triggered");
+    BOOST_CHECK_EQUAL(second.message, "hey triggered");
 }
 
 BOOST_FIXTURE_TEST_CASE(DebugCommentsWatchpointTest, LC3AssembleTest)
@@ -283,7 +283,7 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsWatchpointTest, LC3AssembleTest)
         ".orig x3000\n"
         ";@watch"
         "HALT\n"
-        ";@watch target=R0 condition=R0==3 name=R0three message=R0_is_3 times=6\n"
+        ";@watch target=R0 condition=R0==3 name=R0three message=\"R0 is 3\" times=6\n"
         ";@watch target=x3030 condition=1\n"
         ".end"
     );
@@ -322,7 +322,7 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsWatchpointTest, LC3AssembleTest)
     BOOST_CHECK_EQUAL(third.label, "R0three");
     BOOST_CHECK_EQUAL(third.condition, "R0==3");
     BOOST_CHECK_EQUAL(third.max_hits, 6);
-    BOOST_CHECK_EQUAL(third.message, "R0_is_3");
+    BOOST_CHECK_EQUAL(third.message, "R0 is 3");
 }
 
 BOOST_FIXTURE_TEST_CASE(InvalidRegisterTest, LC3AssembleTest)
