@@ -1524,7 +1524,24 @@ BOOST_FIXTURE_TEST_CASE(TestBreakpoints, LC3BasicTest)
         state.pc = 0x3025;
     }
 
-    BOOST_CHECK(lc3_remove_breakpoint(state, 0x3040));
+    const auto& breakpoint = state.breakpoints[0x3040];
+    BOOST_CHECK(!breakpoint.enabled);
+}
+
+BOOST_FIXTURE_TEST_CASE(TestBreakpointMessages, LC3BasicTest)
+{
+    state.strict_execution = 0;
+    lc3_add_breakpoint(state, 0x3001, "", "{{PC}} R0 is {{R0}} ok {{R0==1}}");
+    std::ostringstream out;
+    state.debug = &out;
+
+    state.regs[0] = 3;
+    lc3_run(state);
+
+    BOOST_REQUIRE_EQUAL(state.pc, 0x3001);
+    auto& breakpoint = state.breakpoints[0x3001];
+    BOOST_REQUIRE_EQUAL(breakpoint.hit_count, 1);
+    BOOST_CHECK_EQUAL(out.str(), "12289 R0 is 3 ok 0");
 }
 
 BOOST_FIXTURE_TEST_CASE(InstructionBasicAssembleTest, LC3BasicTest)

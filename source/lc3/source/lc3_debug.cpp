@@ -38,24 +38,24 @@ bool lc3_has_watchpoint(lc3_state& state, bool is_reg, uint16_t data)
         return state.mem_watchpoints.find(data) != state.mem_watchpoints.end();
 }
 
-bool lc3_add_breakpoint(lc3_state& state, const std::string& symbol, const std::string& label, const std::string& message, const std::string& condition, int times)
+bool lc3_add_breakpoint(lc3_state& state, const std::string& symbol, const std::string& name, const std::string& message, const std::string& condition, int times)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    return lc3_add_breakpoint(state, addr, label, message, condition, times);
+    return lc3_add_breakpoint(state, addr, name, message, condition, times);
 }
 
-bool lc3_add_breakpoint(lc3_state& state, uint16_t addr, const std::string& label, const std::string& message, const std::string& condition, int times)
+bool lc3_add_breakpoint(lc3_state& state, uint16_t addr, const std::string& name, const std::string& message, const std::string& condition, int times)
 {
     if (state.breakpoints.find(addr) != state.breakpoints.end()) return true;
 
-    lc3_breakpoint_info info;
+    lc3_debug_info info;
     info.enabled = true;
-    info.addr = addr;
+    info.target = lc3_breakpoint_target{addr};
     info.max_hits = times;
     info.hit_count = 0;
-    info.label = label;
+    info.name = name;
     info.message = message;
     info.condition = condition;
 
@@ -64,15 +64,15 @@ bool lc3_add_breakpoint(lc3_state& state, uint16_t addr, const std::string& labe
     return false;
 }
 
-bool lc3_add_watchpoint(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& label, const std::string& message, int times)
+bool lc3_add_watchpoint(lc3_state& state, const std::string& symbol, const std::string& condition, const std::string& name, const std::string& message, int times)
 {
     int addr = lc3_sym_lookup(state, symbol);
     if (addr == -1) return true;
 
-    return lc3_add_watchpoint(state, false, addr, condition, label, message, times);
+    return lc3_add_watchpoint(state, false, addr, condition, name, message, times);
 }
 
-bool lc3_add_watchpoint(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& label, const std::string& message, int times)
+bool lc3_add_watchpoint(lc3_state& state, bool is_reg, uint16_t data, const std::string& condition, const std::string& name, const std::string& message, int times)
 {
     if (is_reg)
     {
@@ -84,13 +84,12 @@ bool lc3_add_watchpoint(lc3_state& state, bool is_reg, uint16_t data, const std:
         return true;
     }
 
-    lc3_watchpoint_info info;
+    lc3_debug_info info;
     info.enabled = true;
-    info.is_reg = is_reg;
-    info.data = data;
+    info.target = lc3_watchpoint_target{is_reg, data};
     info.max_hits = times;
     info.hit_count = 0;
-    info.label = label;
+    info.name = name;
     info.condition = condition;
     info.message = message;
 
@@ -184,154 +183,120 @@ bool lc3_remove_watchpoint(lc3_state& state, bool is_reg, uint16_t data)
     return false;
 }
 
+std::string form_debug_message(lc3_state& state, lc3_debug_info& info)
+{
+    std::string_view message = info.message;
+
+    std::stringstream msg;
+    size_t i = 0;
+    while (i < message.size())
+    {
+        size_t n = message.find_first_of("{{", i);
+        msg << message.substr(i, n - i);
+        if (n == std::string_view::npos)
+            break;
+        size_t z = message.find_first_of("}}", n);
+        if (z == std::string_view::npos)
+        {
+            msg << message.substr(n);
+            break;
+        }
+
+        try
+        {
+            msg << lc3_calculate(state, message.substr(n + 2, z - (n + 2)));
+        }
+        catch (const LC3CalculateException& e)
+        {
+            std::stringstream msg;
+            msg << info.target_string() << " name: " << info.name << " " << e.what() << "\nHalting processor.";
+            lc3_warning(state, msg.str());
+            state.halted = 1;
+            state.pc--;
+            return "";
+        }
+
+        i = z + 2;
+    }
+
+    return msg.str();
+}
+
+void lc3_break_eval(lc3_state& state, lc3_debug_info& info)
+{
+        int triggered = 0;
+        try
+        {
+            triggered = lc3_calculate(state, info.condition);
+        }
+        catch (const LC3CalculateException& e)
+        {
+            std::stringstream msg;
+            msg << info.target_string() << " name: " << info.name << " " << e.what() << "\nHalting processor.";
+            lc3_warning(state, msg.str());
+            state.halted = 1;
+            state.pc--;
+            return;
+        }
+
+        if (triggered)
+        {
+            state.halted = 1;
+            info.hit_count++;
+
+            if (state.debug)
+                (*state.debug) << form_debug_message(state, info);
+
+            if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
+                info.enabled = false;
+        }
+}
+
+
 bool lc3_break_test(lc3_state& state, const lc3_state_change* changes)
 {
     // Test for breakpoints
-    if (state.breakpoints.find(state.pc) != state.breakpoints.end())
-    {
-        lc3_breakpoint_info& info = state.breakpoints[state.pc];
-        if (info.enabled)
-        {
-            int boolean = 0;
-            try
-            {
-                boolean = lc3_calculate(state, info.condition);
-            }
-            catch (const LC3CalculateException& e)
-            {
-                std::stringstream msg;
-                msg << "Breakpoint address: x" << std::hex << state.pc << " name: " << info.label << " " << e.what() << "\nHalting processor.";
-                lc3_warning(state, msg.str());
-                state.halted = 1;
-                state.pc--;
-                return true;
-            }
-
-            if (boolean)
-            {
-                // Halt
-                state.halted = 1;
-                info.hit_count++;
-                // If we are concerned about the number of times and we have surpassed the max.
-                if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
-                    // Time to delete
-                    /// TODO Just disable the breakpoint?
-                    lc3_remove_breakpoint(state, state.pc);
-            }
-        }
-    }
+    const auto& breakpoint = state.breakpoints.find(state.pc);
+    if (breakpoint != state.breakpoints.end())
+        lc3_break_eval(state, breakpoint->second);
 
     // Test for watchpoints
-    bool r7changed = state.regs[7] != changes->r7;
-    // Have we modified a register or a memory address?
     if (changes->changes == LC3_REGISTER_CHANGE)
     {
-        int reg = changes->location;
-        if (state.reg_watchpoints.find(reg) != state.reg_watchpoints.end())
-        {
-            lc3_watchpoint_info& info = state.reg_watchpoints[reg];
-            if (info.enabled)
-            {
-                int boolean = 0;
-                try
-                {
-                    boolean = lc3_calculate(state, info.condition);
-                }
-                catch (const LC3CalculateException& e)
-                {
-                    std::stringstream msg;
-                    msg << "Watchpoint target: R" << info.data << " name: " << info.label << " " << e.what() << "\nHalting processor.";
-                    lc3_warning(state, msg.str());
-                    state.halted = 1;
-                    state.pc--;
-                    return true;
-                }
-
-                if (boolean)
-                {
-                    // Halt
-                    state.halted = 1;
-                    info.hit_count++;
-                    // If we are concerned about the number of times and we have surpassed the max.
-                    if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
-                        // Time to delete
-                        lc3_remove_watchpoint(state, true, reg);
-                }
-            }
-        }
+        const auto& watchpoint = state.reg_watchpoints.find(changes->location);
+        if (watchpoint != state.reg_watchpoints.end())
+            lc3_break_eval(state, watchpoint->second);
     }
     else if (changes->changes == LC3_MEMORY_CHANGE)
     {
-        int mem = changes->location;
-        if (state.mem_watchpoints.find(mem) != state.mem_watchpoints.end())
+        const auto& watchpoint = state.mem_watchpoints.find(changes->location);
+        if (watchpoint != state.mem_watchpoints.end())
+            lc3_break_eval(state, watchpoint->second);
+    }
+    else if (changes->changes == LC3_MULTI_CHANGE)
+    {
+        for (const auto& info : changes->info)
         {
-            lc3_watchpoint_info& info = state.mem_watchpoints[mem];
-            if (info.enabled)
+            if (info.is_reg)
             {
-                int boolean = 0;
-                try
-                {
-                    boolean = lc3_calculate(state, info.condition);
-                }
-                catch (const LC3CalculateException& e)
-                {
-                    std::stringstream msg;
-                    msg << "Watchpoint target: x" << std::hex << info.data << " name: " << info.label << " " << e.what() << "\nHalting processor.";
-                    lc3_warning(state, msg.str());
-                    state.halted = 1;
-                    state.pc--;
-                    return true;
-                }
-
-                if (boolean)
-                {
-                    // Halt
-                    state.halted = 1;
-                    info.hit_count++;
-                    // If we are concerned about the number of times and we have surpassed the max.
-                    if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
-                        // Time to delete
-                        lc3_remove_watchpoint(state, false, mem);
-                }
+                const auto& watchpoint = state.reg_watchpoints.find(info.location);
+                if (watchpoint != state.reg_watchpoints.end())
+                    lc3_break_eval(state, watchpoint->second);
+            }
+            else
+            {
+                const auto& watchpoint = state.mem_watchpoints.find(info.location);
+                if (watchpoint != state.mem_watchpoints.end())
+                    lc3_break_eval(state, watchpoint->second);
             }
         }
     }
 
-    // Also handle r7 changes.
-    if (r7changed)
+    if (state.regs[7] != changes->r7)
     {
-        int reg = 7;
-        if (state.reg_watchpoints.find(reg) != state.reg_watchpoints.end())
-        {
-            lc3_watchpoint_info& info = state.reg_watchpoints[reg];
-            if (info.enabled)
-            {
-                int boolean = 0;
-                try
-                {
-                    boolean = lc3_calculate(state, info.condition);
-                }
-                catch (const LC3CalculateException& e)
-                {
-                    std::stringstream msg;
-                    msg << "Watchpoint target R7 name: " << info.label << " " << e.what() << "\nHalting processor.";
-                    lc3_warning(state, msg.str());
-                    state.halted = 1;
-                    state.pc--;
-                    return true;
-                }
-                if (boolean)
-                {
-                    // Halt
-                    state.halted = 1;
-                    info.hit_count++;
-                    // If we are concerned about the number of times and we have surpassed the max.
-                    if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
-                        // Time to delete
-                        lc3_remove_watchpoint(state, true, reg);
-                }
-            }
-        }
+        const auto& watchpoint = state.reg_watchpoints.find(7);
+        if (watchpoint != state.reg_watchpoints.end())
+            lc3_break_eval(state, watchpoint->second);
     }
 
     return state.halted;

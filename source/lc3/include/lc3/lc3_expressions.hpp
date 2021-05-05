@@ -17,7 +17,7 @@ int get_mem(bool, int);
 class LC3_API LC3CalculateException : public std::exception
 {
 public:
-    LC3CalculateException(const std::string& expr, unsigned int error_id);
+    LC3CalculateException(std::string_view expr, unsigned int error_id);
     const char* what() const noexcept override { return message.c_str(); }
     unsigned int get_id() const { return id; }
 private:
@@ -36,7 +36,7 @@ private:
   * @return Return value
   * @throws LC3CalculateException if an error occurs.
   */
-int LC3_API lc3_calculate(lc3_state& state, const std::string& expr);
+int LC3_API lc3_calculate(lc3_state& state, std::string_view expr);
 
 /** lc3_int_eval
   *

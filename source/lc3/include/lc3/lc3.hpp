@@ -11,7 +11,9 @@
 #include <list>
 #include <memory>
 #include <random>
+#include <sstream>
 #include <string>
+#include <variant>
 #include <vector>
 #include <unordered_map>
 
@@ -350,36 +352,57 @@ struct LC3_API lc3_change_info
     uint16_t value;
 };
 
-/** Record of stats for a breakpoint. */
-struct LC3_API lc3_breakpoint_info
+struct LC3_API lc3_breakpoint_target
 {
-    bool enabled;
-    uint16_t addr;
-    int32_t max_hits;
-    int32_t hit_count;
-    std::string label;
-    std::string condition;
-    std::string message;
-    bool operator==(const lc3_breakpoint_info& other) const
-    {
-        return addr == other.addr && condition == other.condition;
-    }
+    uint16_t address;
+    bool operator==(const lc3_breakpoint_target& other) const {return address == other.address;}
 };
 
-/** Record of stats for a watchpoint. */
-struct LC3_API lc3_watchpoint_info
+struct LC3_API lc3_watchpoint_target
+{
+    bool is_reg;
+    uint16_t target;
+    bool operator==(const lc3_watchpoint_target& other) const {return target == other.target && is_reg == other.is_reg;}
+};
+
+/** Record of stats for a breakpoint/watchpoint. */
+struct LC3_API lc3_debug_info
 {
     bool enabled;
-    bool is_reg;
-    uint16_t data;
+    std::variant<std::monostate, lc3_breakpoint_target, lc3_watchpoint_target> target;
     int32_t max_hits;
     int32_t hit_count;
-    std::string label;
+    std::string name;
     std::string condition;
     std::string message;
-    bool operator==(const lc3_watchpoint_info& other) const
+    bool is_breakpoint() const {return std::holds_alternative<lc3_breakpoint_target>(target);}
+    bool is_watchpoint() const {return std::holds_alternative<lc3_watchpoint_target>(target);}
+    std::string target_string() const
     {
-        return is_reg == other.is_reg && data == other.data && condition == other.condition;
+        std::stringstream msg;
+        if (is_breakpoint())
+        {
+            auto& breakpoint_info = std::get<lc3_breakpoint_target>(target);
+            msg << "Breakpoint address: x" << std::hex << breakpoint_info.address;
+        }
+        else if (is_watchpoint())
+        {
+            auto& watchpoint_info = std::get<lc3_watchpoint_target>(target);
+            msg << "Watchpoint target: ";
+            if (watchpoint_info.is_reg)
+                msg << "R" << watchpoint_info.target;
+            else
+                msg << "x" << std::hex << watchpoint_info.target;
+        }
+        else
+        {
+            msg << "Unknown debug type";
+        }
+        return msg.str();
+    }
+    bool operator==(const lc3_debug_info& other) const
+    {
+        return target == other.target && condition == other.condition;
     }
 };
 
@@ -516,6 +539,9 @@ struct LC3_API lc3_state
     // Function to write one character to stream
     std::function<int32_t(lc3_state&, std::ostream&, int32_t)> writer;
 
+    // Stream for debug messages
+    std::ostream* debug = nullptr;
+
     // Stream for warnings
     std::ostream* warning;
 
@@ -566,9 +592,9 @@ struct LC3_API lc3_state
     uint32_t keyboard_int_counter; // Counter for the above delay.
 
     // Debugging information.
-    std::unordered_map<uint16_t, lc3_breakpoint_info> breakpoints;
-    std::unordered_map<uint16_t, lc3_watchpoint_info> mem_watchpoints;
-    std::unordered_map<uint16_t, lc3_watchpoint_info> reg_watchpoints;
+    std::unordered_map<uint16_t, lc3_debug_info> breakpoints;
+    std::unordered_map<uint16_t, lc3_debug_info> mem_watchpoints;
+    std::unordered_map<uint8_t , lc3_debug_info> reg_watchpoints;
     std::unordered_map<uint16_t, std::string> comments;
     std::unordered_map<uint16_t, lc3_subroutine_info> subroutines;
 
@@ -578,7 +604,7 @@ struct LC3_API lc3_state
     uint64_t total_writes;
 
     // Trace logging
-    std::ostream* trace;
+    std::ostream* trace = nullptr;
 
     // test_only mode
     // The only effect is that it records the first level subroutine/trap calls.

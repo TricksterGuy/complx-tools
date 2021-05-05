@@ -41,7 +41,7 @@ namespace ExpressionEvaluator
         EVAL_FUNCTION = 1
     };
 
-    int Calculate(const std::string& expr, int &r);
+    int Calculate(std::string_view expr, int &r);
 
 }
 

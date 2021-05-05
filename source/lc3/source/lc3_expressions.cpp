@@ -108,7 +108,7 @@ int lc3_get_symbol(const std::string& symbol, bool hasref, int ref, int& error)
         return static_cast<uint16_t>(addr);
 }
 
-LC3CalculateException::LC3CalculateException(const std::string& expr, unsigned int error_id) : expression(expr), id(error_id)
+LC3CalculateException::LC3CalculateException(std::string_view expr, unsigned int error_id) : expression(expr), id(error_id)
 {
     message = form_error_message();
 }
@@ -143,7 +143,7 @@ std::string LC3CalculateException::form_error_message() const noexcept
 }
 
 
-int lc3_calculate(lc3_state& state, const std::string& expr)
+int lc3_calculate(lc3_state& state, std::string_view expr)
 {
     static int lazy_load = 1;
 

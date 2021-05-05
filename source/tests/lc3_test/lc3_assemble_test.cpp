@@ -263,15 +263,17 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsBreakpointTest, LC3AssembleTest)
     const auto& second = state.breakpoints[0x2fff];
 
     BOOST_CHECK(first.enabled);
-    BOOST_CHECK_EQUAL(first.addr, 0x3000);
-    BOOST_CHECK_EQUAL(first.label, "");
+    auto first_target = std::get<lc3_breakpoint_target>(first.target);
+    BOOST_CHECK_EQUAL(first_target.address, 0x3000);
+    BOOST_CHECK_EQUAL(first.name, "");
     BOOST_CHECK_EQUAL(first.condition, "1");
     BOOST_CHECK_EQUAL(first.max_hits, -1);
     BOOST_CHECK_EQUAL(first.message, "");
 
     BOOST_CHECK(second.enabled);
-    BOOST_CHECK_EQUAL(second.addr, 0x2fff);
-    BOOST_CHECK_EQUAL(second.label, "backwards");
+    auto second_target = std::get<lc3_breakpoint_target>(second.target);
+    BOOST_CHECK_EQUAL(second_target.address, 0x2fff);
+    BOOST_CHECK_EQUAL(second.name, "backwards");
     BOOST_CHECK_EQUAL(second.condition, "R0==3");
     BOOST_CHECK_EQUAL(second.max_hits, 6);
     BOOST_CHECK_EQUAL(second.message, "hey triggered");
@@ -301,25 +303,28 @@ BOOST_FIXTURE_TEST_CASE(DebugCommentsWatchpointTest, LC3AssembleTest)
     const auto& third = state.reg_watchpoints[0];
 
     BOOST_CHECK(first.enabled);
-    BOOST_CHECK_EQUAL(first.is_reg, false);
-    BOOST_CHECK_EQUAL(first.data, 0x3000);
-    BOOST_CHECK_EQUAL(first.label, "");
+    auto first_target = std::get<lc3_watchpoint_target>(first.target);
+    BOOST_CHECK_EQUAL(first_target.is_reg, false);
+    BOOST_CHECK_EQUAL(first_target.target, 0x3000);
+    BOOST_CHECK_EQUAL(first.name, "");
     BOOST_CHECK_EQUAL(first.condition, "1");
     BOOST_CHECK_EQUAL(first.max_hits, -1);
     BOOST_CHECK_EQUAL(first.message, "");
 
     BOOST_CHECK(second.enabled);
-    BOOST_CHECK_EQUAL(second.is_reg, false);
-    BOOST_CHECK_EQUAL(second.data, 0x3030);
-    BOOST_CHECK_EQUAL(second.label, "");
+    auto second_target = std::get<lc3_watchpoint_target>(second.target);
+    BOOST_CHECK_EQUAL(second_target.is_reg, false);
+    BOOST_CHECK_EQUAL(second_target.target, 0x3030);
+    BOOST_CHECK_EQUAL(second.name, "");
     BOOST_CHECK_EQUAL(second.condition, "1");
     BOOST_CHECK_EQUAL(second.max_hits, -1);
     BOOST_CHECK_EQUAL(second.message, "");
 
     BOOST_CHECK(third.enabled);
-    BOOST_CHECK_EQUAL(third.is_reg, true);
-    BOOST_CHECK_EQUAL(third.data, 0);
-    BOOST_CHECK_EQUAL(third.label, "R0three");
+    auto third_target = std::get<lc3_watchpoint_target>(third.target);
+    BOOST_CHECK_EQUAL(third_target.is_reg, true);
+    BOOST_CHECK_EQUAL(third_target.target, 0);
+    BOOST_CHECK_EQUAL(third.name, "R0three");
     BOOST_CHECK_EQUAL(third.condition, "R0==3");
     BOOST_CHECK_EQUAL(third.max_hits, 6);
     BOOST_CHECK_EQUAL(third.message, "R0 is 3");

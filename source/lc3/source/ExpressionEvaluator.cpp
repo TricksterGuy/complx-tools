@@ -105,7 +105,7 @@ int EvaluateOperand(const string&, int&);
 // Returns < 0 if 'op' is not an operator
 // Otherwise it returns the index of the operator in the 'operators' array
 // The index can be used to get the operator's precedence value.
-int isOperator(const string& op)
+int isOperator(std::string_view op)
 {
     unsigned int i = 0;
     int oplen = 0;
@@ -139,7 +139,7 @@ int isOperator(const string& op)
 
 // returns the operands length.
 // scans as long as the current value is an alphanumeric or []
-int getToken(const string& str)
+int getToken(std::string_view str)
 {
     unsigned int i=0;
     int tokenLen = 0;
@@ -155,7 +155,7 @@ int getToken(const string& str)
     return depth == 0 ? tokenLen : 0;
 }
 
-int toRPN(const string& exp, string& rpn)
+int toRPN(std::string_view exp, string& rpn)
 {
     std::stack<string> st;
     string token, topToken;
@@ -379,7 +379,7 @@ int evaluateRPN(const string& rpn, int& result)
     return eval_ok;
 }
 
-int Calculate(const string& expr, int &r)
+int Calculate(std::string_view expr, int &r)
 {
     string rpn;
     int err = eval_evalerr; // unexpected error
