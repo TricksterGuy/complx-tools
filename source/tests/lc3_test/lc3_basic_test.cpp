@@ -1541,7 +1541,7 @@ BOOST_FIXTURE_TEST_CASE(TestBreakpointMessages, LC3BasicTest)
     BOOST_REQUIRE_EQUAL(state.pc, 0x3001);
     auto& breakpoint = state.breakpoints[0x3001];
     BOOST_REQUIRE_EQUAL(breakpoint.hit_count, 1);
-    BOOST_CHECK_EQUAL(out.str(), "12289 R0 is 3 ok 0");
+    BOOST_CHECK_EQUAL(out.str(), "12289 R0 is 3 ok 0\n");
 }
 
 BOOST_FIXTURE_TEST_CASE(InstructionBasicAssembleTest, LC3BasicTest)
