@@ -183,7 +183,7 @@ bool lc3_remove_watchpoint(lc3_state& state, bool is_reg, uint16_t data)
     return false;
 }
 
-std::string form_debug_message(lc3_state& state, lc3_debug_info& info)
+static std::string form_debug_message(lc3_state& state, lc3_debug_info& info)
 {
     std::string_view message = info.message;
 
@@ -245,7 +245,7 @@ void lc3_break_eval(lc3_state& state, lc3_debug_info& info)
             info.hit_count++;
 
             if (state.debug)
-                (*state.debug) << form_debug_message(state, info);
+                (*state.debug) << form_debug_message(state, info) << "\n";
 
             if (info.max_hits >= 0 && info.hit_count >= info.max_hits)
                 info.enabled = false;
