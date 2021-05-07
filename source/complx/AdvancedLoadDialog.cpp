@@ -64,6 +64,10 @@ LoadingOptions AdvancedLoadDialog::GetOptions()
         case 2:
             options.registers = static_cast<ValueInitializationMethod>(ParseIntegralValueOrDie(regFill));
             break;
+        default:
+            WarnLog("Unknown register initialization option given %d", regInitializer);
+            options.registers = RANDOMIZE;
+            break;
     }
 
     switch(memInitializer)
@@ -76,6 +80,10 @@ LoadingOptions AdvancedLoadDialog::GetOptions()
             break;
         case 2:
             options.memory = static_cast<ValueInitializationMethod>(ParseIntegralValueOrDie(memFill));
+            break;
+        default:
+            WarnLog("Unknown memory initialization option given %d", regInitializer);
+            options.memory = RANDOMIZE;
             break;
     }
 
