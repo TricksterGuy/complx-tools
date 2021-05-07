@@ -40,8 +40,7 @@ void ProcessStatusRegisterProperty::RefreshDisplayedValue()
     }
     else if (mode == DisplayAsPSR)
     {
-        uint16_t psr = (state.privilege << 15) | (state.priority << 8) | (state.n << 2) | (state.z << 1) | state.p;
-        SetValue(wxString::Format("x%04x", psr));
+        SetValue(wxString::Format("x%04x", lc3_psr(state)));
     }
 }
 
