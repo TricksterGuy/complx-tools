@@ -2,7 +2,7 @@
 # External dependencies
 #
 
-find_package(Boost COMPONENTS serialization QUIET)
+find_package(Boost COMPONENTS serialization iostreams QUIET)
 
 #
 # Library name and options
@@ -14,6 +14,9 @@ set(target lc3_replay)
 # Exit here if required dependencies are not met
 if (NOT Boost_SERIALIZATION_FOUND)
     message(STATUS "Lib ${target} skipped: Boost Serialization not found")
+    return()
+elseif (NOT Boost_IOSTREAMS_FOUND)
+    message(STATUS "Lib ${target} skipped: Boost Iostreams not found")
     return()
 else()
     message(STATUS "Lib ${target}")

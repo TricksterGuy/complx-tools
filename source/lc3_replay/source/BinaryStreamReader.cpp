@@ -84,7 +84,6 @@ BinaryStreamReader& BinaryStreamReader::operator>>(std::string& val)
     val.assign(buffer.data(), effSize);
 
     width = 0;
-
     return *this;
 }
 
