@@ -13,9 +13,8 @@ public:
     MultiplyPlugin() : InstructionPlugin(MULTIPLY_MAJOR_VERSION, MULTIPLY_MINOR_VERSION, "Multiplication Plugin") {}
     std::string GetOpcode() const override;
     uint16_t DoAssembleOne(lc3_state& state, LC3AssembleContext& context) override;
-    void OnDecode(lc3_state& state, uint16_t data, lc3_instr& instr) override;
-    void OnExecute(lc3_state& state, lc3_instr& instruction, lc3_state_change& changes) override;
-    std::string OnDisassemble(lc3_state& state, lc3_instr& instr, unsigned int level) override;
+    void OnExecute(lc3_state& state, const lc3_instruction& instruction, lc3_state_change& changes) override;
+    std::string OnDisassemble(lc3_state& state, const lc3_instruction& instr, unsigned int level) override;
     std::list<RLEColorEntry> GetInstructionColoring(uint16_t instr) const override;
 };
 

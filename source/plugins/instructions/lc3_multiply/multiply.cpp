@@ -63,30 +63,18 @@ uint16_t MultiplyPlugin::DoAssembleOne(lc3_state& /*state*/, LC3AssembleContext&
     return instruction;
 }
 
-void MultiplyPlugin::OnDecode(lc3_state& /*state*/, uint16_t data, lc3_instr& instr)
-{
-    // ARITH FORMAT INSTRUCTION
-    instr.arith.imm.dr = (data >> 9) & 0x7;
-    instr.arith.imm.sr1 = (data >> 6) & 0x7;
-    instr.arith.imm.is_imm = (data >> 5) & 0x1;
-    if (instr.arith.imm.is_imm)
-        instr.arith.imm.imm = data & 0x1F;
-    else
-        instr.arith.reg.sr2 = data & 0x7;
-}
-
-void MultiplyPlugin::OnExecute(lc3_state& state, lc3_instr& instruction, lc3_state_change& changes)
+void MultiplyPlugin::OnExecute(lc3_state& state, const lc3_instruction& instruction, lc3_state_change& changes)
 {
     // Hey DR will change here save it
     changes.changes = LC3_REGISTER_CHANGE;
-    changes.location = instruction.arith.imm.dr;
+    changes.location = instruction.dr();
     changes.value = state.regs[changes.location];
 
     // Two modes immediate value and registers
-    if (instruction.arith.imm.is_imm)
-        state.regs[changes.location] = state.regs[instruction.arith.imm.sr1] * instruction.arith.imm.imm;
+    if (instruction.is_imm())
+        state.regs[changes.location] = state.regs[instruction.sr1()] * instruction.imm5();
     else
-        state.regs[changes.location] = state.regs[instruction.arith.reg.sr1] * state.regs[instruction.arith.reg.sr2];
+        state.regs[changes.location] = state.regs[instruction.sr1()] * state.regs[instruction.sr2()];
 
     // Update NZP
     lc3_setcc(state, state.regs[changes.location]);
@@ -110,7 +98,7 @@ static const char* const MUL_ADVANCED_DISASSEMBLE[7] =
 };
 
 
-std::string MultiplyPlugin::OnDisassemble(lc3_state& /*state*/, lc3_instr& instr, unsigned int level)
+std::string MultiplyPlugin::OnDisassemble(lc3_state& /*state*/, const lc3_instruction& instr, unsigned int level)
 {
     char buf[128];
     int16_t data;
@@ -118,48 +106,48 @@ std::string MultiplyPlugin::OnDisassemble(lc3_state& /*state*/, lc3_instr& instr
     // No difference between basic and normal
     if (level == LC3_BASIC_DISASSEMBLE || level == LC3_NORMAL_DISASSEMBLE)
     {
-        if (instr.arith.imm.is_imm)
+        if (instr.is_imm())
         {
-            sprintf(buf, MUL_DISASSEMBLE_LOOKUP[1], instr.arith.imm.dr, instr.arith.imm.sr1, instr.arith.imm.imm);
+            sprintf(buf, MUL_DISASSEMBLE_LOOKUP[1], instr.dr(), instr.sr1(), instr.imm5());
         }
         else
         {
-            sprintf(buf, MUL_DISASSEMBLE_LOOKUP[0], instr.arith.reg.dr, instr.arith.reg.sr1, instr.arith.reg.sr2);
+            sprintf(buf, MUL_DISASSEMBLE_LOOKUP[0], instr.dr(), instr.sr1(), instr.sr2());
         }
     }
     else if (level == LC3_ADVANCED_DISASSEMBLE)
     {
-        if (instr.arith.imm.is_imm)
+        if (instr.is_imm())
         {
             // Data is imm
-            data = instr.arith.imm.imm;
+            data = instr.imm5();
             // TEST = MUL RX, RX, 1
-            if (data == 1 && instr.arith.imm.dr == instr.arith.imm.sr1)
-                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_TEST], instr.arith.imm.dr);
+            if (data == 1 && instr.dr() == instr.sr1())
+                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_TEST], instr.dr());
             // SET = MUL RX, RY, 1
-            else if (data == 1 && instr.arith.imm.dr != instr.arith.imm.sr1)
-                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_SET], instr.arith.imm.dr, instr.arith.imm.sr1);
+            else if (data == 1 && instr.dr() != instr.sr1())
+                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_SET], instr.dr(), instr.sr1());
             // CLEAR = MUL RX, RANY, 0
             else if (data == 0)
-                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_ZERO], instr.arith.imm.dr);
+                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_ZERO], instr.dr());
             // MUL_EQ = MUL RX, RX, NUM
-            else if (instr.arith.imm.dr == instr.arith.imm.sr1)
-                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_REG_NUM], instr.arith.imm.dr, SIGN_NEG_CHR(data), ABS(data));
+            else if (instr.dr() == instr.sr1())
+                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_REG_NUM], instr.dr(), SIGN_NEG_CHR(data), ABS(data));
             // NORMAL MUL IMM
             else
-                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_NUM], instr.arith.imm.dr, instr.arith.imm.sr1, SIGN_NEG_CHR(data), ABS(data));
+                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_NUM], instr.dr(), instr.sr1(), SIGN_NEG_CHR(data), ABS(data));
         }
         else
         {
             // DR is the data here
-            data = instr.arith.reg.dr;
+            data = instr.dr();
 
             // MUL EQ
-            if (data == instr.arith.reg.sr1 || data == instr.arith.reg.sr2)
-                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_EQ_REG], data, OTHER(data, instr.arith.reg.sr1, instr.arith.reg.sr2));
+            if (data == instr.sr1() || data == instr.sr2())
+                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_EQ_REG], data, OTHER(data, instr.sr1(), instr.sr2()));
             // NORMAL MUL
             else
-                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_TWO_REGS], data, instr.arith.reg.sr1, instr.arith.reg.sr2);
+                sprintf(buf, MUL_ADVANCED_DISASSEMBLE[MUL_TWO_REGS], data, instr.sr1(), instr.sr2());
         }
     }
     return buf;

@@ -50,7 +50,8 @@ endfunction()
 # External dependencies
 #
 
-find_package(Boost COMPONENTS unit_test_framework serialization REQUIRED QUIET)
+find_package(Boost COMPONENTS unit_test_framework serialization iostreams REQUIRED QUIET)
+find_package(ZLIB REQUIRED QUIET)
 
 #
 # Target 'test'

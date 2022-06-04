@@ -23,6 +23,16 @@
 #define SIGN_NEG_CHR(x) (((x) < 0) ? "-" : "")
 /** Absolute value */
 #define ABS(x) (((x) < 0) ? -(x) : (x))
+/** Sign extension */
+static inline short sext(int n, int size)
+{
+    constexpr unsigned short extend = 0xFFFFU;
+    int b = size - 1;
+    if (n & (1 << b))
+        return n | (extend << b);
+    else
+        return n;
+}
 
 /**
   * Given 3 values when 2 of them are equal
@@ -187,147 +197,40 @@ struct PluginInfo
     Plugin* plugin;
 };
 
-/** Arithmetic instruction type with registers. */
-struct arithreg_instruction
-{
-    uint16_t opcode:4;
-    uint16_t dr:3;
-    uint16_t sr1:3;
-    uint16_t is_imm:1;
-    uint16_t unused:2;
-    uint16_t sr2:3;
-};
-
-/** Arithmetic instruction type with immediate value. */
-struct arithimm_instruction
-{
-    uint16_t opcode:4;
-    uint16_t dr:3;
-    uint16_t sr1:3;
-    uint16_t is_imm:1;
-    int16_t imm:5;
-};
-
-/** Not instruction type. */
-struct not_instruction
-{
-    uint16_t opcode:4;
-    uint16_t dr:3;
-    uint16_t sr1:3;
-    uint16_t unused:6;
-};
-
-/** Union for Arithmetic instruction type. */
-union arith_instruction
-{
-    arithimm_instruction imm;
-    arithreg_instruction reg;
-    not_instruction inv;
-};
-
-/** Branch instruction type. */
-struct br_instruction
-{
-    uint16_t opcode:4;
-    uint16_t n:1;
-    uint16_t z:1;
-    uint16_t p:1;
-    int16_t pc_offset:9;
-};
-
-/** Jump instruction type. */
-struct jmp_instruction
-{
-    uint16_t opcode:4;
-    uint16_t unused_3:3;
-    uint16_t base_r:3;
-    uint16_t unused_6:6;
-};
-
-/** Jump to subroutine type. */
-struct jsr_instruction
-{
-    uint16_t opcode:4;
-    uint16_t is_jsr:1;
-    int16_t pc_offset:11;
-};
-
-/** Jump to subroutine within register type. */
-struct jsrr_instruction
-{
-    uint16_t opcode:4;
-    uint16_t is_jsr:1;
-    uint16_t unused_2:2;
-    uint16_t base_r:3;
-    uint16_t unused_6:6;
-};
-
-/** Type for subroutine instruction. */
-union subr_instruction
-{
-    jsr_instruction jsr;
-    jsrr_instruction jsrr;
-};
-
-/** Type for memory instructions with offset. */
-struct memoryoffset_instruction
-{
-    uint16_t opcode:4;
-    uint16_t reg:3;
-    int16_t pc_offset:9;
-};
-
-/** Type for memory instructions with base register and offset. */
-struct memoryreg_instruction
-{
-    uint16_t opcode:4;
-    uint16_t reg:3;
-    uint16_t base_r:3;
-    int16_t offset:6;
-};
-
-/** Type for all memory instructions */
-union memory_instruction
-{
-    memoryoffset_instruction offset;
-    memoryreg_instruction reg;
-};
-
-/** Type for TRAPs */
-struct trap_instruction
-{
-    uint16_t opcode:4;
-    uint16_t unused:4;
-    uint16_t vector:8;
-};
-
 /** General instruction type for lc3 */
-struct instruction_t
+class lc3_instruction
 {
-    uint16_t opcode:4;
-    uint16_t data:12;
-};
+    public:
+        explicit lc3_instruction(uint16_t _data) { data = _data; }
+        uint8_t opcode() const      { return  data >> 12 & 0xF; }
+        uint16_t operands() const   { return  data       & 0xFFF; }
 
-/**
-  * Lc3 instruction type
-  * contains the data for the different types of instructions
-  * Note: the bits field != the instruction as data
-  * The bits field gets it as how the system is representing
-  * it in memory due to endianness not the actual LC3 view of it.
-  * That is TRAP x25 = 0xF025 but could appear in memory as 0x250F
-  */
-/// TODO Consider getting rid of this setup.
-union LC3_API lc3_instr
-{
-    arith_instruction  arith;
-    br_instruction     br;
-    jmp_instruction    jmp;
-    subr_instruction   subr;
-    memory_instruction mem;
-    trap_instruction   trap;
-    instruction_t      rti;
-    instruction_t      data;
-    uint16_t           bits;
+        uint8_t dr()  const         { return (data >> 9) & 0x7; }
+        uint8_t sr1() const         { return (data >> 6) & 0x7; }
+        uint8_t base_r() const      { return (data >> 6) & 0x7; }
+        uint8_t sr2() const         { return  data       & 0x7; }
+        bool is_imm() const         { return (data >> 5) & 0x1; }
+        int8_t imm5() const         { return sext(data & 0x1F, 5); }
+
+        int8_t offset6() const      { return sext(data & 0x3F, 6); };
+        int16_t pc_offset9() const  { return sext(data & 0x1FF, 9); }
+
+        bool is_jsr() const        { return (data >> 11) & 0x1; }
+        int16_t pc_offset11() const { return sext(data & 0x7FF, 11); }
+
+        // TRAP
+        uint8_t vector() const    { return data & 0xFF; }
+
+        bool n() const { return (data >> 11) & 0x1; }
+        bool z() const { return (data >> 10) & 0x1; }
+        bool p() const { return (data >>  9) & 0x1; }
+        uint8_t cc() const {return (data >> 9) & 0x7; }
+
+        uint16_t get(int i, int length) const { return (data >> i) & ((1 << length) - 1); }
+        int16_t bits() const { return data; }
+
+    private:
+        uint16_t data;
 };
 
 /** Enumeration of possible things that can change as part of instruction execution. */
@@ -412,7 +315,6 @@ struct LC3_API lc3_subroutine_info
     uint16_t address;
     std::string name;
     int32_t num_params;
-    // Will be empty if not used.
     std::vector<std::string> params;
 };
 
@@ -672,6 +574,16 @@ std::string lc3_smart_disassemble(lc3_state& state, uint16_t data);
   * @return The disassembled instruction as a string.
   */
 std::string LC3_API lc3_disassemble(lc3_state& state, uint16_t data, int32_t pc = -1, int32_t level = LC3_NORMAL_DISASSEMBLE);
+
+/** lc3_check_malformed_instruction
+  *
+  * Checks if the instruction given is malformed.
+  * A malformed instruction is an instruction that doesn't follow its bit layout from the ISA.
+  *
+  * @param instruction lc3_instruction object.
+  * @return True if the instruction is malformed.
+  */
+bool lc3_check_malformed_instruction(const lc3_instruction& instruction);
 
 /** lc3_load
   *

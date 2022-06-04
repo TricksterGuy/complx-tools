@@ -61,6 +61,7 @@ target_include_directories(${target}
     PRIVATE
     ${DEFAULT_INCLUDE_DIRECTORIES}
     ${Boost_INCLUDE_DIRS}
+    ${ZLIB_INCLUDE_DIRS}
     ${PROJECT_BINARY_DIR}/source/include
 )
 
@@ -72,9 +73,10 @@ target_include_directories(${target}
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
     ${META_PROJECT_NAME}::lc3
     ${META_PROJECT_NAME}::lc3_replay
+    ${Boost_LIBRARIES}
+    ${ZLIB_LIBRARIES}
 )
 
 

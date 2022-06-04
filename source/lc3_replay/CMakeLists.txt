@@ -2,6 +2,7 @@
 # External dependencies
 #
 
+find_package(ZLIB QUIET)
 find_package(Boost COMPONENTS serialization iostreams QUIET)
 
 #
@@ -18,6 +19,8 @@ if (NOT Boost_SERIALIZATION_FOUND)
 elseif (NOT Boost_IOSTREAMS_FOUND)
     message(STATUS "Lib ${target} skipped: Boost Iostreams not found")
     return()
+elseif (NOT ZLIB_FOUND)
+    message(STATUS "Lib ${target} skipped: Zlib not found")
 else()
     message(STATUS "Lib ${target}")
 endif()
@@ -128,10 +131,12 @@ target_include_directories(${target}
     ${PROJECT_BINARY_DIR}/source/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/include
-    ${Boost_INCLUDE_DIRS}
 
     PUBLIC
     ${DEFAULT_INCLUDE_DIRECTORIES}
+    ${Boost_INCLUDE_DIRS}
+    ${ZLIB_INCLUDE_DIRS}
+
 
     INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -150,7 +155,8 @@ target_link_libraries(${target}
     PUBLIC
     ${DEFAULT_LIBRARIES}
     ${META_PROJECT_NAME}::lc3
-    ${BOOST_SERIALIZATION_LIBRARY}
+    ${BOOST_LIBRARIES}
+    ${ZLIB_LIBRARIES}
 
     INTERFACE
 )

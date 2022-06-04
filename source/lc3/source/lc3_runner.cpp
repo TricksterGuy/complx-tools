@@ -45,10 +45,8 @@ void lc3_step(lc3_state& state)
 
     // Increment PC
     state.pc++;
-    // Form Instruction
-    lc3_instr instr = lc3_decode(state, data);
     // Execute Instruction
-    const lc3_state_change change = lc3_execute(state, instr);
+    const lc3_state_change change = lc3_execute(state, data);
 
     // Increment executions
     state.executions++;
@@ -217,17 +215,17 @@ int lc3_next_line(lc3_state& state, unsigned int num, int depth)
         i++;
 
         // Get Next Instruction.
-        lc3_instr instr = lc3_decode(state, state.mem[state.pc]);
+        lc3_instruction instr(state.mem[state.pc]);
         // So if we get a JSR/JSRR or if we get a TRAP and true traps are enabled
-        if (instr.data.opcode == JSR_INSTR || (instr.data.opcode == TRAP_INSTR && state.true_traps))
+        if (instr.opcode() == JSR_INSTR || (instr.opcode() == TRAP_INSTR && state.true_traps))
             depth++;
 
         // If we get a RET instruction JMP R7
-        if (instr.data.opcode == JMP_INSTR && instr.jmp.base_r == 7)
+        if (instr.opcode() == JMP_INSTR && instr.base_r() == 7)
             depth--;
 
         // If we get an RTI instruction
-        if (instr.data.opcode == RTI_INSTR)
+        if (instr.opcode() == RTI_INSTR)
             depth--;
 
         // Execute
@@ -271,12 +269,12 @@ int lc3_prev_line(lc3_state& state, unsigned int num, int depth)
         // instruction due to jumps.
         lc3_back(state);
         // Get the instruction that got you where you are.
-        lc3_instr instr = lc3_decode(state, state.mem[state.pc]);
+        lc3_instruction instr(state.mem[state.pc]);
         // If we get a RET instruction JMP R7
-        if (instr.data.opcode == JMP_INSTR && instr.jmp.base_r == 7)
+        if (instr.opcode() == JMP_INSTR && instr.base_r() == 7)
             depth++;
         // So if we get a JSR/JSRR or if we get a TRAP and true traps are enabled
-        if (instr.data.opcode == JSR_INSTR || (instr.data.opcode == TRAP_INSTR && state.true_traps))
+        if (instr.opcode() == JSR_INSTR || (instr.opcode() == TRAP_INSTR && state.true_traps))
             depth--;
         // Don't have to handle interrupts here...
 

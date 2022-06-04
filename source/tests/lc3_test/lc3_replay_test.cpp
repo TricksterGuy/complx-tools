@@ -20,7 +20,7 @@ void split(const std::string& s, char delimiter, std::vector<std::string>& token
         tokens.push_back(item);
 }
 
-void lc3_setup_replay(lc3_state& state, std::istream& file, const std::string& replay_string, std::stringstream& newinput);
+void lc3_setup_replay(lc3_state& state, const std::string& filename, std::istream& file, const std::string& replay_string, std::stringstream& newinput);
 
 const std::string REPLAY_STRING            = "bGMtMwEAAAAAAAAAgAEAAPaHFA4AEgAAAHRoaXNfaXNfYV90ZXN0LmFzbQEBAAAAAgEAAAADAQAAAAQAAAAABQAAAAAG/////wcAgAAACAEAAAAQEQEAAAA0AQAAAAFAEgAAAAABAAAAAAUTAwAAAEFISAEAAAAHABQEAAAAQkxBSAEAAACmAhUGAAAAQ0FXQ0FXBQAAAAUAAgAJAAAw//8WBAAAAFBBUEEEAAAATQBBAE0AQQAXAAAAAAYAAABSAEEASABSAEEASAAYBAAAAFRBVEEGAAAABQBAQACAAgAFAAcAGgQAAAA4MDAwAQAAACEAGwQAAAA5MDAwBAAAAFYAQQBWAEEAHAQAAABhMDAwAwAAAAEAIADZAh0EAAAAYjAwMAcAAAADAAEAAAD/AAEAIgAAAB0EAAAAYjAyMAcAAAADAAEAALD/AAEAOAAAAB0EAAAAYjA1MAoAAAADAAQAALABsAKwA7D/AAEASAAAAB4EAAAAYzAwMBUAAAABAACQAgAEAHQAZQBzAHQAAwACACwANwD/AAEASAADAAMAAQACAAMAAAD//w==";
 const std::string REPLAY_STRING_COMPRESSED = "bGMtMwEAAAAAAAAA6wAAACIfpI4BEgAAAHRoaXNfaXNfYV90ZXN0LmFzbXjaRVBLTkJBEKyZkffAlR8+BtCIaxcTAxF3b3DzFpoQQnCtxhPIATiCp3D9ruNpxqqGhMl0daqrpmd6nAPgBUFwwkBLUGSuEjugLeHsXDgVuOpCBmfWy0BMdS1Woqvzi5dk9Nf3Cqbn9Mbdsr4eHSDm3JdvmZZJ+RXJYmDXMlYk9QGv5FindSqsQVVh55lLDCXMY4y6aoKR6BOp8oZHFWORdxaDvfcWf/5apQ+WSo1sQ2TiHfNBejhKjaT5UZrFU5PIGtf4JpihZu1Ghk+27e1/5sfTtMUXvomBc9/jEXtzsN4eelPO//V1Kao=";
@@ -370,7 +370,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectMagic, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, "", file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion, LC3ReplayTest)
@@ -384,7 +384,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, "", file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion2, LC3ReplayTest)
@@ -398,7 +398,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectImproperVersion2, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, "", file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidSize, LC3ReplayTest)
@@ -412,7 +412,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidSize, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, "", file, replay, input), LC3ReplayStringException);
 }
 
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidChecksum, LC3ReplayTest)
@@ -426,7 +426,7 @@ BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidChecksum, LC3ReplayTest)
 
     std::stringstream file(asm_file);
     std::stringstream input;
-    BOOST_CHECK_THROW(lc3_setup_replay(state, file, replay, input), LC3ReplayStringException);
+    BOOST_CHECK_THROW(lc3_setup_replay(state, "", file, replay, input), LC3ReplayStringException);
 }
 BOOST_FIXTURE_TEST_CASE(ReplayTestRejectInvalidFilename, LC3ReplayTest)
 {

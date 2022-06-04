@@ -14,7 +14,7 @@ include(CMakeFindDependencyMacro)
 set(MODULE_NAMES
     lc3
     lc3_replay
-    complx
+    complx_lib
 )
 
 

@@ -211,8 +211,8 @@ const char* DISASSEMBLE_LOOKUP[16][3] =
 
 const char* TRAP_CASES[6] = {"GETC", "OUT", "PUTS", "IN", "PUTSP", "HALT"};
 
-//nul(NOP), N, Z, NZ, P, NP, ZP, nul(NZP)
-const char* BR_CASES[8] = {"", "<", "=", "<=", ">", "!=", ">=", ""};
+//nul(NOP), P, Z, ZP, N, NP, NZ, nul(NZP)
+const char* BR_CASES[8] = {"", ">", "=", ">=", "<", "!=", "<=", ""};
 
 const char* ADV_DISASSEMBLE_LOOKUP[16][8] =
 {
@@ -236,25 +236,25 @@ const char* ADV_DISASSEMBLE_LOOKUP[16][8] =
 
 std::string lc3_basic_disassemble(lc3_state& state, uint16_t data, uint16_t /* unused pc */)
 {
-    lc3_instr instr = lc3_decode(state, data);
-    uint32_t opcode = instr.data.opcode;
     char buf[128];
 
+    lc3_instruction instr(data);
+    uint8_t opcode = instr.opcode();
 
     switch(opcode)
     {
         case BR_INSTR:
             // If all flags are off or offset is 0
-            if (!(instr.br.n || instr.br.z || instr.br.p) || instr.br.pc_offset == 0)
+            if (!(instr.n() || instr.z() || instr.p()) || instr.pc_offset9() == 0)
             {
-                if (!instr.br.n && !instr.br.z && !instr.br.p)
+                if (!instr.n() && !instr.z() && !instr.p())
                 {
                     // Hey do I have a printable character?
-                    if (isprint(instr.br.pc_offset))
+                    if (isprint(instr.pc_offset9()))
                     {
                         // Write the character
                         char minibuf[7];
-                        snprintf(minibuf, 7, " ('%c')", instr.br.pc_offset);
+                        snprintf(minibuf, 7, " ('%c')", instr.pc_offset9());
                         // NOP (with character)
                         sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][1], minibuf);
                     }
@@ -269,60 +269,60 @@ std::string lc3_basic_disassemble(lc3_state& state, uint16_t data, uint16_t /* u
                     sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][1], "");
             }
             // If not all flags are on
-            else if (!(instr.br.n && instr.br.z && instr.br.p))
+            else if (!(instr.n() && instr.z() && instr.p()))
             {
-                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.br.n ? "N" : "",
-                        instr.br.z ? "Z" : "", instr.br.p ? "P" : "", instr.br.pc_offset);
+                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.n() ? "N" : "",
+                        instr.z() ? "Z" : "", instr.p() ? "P" : "", instr.pc_offset9());
             }
             // All flags are on then
             else
             {
-                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], "", "", "", instr.br.pc_offset);
+                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], "", "", "", instr.pc_offset9());
             }
             break;
         case ADD_INSTR:
         case AND_INSTR:
-            if (instr.arith.imm.is_imm)
+            if (instr.is_imm())
             {
                 sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][1],
-                        instr.arith.imm.dr, instr.arith.imm.sr1, instr.arith.imm.imm);
+                        instr.dr(), instr.sr1(), instr.imm5());
             }
             else
             {
                 sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0],
-                        instr.arith.reg.dr, instr.arith.reg.sr1, instr.arith.reg.sr2);
+                        instr.dr(), instr.sr1(), instr.sr2());
             }
             break;
         case NOT_INSTR:
-            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.arith.inv.dr, instr.arith.inv.sr1);
+            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.dr(), instr.sr1());
             break;
         case LD_INSTR:
         case ST_INSTR:
         case LEA_INSTR:
         case LDI_INSTR:
         case STI_INSTR:
-            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.mem.offset.reg,
-                    instr.mem.offset.pc_offset);
+            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.dr(),
+                    instr.pc_offset9());
             break;
         case LDR_INSTR:
         case STR_INSTR:
-            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.mem.reg.reg, instr.mem.reg.base_r,
-                    instr.mem.reg.offset);
+            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.dr(), instr.base_r(),
+                    instr.offset6());
             break;
         case JSR_INSTR: // JSRR_INSTR
-            if (instr.subr.jsr.is_jsr)
-                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][1], instr.subr.jsr.pc_offset);
+            if (instr.is_jsr())
+                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][1], instr.pc_offset11());
             else
-                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.subr.jsrr.base_r);
+                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.base_r());
             break;
         case JMP_INSTR: // RET_INSTR
-            if (instr.jmp.base_r == 0x7)
+            if (instr.base_r() == 0x7)
                 sprintf(buf, "%s", BASIC_DISASSEMBLE_LOOKUP[opcode][1]);
             else
-                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.jmp.base_r);
+                sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.base_r());
             break;
         case TRAP_INSTR:
-            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.trap.vector);
+            sprintf(buf, BASIC_DISASSEMBLE_LOOKUP[opcode][0], instr.vector());
             break;
         case RTI_INSTR:
             sprintf(buf, "%s", BASIC_DISASSEMBLE_LOOKUP[opcode][0]);
@@ -342,8 +342,8 @@ std::string lc3_basic_disassemble(lc3_state& state, uint16_t data, uint16_t /* u
 
 std::string lc3_normal_disassemble(lc3_state& state, uint16_t data, uint16_t pc)
 {
-    lc3_instr instr = lc3_decode(state, data);
-    uint32_t opcode = instr.data.opcode;
+    lc3_instruction instr(data);
+    uint32_t opcode = instr.opcode();
     char buf[128];
     int32_t offset;
     std::string label;
@@ -351,18 +351,18 @@ std::string lc3_normal_disassemble(lc3_state& state, uint16_t data, uint16_t pc)
     switch(opcode)
     {
         case BR_INSTR:
-            offset = instr.br.pc_offset;
+            offset = instr.pc_offset9();
             label = lc3_sym_rev_lookup(state, pc + offset);
             // If all flags are off
-            if (!(instr.br.n || instr.br.z || instr.br.p) || instr.br.pc_offset == 0)
+            if (!(instr.n() || instr.z() || instr.p()) || instr.pc_offset9() == 0)
             {
-                if (!instr.br.n && !instr.br.z && !instr.br.p)
+                if (!instr.n() && !instr.z() && !instr.p())
                 {
                     // Hey do I have a character?
-                    if (isprint(instr.br.pc_offset))
+                    if (isprint(instr.pc_offset9()))
                     {
                         char minibuf[7];
-                        snprintf(minibuf, 7, " ('%c')", instr.br.pc_offset);
+                        snprintf(minibuf, 7, " ('%c')", instr.pc_offset9());
                         // NOP (maybe with character)
                         sprintf(buf, DISASSEMBLE_LOOKUP[opcode][2], minibuf);
                     }
@@ -377,88 +377,88 @@ std::string lc3_normal_disassemble(lc3_state& state, uint16_t data, uint16_t pc)
                     sprintf(buf, DISASSEMBLE_LOOKUP[opcode][2], "");
             }
             // If not all flags are on
-            else if (!(instr.br.n && instr.br.z && instr.br.p))
+            else if (!(instr.n() && instr.z() && instr.p()))
             {
                 if (label.empty())
                 {
-                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.br.n ? "N" : "",
-                            instr.br.z ? "Z" : "", instr.br.p ? "P" : "", instr.br.pc_offset);
+                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.n() ? "N" : "",
+                            instr.z() ? "Z" : "", instr.p() ? "P" : "", instr.pc_offset9());
                 }
                 else
                 {
-                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1], instr.br.n ? "N" : "",
-                            instr.br.z ? "Z" : "", instr.br.p ? "P" : "", label.c_str());
+                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1], instr.n() ? "N" : "",
+                            instr.z() ? "Z" : "", instr.p() ? "P" : "", label.c_str());
                 }
             }
             // All flags are on then
             else
             {
                 if (label.empty())
-                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], "", "", "", instr.br.pc_offset);
+                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], "", "", "", instr.pc_offset9());
                 else
                     sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1], "", "", "", label.c_str());
             }
             break;
         case ADD_INSTR:
         case AND_INSTR:
-            if (instr.arith.imm.is_imm)
+            if (instr.is_imm())
             {
                 sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1],
-                        instr.arith.imm.dr, instr.arith.imm.sr1, instr.arith.imm.imm);
+                        instr.dr(), instr.sr1(), instr.imm5());
             }
             else
             {
                 sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0],
-                        instr.arith.reg.dr, instr.arith.reg.sr1, instr.arith.reg.sr2);
+                        instr.dr(), instr.sr1(), instr.sr2());
             }
             break;
         case NOT_INSTR:
-            sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.arith.inv.dr, instr.arith.inv.sr1);
+            sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.dr(), instr.sr1());
             break;
         case LD_INSTR:
         case ST_INSTR:
         case LEA_INSTR:
         case LDI_INSTR:
         case STI_INSTR:
-            offset = instr.mem.offset.pc_offset;
+            offset = instr.pc_offset9();
             label = lc3_sym_rev_lookup(state, pc + offset);
             if (label.empty())
             {
-                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.mem.offset.reg,
-                        instr.mem.offset.pc_offset);
+                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.dr(),
+                        instr.pc_offset9());
             }
             else
             {
-                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1], instr.mem.offset.reg, label.c_str());
+                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1], instr.dr(), label.c_str());
             }
             break;
         case LDR_INSTR:
         case STR_INSTR:
-            sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.mem.reg.reg, instr.mem.reg.base_r,
-                    instr.mem.reg.offset);
+            sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.dr(), instr.base_r(),
+                    instr.offset6());
             break;
         case JSR_INSTR: // JSRR_INSTR
-            if (instr.subr.jsr.is_jsr)
+            if (instr.is_jsr())
             {
-                offset = instr.subr.jsr.pc_offset;
+                offset = instr.pc_offset11();
                 label = lc3_sym_rev_lookup(state, pc + offset);
 
                 if (label.empty())
-                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1], instr.subr.jsr.pc_offset);
+                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][1], instr.pc_offset11());
                 else
                     sprintf(buf, DISASSEMBLE_LOOKUP[opcode][2], label.c_str());
             }
             else
-                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.subr.jsrr.base_r);
+                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.base_r());
             break;
         case JMP_INSTR: // RET_INSTR
-            if (instr.jmp.base_r == 0x7)
+            if (instr.base_r() == 0x7)
                 sprintf(buf, "%s", DISASSEMBLE_LOOKUP[opcode][1]);
             else
-                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.jmp.base_r);
+                sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.base_r());
             break;
         case TRAP_INSTR:
-            data = instr.trap.vector;
+            data = instr.vector();
             if (data >= TRAP_GETC && data <= TRAP_HALT)
                 sprintf(buf, "%s", TRAP_CASES[data - TRAP_GETC]);
             else
@@ -467,7 +467,7 @@ std::string lc3_normal_disassemble(lc3_state& state, uint16_t data, uint16_t pc)
                 if (state.trapPlugins.find(data) != state.trapPlugins.end())
                     return state.trapPlugins[data]->GetTrapName();
                 else
-                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.trap.vector);
+                    sprintf(buf, DISASSEMBLE_LOOKUP[opcode][0], instr.vector());
             }
             break;
         case RTI_INSTR:
@@ -488,9 +488,9 @@ std::string lc3_normal_disassemble(lc3_state& state, uint16_t data, uint16_t pc)
 
 std::string lc3_smart_disassemble(lc3_state& state, uint16_t instruction, uint16_t pc)
 {
-    lc3_instr instr = lc3_decode(state, instruction);
+    lc3_instruction instr(instruction);
     int32_t offset;
-    uint32_t opcode = instr.data.opcode;
+    uint32_t opcode = instr.opcode();
     int32_t data;
     std::string label;
     char buf[128];
@@ -498,12 +498,12 @@ std::string lc3_smart_disassemble(lc3_state& state, uint16_t instruction, uint16
     switch(opcode)
     {
         case BR_INSTR:
-            offset = instr.br.pc_offset;
+            offset = instr.pc_offset9();
             label = lc3_sym_rev_lookup(state, pc + offset);
             // If no flags are on or offset == 0 its a NOP
-            if (!(instr.br.n || instr.br.z || instr.br.p) || offset == 0)
+            if (!(instr.n() || instr.z() || instr.p()) || offset == 0)
             {
-                if (!(instr.br.n || instr.br.z || instr.br.p)/* && offset <= 256*/)
+                if (!(instr.n() || instr.z() || instr.p())/* && offset <= 256*/)
                 {
                     if (isprint(offset))
                     {
@@ -519,7 +519,7 @@ std::string lc3_smart_disassemble(lc3_state& state, uint16_t instruction, uint16
 
             }
             // If all flags are on
-            else if (instr.br.n && instr.br.z && instr.br.p)
+            else if (instr.n() && instr.z() && instr.p())
             {
                 // If we know the label
                 if (!label.empty())
@@ -531,7 +531,7 @@ std::string lc3_smart_disassemble(lc3_state& state, uint16_t instruction, uint16
             else
             {
                 // Data is the NZP flags
-                data = instr.br.n | instr.br.z << 1 | instr.br.p << 2;
+                data = instr.cc();
                 if (!label.empty())
                     sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][BR_NORM_LABEL], BR_CASES[data], label.c_str());
                 else
@@ -540,127 +540,126 @@ std::string lc3_smart_disassemble(lc3_state& state, uint16_t instruction, uint16
             }
             break;
         case ADD_INSTR:
-            if (instr.arith.imm.is_imm)
+            if (instr.is_imm())
             {
                 // Data is imm
-                data = instr.arith.imm.imm;
+                data = instr.imm5();
                 // TEST = ADD RX, RX, 0
-                if (data == 0 && instr.arith.imm.dr == instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_TEST], instr.arith.imm.dr);
+                if (data == 0 && instr.dr() == instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_TEST], instr.dr());
                 // SET
-                else if (data == 0 && instr.arith.imm.dr != instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_SET], instr.arith.imm.dr,
-                            instr.arith.imm.sr1);
+                else if (data == 0 && instr.dr() != instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_SET], instr.dr(),
+                            instr.sr1());
                 // INC = ADD RX, RX, 1
-                else if (data == 1 && instr.arith.imm.dr == instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_INC], instr.arith.imm.dr);
+                else if (data == 1 && instr.dr() == instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_INC], instr.dr());
                 // DEC = ADD RX, RX, -1
-                else if (data == -1 && instr.arith.imm.dr == instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_DEC], instr.arith.imm.dr);
+                else if (data == -1 && instr.dr() == instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_DEC], instr.dr());
                 // ADD_EQ = ADD RX, RX, NUM
-                else if (instr.arith.imm.dr == instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_EQ_VAL], instr.arith.imm.dr,
+                else if (instr.dr() == instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_EQ_VAL], instr.dr(),
                             SIGN_CHR(data), ABS(data));
                 // NORMAL ADD IMM
                 else
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_REG_VAL], instr.arith.imm.dr,
-                            instr.arith.imm.sr1, SIGN_CHR(data), ABS(data));
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_REG_VAL], instr.dr(),
+                            instr.sr1(), SIGN_CHR(data), ABS(data));
             }
             else
             {
                 // DR is the data here
-                data = instr.arith.reg.dr;
+                data = instr.dr();
 
                 // ADD EQ
-                if (data == instr.arith.reg.sr1 || data == instr.arith.reg.sr2)
+                if (data == instr.sr1() || data == instr.sr2())
                     sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_EQ_REG], data,
-                            OTHER(data, instr.arith.reg.sr1, instr.arith.reg.sr2));
+                            OTHER(data, instr.sr1(), instr.sr2()));
                 // NORMAL ADD
                 else
                     sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][ADD_TWO_REGS], data,
-                            instr.arith.reg.sr1, instr.arith.reg.sr2);
+                            instr.sr1(), instr.sr2());
             }
             break;
         case AND_INSTR:
-            if (instr.arith.imm.is_imm)
+            if (instr.is_imm())
             {
-                data = instr.arith.imm.imm;
+                data = instr.imm5();
                 // ZERO OUT
                 if (data == 0)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_ZERO], instr.arith.imm.dr);
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_ZERO], instr.dr());
                 // TEST REG
-                else if (data == -1 && instr.arith.imm.dr == instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_TEST], instr.arith.imm.dr);
+                else if (data == -1 && instr.dr() == instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_TEST], instr.dr());
                 // SET REG
-                else if (data == -1 && instr.arith.imm.dr != instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_SET], instr.arith.imm.dr,
-                            instr.arith.imm.sr1);
+                else if (data == -1 && instr.dr() != instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_SET], instr.dr(),
+                            instr.sr1());
                 // AND EQUALS
-                else if (instr.arith.imm.dr == instr.arith.imm.sr1)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_NUM], instr.arith.imm.dr, data);
+                else if (instr.dr() == instr.sr1())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_NUM], instr.dr(), data);
                 // NORMAL IMM ADD
                 else
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_REG_NUM], instr.arith.imm.dr,
-                            instr.arith.imm.sr1, data);
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_REG_NUM], instr.dr(),
+                            instr.sr1(), data);
             }
             else
             {
                 // Data is DR
-                data = instr.arith.reg.dr;
+                data = instr.dr();
 
-                if (data == instr.arith.reg.sr1 && data == instr.arith.reg.sr2)
+                if (data == instr.sr1() && data == instr.sr2())
                     sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_TEST], data);
-                else if (instr.arith.reg.sr1 == instr.arith.reg.sr2)
-                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_SET], data, instr.arith.reg.sr1);
-                else if (data == instr.arith.reg.sr1 || data == instr.arith.reg.sr2)
+                else if (instr.sr1() == instr.sr2())
+                    sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_SET], data, instr.sr1());
+                else if (data == instr.sr1() || data == instr.sr2())
                     sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_EQ_REG], data,
-                            OTHER(data, instr.arith.reg.sr1, instr.arith.reg.sr2));
+                            OTHER(data, instr.sr1(), instr.sr2()));
                 else
                     sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][AND_TWO_REGS], data,
-                            instr.arith.reg.sr1, instr.arith.reg.sr2);
+                            instr.sr1(), instr.sr2());
             }
             break;
         case NOT_INSTR:
-            // Easy :D
-            sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][0], instr.arith.inv.dr, instr.arith.inv.sr1);
+            sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][0], instr.dr(), instr.sr1());
             break;
         case LD_INSTR:
         case LEA_INSTR:
         case LDI_INSTR:
-            offset = instr.mem.offset.pc_offset;
+            offset = instr.pc_offset9();
             label = lc3_sym_rev_lookup(state, pc + offset);
             if (!label.empty())
-                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_LABEL], instr.mem.offset.reg, label.c_str());
+                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_LABEL], instr.dr(), label.c_str());
             else if (offset != 0)
-                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_OFFSET], instr.mem.offset.reg, SIGN_CHR(offset),
+                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_OFFSET], instr.dr(), SIGN_CHR(offset),
                         ABS(offset));
             else
-                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_OFFSET_0], instr.mem.offset.reg);
+                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_OFFSET_0], instr.dr());
             break;
         case ST_INSTR:
         case STI_INSTR:
-            offset = instr.mem.offset.pc_offset;
+            offset = instr.pc_offset9();
             label = lc3_sym_rev_lookup(state, pc + offset);
             if (!label.empty())
-                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_LABEL], label.c_str(), instr.mem.offset.reg);
+                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_LABEL], label.c_str(), instr.dr());
             else if (offset != 0)
                 sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_OFFSET], SIGN_CHR(offset), ABS(offset),
-                        instr.mem.offset.reg);
+                        instr.dr());
             else
-                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_OFFSET_0], instr.mem.offset.reg);
+                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][MEM_OFFSET_0], instr.dr());
             break;
         case LDR_INSTR:
-            sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][0], instr.mem.reg.reg, instr.mem.reg.base_r,
-                    instr.mem.reg.offset);
+            sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][0], instr.dr(), instr.base_r(),
+                    instr.offset6());
             break;
         case STR_INSTR:
-            sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][0], instr.mem.reg.base_r, instr.mem.reg.offset,
-                    instr.mem.reg.reg);
+            sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][0], instr.base_r(), instr.offset6(),
+                    instr.dr());
             break;
         case JSR_INSTR:
-            if (instr.subr.jsr.is_jsr)
+            if (instr.is_jsr())
             {
-                offset = instr.subr.jsr.pc_offset;
+                offset = instr.pc_offset11();
                 label = lc3_sym_rev_lookup(state, pc + offset);
 
                 if (!label.empty())
@@ -671,16 +670,16 @@ std::string lc3_smart_disassemble(lc3_state& state, uint16_t instruction, uint16
                     sprintf(buf, "%s", ADV_DISASSEMBLE_LOOKUP[opcode][JSR_OFFSET_0]);
             }
             else
-                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][JSR_JSRR], instr.subr.jsrr.base_r);
+                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][JSR_JSRR], instr.base_r());
             break;
         case JMP_INSTR:
-            if (instr.jmp.base_r == 0x7)
+            if (instr.base_r() == 0x7)
                 sprintf(buf, "%s", ADV_DISASSEMBLE_LOOKUP[opcode][JMP_R7]);
             else
-                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][JMP_REG], instr.jmp.base_r);
+                sprintf(buf, ADV_DISASSEMBLE_LOOKUP[opcode][JMP_REG], instr.base_r());
             break;
         case TRAP_INSTR:
-            data = instr.trap.vector;
+            data = instr.vector();
             if (data >= TRAP_GETC && data <= TRAP_HALT)
                 sprintf(buf, "%s", ADV_DISASSEMBLE_LOOKUP[opcode][data - TRAP_GETC]);
             else
@@ -729,45 +728,47 @@ std::string lc3_disassemble(lc3_state& state, uint16_t data, int32_t pc, int32_t
             break;
     }
 
-    if (state.strict_execution)
-    {
-        switch(data >> 12)
-        {
-            case ADD_INSTR:
-            case AND_INSTR:
-                if ((data & 0x20) == 0 && (data & 0x18) != 0)
-                    instr += " *";
-                break;
-            case BR_INSTR:
-                if ((data & 0xE00) == 0)
-                    instr += " *";
-                break;
-            case JMP_INSTR:
-                if ((data & 0xE3F) != 0)
-                    instr += " *";
-                break;
-            case JSRR_INSTR:
-                if ((data & 0x800) == 0 && (data & 0x63F) != 0)
-                    instr += " *";
-                break;
-            case NOT_INSTR:
-                if ((data & 0x3F) != 0x3F)
-                    instr += " *";
-                break;
-            case RTI_INSTR:
-                if ((data & 0xFFF) != 0)
-                    instr += " *";
-                break;
-            case TRAP_INSTR:
-                if ((data & 0xF00) != 0)
-                    instr += " *";
-                break;
-            default:
-                break;
-        }
-    }
+    if (state.strict_execution && lc3_check_malformed_instruction(lc3_instruction(data)))
+        instr += " *";
 
     return instr;
+}
+
+bool lc3_check_malformed_instruction(const lc3_instruction& instruction)
+{
+    switch(instruction.opcode())
+    {
+        case BR_INSTR:
+            // 0000 <!= 000> xxxxxxxxx
+            return instruction.cc() == 0;
+        case ADD_INSTR:
+             [[fallthrough]];
+        case AND_INSTR:
+            // 0001 xxx xxx 0 <00> xxx
+            // 0101 xxx xxx 0 <00> xxx
+            return !instruction.is_imm() && instruction.get(3, 2) != 0;
+        case JSRR_INSTR:
+            // 0100 0 <00> xxx <000000>
+            return !instruction.is_jsr() && (instruction.get(9, 2) != 0 || instruction.get(0, 6) != 0);
+        case RTI_INSTR:
+            // 1000 <000000000000>
+            return instruction.get(0, 12) != 0;
+        case NOT_INSTR:
+            // 1001 xxx xxx <111111>
+            return instruction.get(0, 6) != 0x3F;
+        case JMP_INSTR:
+            // 1100 <000> xxx <000000>
+            return instruction.get(9, 3) != 0 || instruction.get(0, 6) != 0;
+        case TRAP_INSTR:
+            // 1111 <0000> xxxxxxxx
+            return instruction.get(8, 4) != 0;
+        case ERROR_INSTR:
+            /// TODO implement a malformed instruction checker for plugins.
+            return false;
+        default:
+            return false;
+    }
+    return false;
 }
 
 int32_t lc3_load(lc3_state& state, std::istream& file, int32_t (*reader)(std::istream&))
@@ -776,7 +777,6 @@ int32_t lc3_load(lc3_state& state, std::istream& file, int32_t (*reader)(std::is
 
     int32_t read_data = reader(file);
 
-    // Until the reader runs out of data
     while (read_data >= 0)
     {
         // Get Address Start from Reader
@@ -796,14 +796,13 @@ int32_t lc3_load(lc3_state& state, std::istream& file, int32_t (*reader)(std::is
 int32_t lc3_reader_hex(std::istream& file)
 {
     std::string line;
-    // Read one line
     if (file.eof()) return -1;
     getline(file, line);
 
-    // Interpret as hex
     std::stringstream ss(line);
     uint32_t result;
-    if (!(ss >> std::hex >> result)) return -1;
+    if (!(ss >> std::hex >> result))
+        return -1;
 
     return result;
 }
@@ -811,10 +810,8 @@ int32_t lc3_reader_hex(std::istream& file)
 int32_t lc3_reader_obj(std::istream& file)
 {
     uint16_t data;
-    // Read two bytes
     file.read(reinterpret_cast<char*>(&data), sizeof(data));
     if (file.eof()) return -1;
-    // Convert to LSB
     return ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
 }
 
@@ -862,7 +859,8 @@ int32_t lc3_write_str(lc3_state& state, const std::function<int32_t(lc3_state&, 
 {
     for (const auto& c : str)
     {
-        if (writer(state, file, c)) return -1;
+        if (writer(state, file, c))
+            return -1;
     }
     return 0;
 }

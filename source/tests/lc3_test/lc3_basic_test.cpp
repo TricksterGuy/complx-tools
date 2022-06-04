@@ -67,148 +67,68 @@ const unsigned char simplesubr[] = {
 const unsigned int simplesubr_len = 22;
 
 
-BOOST_FIXTURE_TEST_CASE(InstructionDecodeTest, LC3BasicTest)
-{
-    std::stringstream file(std::string(reinterpret_cast<char*>(allinstrs), allinstrs_len));
-    file.ignore(4);
-
-    unsigned short data;
-    lc3_instr instr[18];
-
-                            //BR #1             : op, n, z, p, pc_offset
-    instr[0].br             = br_instruction({BR_INSTR, 1, 1, 1, 1});
-                            //ADD R0, R1, R2    : op, dr, sr1, 0, 0, sr2
-    instr[1].arith.reg      = arithreg_instruction({ADD_INSTR, 0, 1, 0, 0, 2});
-                            //ADD R0, R1, #2    : op, dr, sr1, 1, imm
-    instr[2].arith.imm      = arithimm_instruction({ADD_INSTR, 0, 1, 1, 2});
-                            //LD R0, #-1        : op, reg, pc_offset
-    instr[3].mem.offset     = memoryoffset_instruction({LD_INSTR, 0, -1});
-                            //ST R0, #-1        : op, reg, pc_offset
-    instr[4].mem.offset     = memoryoffset_instruction({ST_INSTR, 0, -1});
-                            //JSR #-1           : op, 1, pc_offset
-    instr[5].subr.jsr       = jsr_instruction({JSR_INSTR, 1, -1});
-                            //JSRR R0           : op, 0, 0, reg, 0
-    instr[6].subr.jsrr      = jsrr_instruction({JSRR_INSTR, 0, 0, 0, 0});
-                            //AND R0, R1, R2    : op, dr, sr1, 0, 0, sr2
-    instr[7].arith.reg      = arithreg_instruction({AND_INSTR, 0, 1, 0, 0, 2});
-                            //AND R0, R1, #2    : op, dr, sr1, 1, imm
-    instr[8].arith.imm      = arithimm_instruction({AND_INSTR, 0, 1, 1, 2});
-                            //LDR R0, R1, #2    : op, reg, base, offset
-    instr[9].mem.reg        = memoryreg_instruction({LDR_INSTR, 0, 1, 2});
-                            //STR R0, R1, #2    : op, reg, base, offset
-    instr[10].mem.reg       = memoryreg_instruction({STR_INSTR, 0, 1, 2});
-                            //NOT R0, R1        : op, dr, sr1, 0x3F
-    instr[11].arith.inv     = not_instruction({NOT_INSTR, 0, 1, 0x3F});
-                            // LDI R0, #-1      : op, reg, pc_offset
-    instr[12].mem.offset    = memoryoffset_instruction({LDI_INSTR, 0, -1});
-                            // STI R0, #-1      : op, reg, pc_offset
-    instr[13].mem.offset    = memoryoffset_instruction({STI_INSTR, 0, -1});
-                            // RET              : op, 0, 7, 0
-    instr[14].jmp           = jmp_instruction({RET_INSTR, 0, 7, 0});
-                            // JMP R0           : op, 0, reg, 0
-    instr[15].jmp           = jmp_instruction({JMP_INSTR, 0, 0, 0});
-                            // LEA R0, #-1      : op, reg, pc_offset
-    instr[16].mem.offset    = memoryoffset_instruction({LEA_INSTR, 0, -1});
-                            // TRAP x25         : op, 0, vector
-    instr[17].trap          = trap_instruction({TRAP_INSTR, 0, 0x25});
-
-    unsigned short data_answers[18] = {
-        0x0E01, 0x1042, 0x1062, 0x21ff, 0x31ff, 0x4fff, 0x4000,
-        0x5042, 0x5062, 0x6042, 0x7042, 0x907f, 0xa1ff, 0xb1ff,
-        0xc1c0, 0xc000, 0xe1ff, 0xf025
-    };
-
-
-    for (int i = 0; i < 18; i++)
-    {
-        file.read((char*) &data, sizeof(unsigned short));
-        data = ((data >> 8) & 0xFF) | ((data & 0xFF) << 8);
-        BOOST_CHECK_EQUAL(data, data_answers[i]);
-        BOOST_CHECK_EQUAL(instr[i].bits, lc3_decode(state, data).bits);
-    }
-
-    // Testing RTI and ERROR for complete test.
-    lc3_instr rti = lc3_decode(state, 0x8000);
-    lc3_instr error = lc3_decode(state, 0xD392);
-
-    BOOST_CHECK_EQUAL(rti.data.opcode, 0x8);
-    BOOST_CHECK_EQUAL(rti.data.data, 0x000);
-
-    BOOST_CHECK_EQUAL(error.data.opcode, 0xD);
-    BOOST_CHECK_EQUAL(error.data.data, 0x392);
-}
-
 
 BOOST_FIXTURE_TEST_CASE(InstructionDecodeTest2, LC3BasicTest)
 {
-    lc3_instr instr;
+    lc3_instruction instr(0x1008);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), ADD_INSTR);
+    BOOST_REQUIRE(!instr.is_imm());
+    BOOST_CHECK_EQUAL(instr.dr(), 0);
+    BOOST_CHECK_EQUAL(instr.sr1(), 0);
+    BOOST_CHECK_EQUAL(instr.sr2(), 0);
 
-    instr = lc3_decode(state, 0x1008);
-    BOOST_REQUIRE_EQUAL(instr.arith.reg.opcode, ADD_INSTR);
-    BOOST_REQUIRE(!instr.arith.reg.is_imm);
-    BOOST_CHECK_EQUAL(instr.arith.reg.dr, 0);
-    BOOST_CHECK_EQUAL(instr.arith.reg.sr1, 0);
-    BOOST_CHECK_EQUAL(instr.arith.reg.sr2, 0);
-    BOOST_CHECK_EQUAL(instr.arith.reg.unused, 1);
+    instr = lc3_instruction(0);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), BR_INSTR);
+    BOOST_CHECK_EQUAL(instr.n(), 0);
+    BOOST_CHECK_EQUAL(instr.z(), 0);
+    BOOST_CHECK_EQUAL(instr.p(), 0);
+    BOOST_CHECK_EQUAL(instr.pc_offset9(), 0);
 
-    instr = lc3_decode(state, 0);
-    BOOST_REQUIRE_EQUAL(instr.br.opcode, BR_INSTR);
-    BOOST_CHECK_EQUAL(instr.br.n, 0);
-    BOOST_CHECK_EQUAL(instr.br.z, 0);
-    BOOST_CHECK_EQUAL(instr.br.p, 0);
-    BOOST_CHECK_EQUAL(instr.br.pc_offset, 0);
+    instr = lc3_instruction(1);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), BR_INSTR);
+    BOOST_CHECK_EQUAL(instr.n(), 0);
+    BOOST_CHECK_EQUAL(instr.z(), 0);
+    BOOST_CHECK_EQUAL(instr.p(), 0);
+    BOOST_CHECK_EQUAL(instr.pc_offset9(), 1);
 
-    instr = lc3_decode(state, 1);
-    BOOST_REQUIRE_EQUAL(instr.br.opcode, BR_INSTR);
-    BOOST_CHECK_EQUAL(instr.br.n, 0);
-    BOOST_CHECK_EQUAL(instr.br.z, 0);
-    BOOST_CHECK_EQUAL(instr.br.p, 0);
-    BOOST_CHECK_EQUAL(instr.br.pc_offset, 1);
+    instr = lc3_instruction(0xC200);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), JMP_INSTR);
+    BOOST_CHECK_EQUAL(instr.base_r(), 0);
 
-    instr = lc3_decode(state, 0xC200);
-    BOOST_REQUIRE_EQUAL(instr.jmp.opcode, JMP_INSTR);
-    BOOST_CHECK_EQUAL(instr.jmp.unused_3, 1);
-    BOOST_CHECK_EQUAL(instr.jmp.base_r, 0);
-    BOOST_CHECK_EQUAL(instr.jmp.unused_6, 0);
+    instr = lc3_instruction(0xC001);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), JMP_INSTR);
+    BOOST_CHECK_EQUAL(instr.base_r(), 0);
 
-    instr = lc3_decode(state, 0xC001);
-    BOOST_REQUIRE_EQUAL(instr.jmp.opcode, JMP_INSTR);
-    BOOST_CHECK_EQUAL(instr.jmp.unused_3, 0);
-    BOOST_CHECK_EQUAL(instr.jmp.base_r, 0);
-    BOOST_CHECK_EQUAL(instr.jmp.unused_6, 1);
+    instr = lc3_instruction(0x4800);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), JSR_INSTR);
+    BOOST_REQUIRE(instr.is_jsr());
+    BOOST_CHECK_EQUAL(instr.pc_offset11(), 0);
 
-    instr = lc3_decode(state, 0x4200);
-    BOOST_REQUIRE_EQUAL(instr.subr.jsrr.opcode, JSRR_INSTR);
-    BOOST_REQUIRE_EQUAL(instr.subr.jsrr.is_jsr, 0);
-    BOOST_CHECK_EQUAL(instr.subr.jsrr.unused_2, 1);
-    BOOST_CHECK_EQUAL(instr.subr.jsrr.base_r, 0);
-    BOOST_CHECK_EQUAL(instr.subr.jsrr.unused_6, 0);
+    instr = lc3_instruction(0x4200);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), JSRR_INSTR);
+    BOOST_REQUIRE(!instr.is_jsr());
+    BOOST_CHECK_EQUAL(instr.base_r(), 0);
 
-    instr = lc3_decode(state, 0x4001);
-    BOOST_REQUIRE_EQUAL(instr.subr.jsrr.opcode, JSRR_INSTR);
-    BOOST_REQUIRE_EQUAL(instr.subr.jsrr.is_jsr, 0);
-    BOOST_CHECK_EQUAL(instr.subr.jsrr.unused_2, 0);
-    BOOST_CHECK_EQUAL(instr.subr.jsrr.base_r, 0);
-    BOOST_CHECK_EQUAL(instr.subr.jsrr.unused_6, 1);
+    instr = lc3_instruction(0x4001);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), JSRR_INSTR);
+    BOOST_REQUIRE(!instr.is_jsr());
+    BOOST_CHECK_EQUAL(instr.base_r(), 0);
 
-    instr = lc3_decode(state, 0x5008);
-    BOOST_REQUIRE_EQUAL(instr.arith.reg.opcode, AND_INSTR);
-    BOOST_REQUIRE(!instr.arith.reg.is_imm);
-    BOOST_CHECK_EQUAL(instr.arith.reg.dr, 0);
-    BOOST_CHECK_EQUAL(instr.arith.reg.sr1, 0);
-    BOOST_CHECK_EQUAL(instr.arith.reg.sr2, 0);
-    BOOST_CHECK_EQUAL(instr.arith.reg.unused, 1);
+    instr = lc3_instruction(0x5008);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), AND_INSTR);
+    BOOST_REQUIRE(!instr.is_imm());
+    BOOST_CHECK_EQUAL(instr.dr(), 0);
+    BOOST_CHECK_EQUAL(instr.sr1(), 0);
+    BOOST_CHECK_EQUAL(instr.sr2(), 0);
 
-    instr = lc3_decode(state, 0x903E);
-    BOOST_REQUIRE_EQUAL(instr.arith.inv.opcode, NOT_INSTR);
-    BOOST_CHECK_EQUAL(instr.arith.inv.dr, 0);
-    BOOST_CHECK_EQUAL(instr.arith.inv.sr1, 0);
-    BOOST_CHECK_EQUAL(instr.arith.inv.unused, 0x3E);
+    instr = lc3_instruction(0x903F);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), NOT_INSTR);
+    BOOST_CHECK_EQUAL(instr.dr(), 0);
+    BOOST_CHECK_EQUAL(instr.sr1(), 0);
 
-    instr = lc3_decode(state, 0xF100);
-    BOOST_REQUIRE_EQUAL(instr.trap.opcode, TRAP_INSTR);
-    BOOST_CHECK_EQUAL(instr.trap.unused, 1);
-    BOOST_CHECK_EQUAL(instr.trap.vector, 0);
+    instr = lc3_instruction(0xF100);
+    BOOST_REQUIRE_EQUAL(instr.opcode(), TRAP_INSTR);
+    BOOST_CHECK_EQUAL(instr.vector(), 0);
 }
 
 BOOST_FIXTURE_TEST_CASE(MalformedInstructionTest, LC3BasicTest)
@@ -218,8 +138,8 @@ BOOST_FIXTURE_TEST_CASE(MalformedInstructionTest, LC3BasicTest)
     for (const auto& data : malformed_instructionuctions)
     {
         BOOST_TEST_MESSAGE("data = x" << std::hex << data);
-        lc3_instr instr = lc3_decode(state, data);
-        lc3_state_change change = lc3_execute(state, instr);
+        BOOST_REQUIRE(lc3_check_malformed_instruction(lc3_instruction(data)));
+        lc3_state_change change = lc3_execute(state, data);
         BOOST_CHECK(state.halted);
         BOOST_CHECK_EQUAL(state.warnings, 1);
         BOOST_CHECK_EQUAL(state.pc, 0x2FFF);
@@ -485,28 +405,11 @@ BOOST_FIXTURE_TEST_CASE(TestSmartDisassemble, LC3BasicTest)
 
 BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
 {
-    arithreg_instruction add_r, and_r;
-    arithimm_instruction add_i, and_i;
-    not_instruction not_r;
-    lc3_instr instr;
-
-            //ADD R0, R1, R2    : op, dr, sr1, 0, 0, sr2
-    add_r = arithreg_instruction({ADD_INSTR, 0, 1, 0, 0, 2});
-            //ADD R0, R1, #2    : op, dr, sr1, 1, imm
-    add_i = arithimm_instruction({ADD_INSTR, 0, 1, 1, 2});
-            //AND R0, R1, R2    : op, dr, sr1, 0, 0, sr2
-    and_r = arithreg_instruction({AND_INSTR, 0, 1, 0, 0, 2});
-            //AND R0, R1, #2    : op, dr, sr1, 1, imm
-    and_i = arithimm_instruction({AND_INSTR, 0, 1, 1, 2});
-            //NOT R0, R1        : op, dr, sr1, 0x3F
-    not_r = not_instruction({NOT_INSTR, 0, 1, 0x3F});
-
     // ADD R0, R1, R2
     state.regs[0] = 23;
     state.regs[1] = 27;
     state.regs[2] = 43;
-    instr.arith.reg = add_r;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x1042);
     BOOST_CHECK_EQUAL(state.regs[0], 70);
     BOOST_CHECK_EQUAL(state.regs[1], 27);
     BOOST_CHECK_EQUAL(state.regs[2], 43);
@@ -517,8 +420,7 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
     // ADD R0, R1, #2
     state.regs[0] = 23;
     state.regs[1] = -666;
-    instr.arith.imm = add_i;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x1062);
     BOOST_CHECK_EQUAL(state.regs[0], -664);
     BOOST_CHECK_EQUAL(state.regs[1], -666);
     BOOST_CHECK_EQUAL(state.n, 1);
@@ -529,8 +431,7 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
     state.regs[0] = 23;
     state.regs[1] = -1;
     state.regs[2] = 0x0;
-    instr.arith.reg = and_r;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x5042);
     BOOST_CHECK_EQUAL(state.regs[0], 0);
     BOOST_CHECK_EQUAL(state.regs[1], -1);
     BOOST_CHECK_EQUAL(state.regs[2], 0x0);
@@ -541,8 +442,7 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
     // AND R0, R1, #2
     state.regs[0] = 23;
     state.regs[1] = -1;
-    instr.arith.imm = and_i;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x5062);
     BOOST_CHECK_EQUAL(state.regs[0], 2);
     BOOST_CHECK_EQUAL(state.regs[1], -1);
     BOOST_CHECK_EQUAL(state.n, 0);
@@ -552,8 +452,7 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
     // NOT R0, R1
     state.regs[0] = 23;
     state.regs[1] = 0x0;
-    instr.arith.inv = not_r;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x907F);
     BOOST_CHECK_EQUAL(state.regs[0], -1);
     BOOST_CHECK_EQUAL(state.regs[1], 0x0);
     BOOST_CHECK_EQUAL(state.n, 1);
@@ -563,89 +462,48 @@ BOOST_FIXTURE_TEST_CASE(TestArithInstructions, LC3BasicTest)
 
 BOOST_FIXTURE_TEST_CASE(TestControlInstructions, LC3BasicTest)
 {
-    state.strict_execution = 0;
-
-    br_instruction brnzp, brn, brz, brp, brnil;
-    jsr_instruction jsr;
-    jsrr_instruction jsrr;
-    jsrr_instruction jsrr7;
-    jmp_instruction ret, jmp;
-    trap_instruction halt;
-    lc3_instr instr;
-
-    //BR #1             : op, n, z, p, pc_offset
-    brnzp = br_instruction({BR_INSTR, 1, 1, 1, 1});
-    //BRN #1            : op, n, z, p, pc_offset
-    brn   = br_instruction({BR_INSTR, 1, 0, 0, 1});
-    //BRZ #-11          : op, n, z, p, pc_offset
-    brz   = br_instruction({BR_INSTR, 0, 1, 0, -11});
-    //BRP #1            : op, n, z, p, pc_offset
-    brp   = br_instruction({BR_INSTR, 0, 0, 1, 1});
-    //.fill #1          : op, n, z, p, pc_offset
-    brnil = br_instruction({BR_INSTR, 0, 0, 0, 1});
-
-    //JSR #-1           : op, 1, pc_offset
-    jsr   = jsr_instruction({JSR_INSTR, 1, -1});
-    //JSRR R0           : op, 0, 0, reg, 0
-    jsrr  = jsrr_instruction({JSRR_INSTR, 0, 0, 0, 0});
-    //JSRR R7           : op, 0, 0, reg, 0
-    jsrr7  = jsrr_instruction({JSRR_INSTR, 0, 0, 7, 0});
-    // RET              : op, 0, 7, 0
-    ret   = jmp_instruction({RET_INSTR, 0, 7, 0});
-    // JMP R0           : op, 0, reg, 0
-    jmp   = jmp_instruction({JMP_INSTR, 0, 0, 0});
-    // TRAP x25         : op, 0, vector
-    halt  = trap_instruction({TRAP_INSTR, 0, 0x25});
-
-
     // BR #1 (Taken)
-    instr.br = brnzp;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x0E01);
     BOOST_CHECK_EQUAL(state.pc, 0x3001U);
 
     // BRN #1 (Not taken)
     state.pc = 0x3000U;
-    instr.br = brn;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x0801);
     BOOST_CHECK_EQUAL(state.pc, 0x3000U);
 
     // BRZ #-11 (taken)
-    instr.br = brz;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x05F5);
     BOOST_CHECK_EQUAL(state.pc, 0x2FF5);
 
     // BRP #1 (Not taken)
     state.pc = 0x3000U;
-    instr.br = brp;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x0201);
     BOOST_CHECK_EQUAL(state.pc, 0x3000U);
 
     // .fill #1 (Not taken / This is also a NOP)
+    state.strict_execution = 0;
     state.pc = 0x3000U;
-    instr.br = brnil;
-    lc3_execute(state, instr);
+    lc3_execute(state, 1);
     BOOST_CHECK_EQUAL(state.pc, 0x3000U);
+    state.strict_execution = 1;
 
     // JSR #-1
     state.pc = 0x3000U;
-    instr.subr.jsr = jsr;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x4FFF);
     BOOST_CHECK_EQUAL(state.pc, 0x2FFFU);
     BOOST_CHECK_EQUAL(state.regs[7], 0x3000);
 
     // JSRR R0
     state.pc = 0x3000U;
     state.regs[0] = 0x6000;
-    instr.subr.jsrr = jsrr;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x4000);
     BOOST_CHECK_EQUAL(state.pc, 0x6000U);
     BOOST_CHECK_EQUAL(state.regs[7], 0x3000);
 
     // JSRR R7
     state.pc = 0x3000U;
     state.regs[7] = 0x6000;
-    instr.subr.jsrr = jsrr7;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x41C0);
     BOOST_CHECK_EQUAL(state.pc, 0x6000U);
     BOOST_CHECK_EQUAL(state.regs[7], 0x3000);
 
@@ -653,8 +511,7 @@ BOOST_FIXTURE_TEST_CASE(TestControlInstructions, LC3BasicTest)
     state.pc = 0x3000U;
     state.regs[0] = 0x4000;
     state.regs[7] = 0x2000;
-    instr.jmp = jmp;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xC000);
     BOOST_CHECK_EQUAL(state.pc, 0x4000U);
     BOOST_CHECK_EQUAL(state.regs[0], 0x4000);
     BOOST_CHECK_EQUAL(state.regs[7], 0x2000);
@@ -662,34 +519,28 @@ BOOST_FIXTURE_TEST_CASE(TestControlInstructions, LC3BasicTest)
     // RET
     state.pc = 0x3000U;
     state.regs[7] = 0x2000;
-    instr.jmp = ret;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xC1C0);
     BOOST_CHECK_EQUAL(state.pc, 0x2000U);
     BOOST_CHECK_EQUAL(state.regs[7], 0x2000);
 
     // TRAP x25 aka HALT
     state.pc = 0x3000U;
-    instr.trap = halt;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xF025);
     BOOST_CHECK_EQUAL(state.halted, 1);
 
     // TEST 2 with TRAP x25 (True traps)
     state.true_traps = 1;
     state.pc = 0x3000U;
-    instr.trap = halt;
     state.mem[0x25] = 0x0490;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xF025);
     BOOST_CHECK_EQUAL(state.pc, 0x0490U);
     BOOST_CHECK_EQUAL(state.regs[0x7], 0x3000);
 }
 
 BOOST_FIXTURE_TEST_CASE(TestErrorInstructions, LC3BasicTest)
 {
-    lc3_instr instr;
-
     state.pc = 0x3000U;
-    instr.data.opcode = ERROR_INSTR;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xD000);
     BOOST_CHECK_EQUAL(state.pc, 0x2FFFU);
     BOOST_CHECK_EQUAL(state.halted, 1);
     BOOST_CHECK_EQUAL(state.warnings, 1U);
@@ -697,8 +548,7 @@ BOOST_FIXTURE_TEST_CASE(TestErrorInstructions, LC3BasicTest)
     state.pc = 0x3000U;
     state.halted = 0;
     state.warnings = 0;
-    instr.data.opcode = RTI_INSTR;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x8000);
     BOOST_CHECK_EQUAL(state.pc, 0x2FFFU);
     BOOST_CHECK_EQUAL(state.halted, 1);
     BOOST_CHECK_EQUAL(state.warnings, 1U);
@@ -706,8 +556,7 @@ BOOST_FIXTURE_TEST_CASE(TestErrorInstructions, LC3BasicTest)
     state.pc = 0x3000U;
     state.halted = 0;
     state.warnings = 0;
-    instr.data.opcode = TRAP_INSTR;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xF000);
     BOOST_CHECK_EQUAL(state.pc, 0x2FFFU);
     BOOST_CHECK_EQUAL(state.halted, 1);
     BOOST_CHECK_EQUAL(state.warnings, 1U);
@@ -715,29 +564,9 @@ BOOST_FIXTURE_TEST_CASE(TestErrorInstructions, LC3BasicTest)
 
 BOOST_FIXTURE_TEST_CASE(TestMemoryInstructions, LC3BasicTest)
 {
-    memoryoffset_instruction ld, st, ldi, sti, lea;
-    memoryreg_instruction ldr, str;
-    lc3_instr instr;
-
-    // LD R0, #-1        : op, reg, pc_offset
-    ld = memoryoffset_instruction({LD_INSTR, 0, -1});
-    // ST R0, #-1        : op, reg, pc_offset
-    st = memoryoffset_instruction({ST_INSTR, 0, -1});
-    // LDR R0, R1, #2    : op, reg, base, offset
-    ldr = memoryreg_instruction({LDR_INSTR, 0, 1, 2});
-    // STR R0, R1, #2    : op, reg, base, offset
-    str = memoryreg_instruction({STR_INSTR, 0, 1, 2});
-    // LDI R0, #-1      : op, reg, pc_offset
-    ldi = memoryoffset_instruction({LDI_INSTR, 0, -1});
-    // STI R0, #-1      : op, reg, pc_offset
-    sti = memoryoffset_instruction({STI_INSTR, 0, -1});
-    // LEA R0, #-1      : op, reg, pc_offset
-    lea = memoryoffset_instruction({LEA_INSTR, 0, -1});
-
     // LD R0, #-1
     state.mem[0x2FFF] = 23;
-    instr.mem.offset = ld;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x21FF);
     BOOST_CHECK_EQUAL(state.regs[0], 23);
     BOOST_CHECK_EQUAL(state.mem[0x2FFF], 23);
     BOOST_CHECK_EQUAL(state.n, 0);
@@ -746,8 +575,7 @@ BOOST_FIXTURE_TEST_CASE(TestMemoryInstructions, LC3BasicTest)
 
     // ST R0, #-1
     state.regs[0] = 0;
-    instr.mem.offset = st;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x31FF);
     BOOST_CHECK_EQUAL(state.regs[0], 0);
     BOOST_CHECK_EQUAL(state.mem[0x2FFF], 0);
     BOOST_CHECK_EQUAL(state.n, 0);
@@ -757,8 +585,7 @@ BOOST_FIXTURE_TEST_CASE(TestMemoryInstructions, LC3BasicTest)
     // LDI R0, #-1
     state.mem[0x2FFF] = 0x4000;
     state.mem[0x4000] = -102;
-    instr.mem.offset = ldi;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xA1FF);
     BOOST_CHECK_EQUAL(state.regs[0], -102);
     BOOST_CHECK_EQUAL(state.mem[0x2FFF], 0x4000);
     BOOST_CHECK_EQUAL(state.mem[0x4000], -102);
@@ -770,8 +597,7 @@ BOOST_FIXTURE_TEST_CASE(TestMemoryInstructions, LC3BasicTest)
     state.regs[0] = 1337;
     state.mem[0x2FFF] = 0x4000;
     state.mem[0x4000] = -102;
-    instr.mem.offset = sti;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xB1FF);
     BOOST_CHECK_EQUAL(state.regs[0], 1337);
     BOOST_CHECK_EQUAL(state.mem[0x2FFF], 0x4000);
     BOOST_CHECK_EQUAL(state.mem[0x4000], 1337);
@@ -780,8 +606,7 @@ BOOST_FIXTURE_TEST_CASE(TestMemoryInstructions, LC3BasicTest)
     BOOST_CHECK_EQUAL(state.p, 0);
 
     // LEA R0, #-1
-    instr.mem.offset = lea;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xE1FF);
     BOOST_CHECK_EQUAL(state.regs[0], 0x2FFF);
     BOOST_CHECK_EQUAL(state.n, 0);
     BOOST_CHECK_EQUAL(state.z, 0);
@@ -791,8 +616,7 @@ BOOST_FIXTURE_TEST_CASE(TestMemoryInstructions, LC3BasicTest)
     state.regs[0] = 1337;
     state.regs[1] = 0x3004;
     state.mem[0x3006] = -7331;
-    instr.mem.reg = ldr;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x6042);
     BOOST_CHECK_EQUAL(state.regs[0], -7331);
     BOOST_CHECK_EQUAL(state.regs[1], 0x3004);
     BOOST_CHECK_EQUAL(state.mem[0x3006], -7331);
@@ -804,8 +628,7 @@ BOOST_FIXTURE_TEST_CASE(TestMemoryInstructions, LC3BasicTest)
     state.regs[0] = 1337;
     state.regs[1] = 0x3004;
     state.mem[0x3006] = -7331;
-    instr.mem.reg = str;
-    lc3_execute(state, instr);
+    lc3_execute(state, 0x7042);
     BOOST_CHECK_EQUAL(state.regs[0], 1337);
     BOOST_CHECK_EQUAL(state.regs[1], 0x3004);
     BOOST_CHECK_EQUAL(state.mem[0x3006], 1337);

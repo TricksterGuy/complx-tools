@@ -27,95 +27,10 @@ const char* WARNING_MESSAGES[LC3_WARNINGS] =
     "W%03d: ""Executing interrupt vector table address x%04x.",
 };
 
-lc3_instr lc3_decode(lc3_state& state, uint16_t data)
+lc3_state_change lc3_execute(lc3_state& state, uint16_t data)
 {
-    lc3_instr instr;
-    // Clear
-    instr.bits = 0;
-    // Gets the opcode bits
-    instr.data.opcode = (data >> 12) & 0xF;
+    lc3_instruction instruction(data);
 
-    switch(instr.data.opcode)
-    {
-        case BR_INSTR:
-            instr.br.n = (data >> 11) & 0x1;
-            instr.br.z = (data >> 10) & 0x1;
-            instr.br.p = (data >> 9)  & 0x1;
-            instr.br.pc_offset = data & 0x1FF;
-            break;
-        case ADD_INSTR:
-        case AND_INSTR:
-            instr.arith.imm.dr = (data >> 9) & 0x7;
-            instr.arith.imm.sr1 = (data >> 6) & 0x7;
-            instr.arith.imm.is_imm = (data >> 5) & 0x1;
-            if (instr.arith.imm.is_imm)
-                instr.arith.imm.imm = data & 0x1F;
-            else
-            {
-                instr.arith.reg.sr2 = data & 0x7;
-                instr.arith.reg.unused = (data >> 3) & 0x3;
-            }
-            break;
-        case NOT_INSTR:
-            instr.arith.inv.dr = (data >> 9) & 0x7;
-            instr.arith.inv.sr1 = (data >> 6) & 0x7;
-            instr.arith.inv.unused = data & 0x3F;
-            break;
-        case LD_INSTR:
-        case ST_INSTR:
-        case LEA_INSTR:
-        case LDI_INSTR:
-        case STI_INSTR:
-            instr.mem.offset.reg = (data >> 9) & 0x7;
-            instr.mem.offset.pc_offset = data & 0x1FF;
-            break;
-        case LDR_INSTR:
-        case STR_INSTR:
-            instr.mem.reg.reg = (data >> 9) & 0x7;
-            instr.mem.reg.base_r = (data >> 6) & 0x7;
-            instr.mem.reg.offset = data & 0x3F;
-            break;
-        case JSR_INSTR: // JSRR_INSTR
-            if ((data >> 11) & 0x1)
-            {
-                instr.subr.jsr.is_jsr = 1;
-                instr.subr.jsr.pc_offset = data & 0x7FF;
-            }
-            else
-            {
-                instr.subr.jsrr.is_jsr = 0;
-                instr.subr.jsrr.unused_2 = (data >> 9) & 0x3;
-                instr.subr.jsrr.base_r = (data >> 6) & 0x7;
-                instr.subr.jsrr.unused_6 = data & 0x3F;
-            }
-            break;
-        case JMP_INSTR: // RET_INSTR
-            instr.jmp.unused_3 = (data >> 9) & 0x7;
-            instr.jmp.base_r = (data >> 6) & 0x7;
-            instr.jmp.unused_6 = data & 0x3F;
-            break;
-        case TRAP_INSTR:
-            instr.trap.unused = (data >> 8) & 0xF;
-            instr.trap.vector = data & 0xFF;
-            break;
-        case RTI_INSTR:
-            instr.rti.data = data & 0xFFF;
-            break;
-        case ERROR_INSTR:
-            if (state.instructionPlugin)
-                state.instructionPlugin->OnDecode(state, data, instr);
-            else
-                instr.data.data = data & 0xFFF;
-            break;
-        default:
-            // Shouldn't happen
-            instr.data.data = data & 0xFFF;
-    }
-    return instr;
-}
-
-lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
-{
     // Initialize Changes (We don't know everything yet)
     lc3_state_change changes;
     changes.pc = state.pc;
@@ -136,188 +51,125 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
     changes.subroutine.r6 = 0x0;
     changes.subroutine.is_trap = false;
 
-    switch(instruction.data.opcode)
+    if (state.strict_execution && lc3_check_malformed_instruction(instruction))
+    {
+        state.halted = 1;
+        state.pc--;
+        lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
+        goto post_processing;
+    }
+
+    switch(instruction.opcode())
     {
         case BR_INSTR:
-            // Invalid instruction check
-            if (!instruction.br.n && !instruction.br.z && !instruction.br.p && state.strict_execution)
-            {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
-            else if ((instruction.br.n && state.n) || (instruction.br.z && state.z) || (instruction.br.p && state.p))
-                state.pc = state.pc + instruction.br.pc_offset;
+            if ((instruction.n() && state.n) || (instruction.z() && state.z) || (instruction.p() && state.p))
+                state.pc = state.pc + instruction.pc_offset9();
             break;
         case ADD_INSTR:
-            // Invalid instruction check
-            if (!instruction.arith.imm.is_imm && instruction.arith.reg.unused != 0 && state.strict_execution)
-            {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
+            changes.changes = LC3_REGISTER_CHANGE;
+            changes.location = instruction.dr();
+            changes.value = state.regs[changes.location];
+            if (instruction.is_imm())
+                state.regs[changes.location] = state.regs[instruction.sr1()] + instruction.imm5();
             else
-            {
-                // Hey DR will change here save it
-                changes.changes = LC3_REGISTER_CHANGE;
-                changes.location = instruction.arith.imm.dr;
-                changes.value = state.regs[changes.location];
-                // Two modes immediate value and registers
-                if (instruction.arith.imm.is_imm)
-                {
-                    state.regs[changes.location] = state.regs[instruction.arith.imm.sr1] + instruction.arith.imm.imm;
-                }
-                else
-                {
-                    state.regs[changes.location] = state.regs[instruction.arith.reg.sr1] +
-                                                   state.regs[instruction.arith.reg.sr2];
-                }
-                // Update NZP
-                lc3_setcc(state, state.regs[changes.location]);
-            }
+                state.regs[changes.location] = state.regs[instruction.sr1()] + state.regs[instruction.sr2()];
+            lc3_setcc(state, state.regs[changes.location]);
             break;
         case LD_INSTR:
-            // DR is going to change here.
             changes.changes = LC3_REGISTER_CHANGE;
-            changes.location = instruction.mem.offset.reg;
+            changes.location = instruction.dr();
             changes.value = state.regs[changes.location];
 
-            state.regs[changes.location] = lc3_mem_read(state, state.pc + instruction.mem.offset.pc_offset);
+            state.regs[changes.location] = lc3_mem_read(state, state.pc + instruction.pc_offset9());
             lc3_setcc(state, state.regs[changes.location]);
             break;
         case ST_INSTR:
-            // MEM[PC + PCOFFSET]  is going to change here.
             changes.changes = LC3_MEMORY_CHANGE;
-            changes.location = state.pc + instruction.mem.offset.pc_offset;
+            changes.location = state.pc + instruction.pc_offset9();
             changes.value = state.mem[changes.location];
 
-            lc3_mem_write(state, changes.location, state.regs[instruction.mem.offset.reg]);
+            lc3_mem_write(state, changes.location, state.regs[instruction.dr()]);
             break;
         case JSR_INSTR:
-            // Invalid instruction check
-            if (!instruction.subr.jsr.is_jsr && (instruction.subr.jsrr.unused_2 != 0 || instruction.subr.jsrr.unused_6 != 0) && state.strict_execution)
-            {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
+            state.regs[0x7] = state.pc;
+            if (instruction.is_jsr())
+                state.pc += instruction.pc_offset11();
+            // Special case you trash R7...
+            else if (instruction.base_r() == 0x7)
+                state.pc = changes.r7;
             else
+                state.pc = state.regs[instruction.base_r()];
+
+            // Special bookeeping.
+            // If not within an interrupt, then don't want to store subroutines within an interrupt.
+            if (state.privilege)
             {
-                // R7's going to change but its already saved. (Done in initializer)
-                // Save Return Address
+                changes.changes = LC3_SUBROUTINE_BEGIN;
+                changes.subroutine.address = state.pc;
+                changes.subroutine.r6 = state.regs[0x6];
 
-                state.regs[0x7] = state.pc;
-                // Perform the Jump
-                if (instruction.subr.jsr.is_jsr)
-                    state.pc += instruction.subr.jsr.pc_offset;
-                else if (instruction.subr.jsrr.base_r == 0x7)
-                    state.pc = changes.r7; // Special case you trash R7 by the above line...
-                else
-                    state.pc = state.regs[instruction.subr.jsrr.base_r];
-
-                // If not within an interrupt, then don't want to store subroutines within an interrupt.
-                if (state.privilege)
+                if (state.call_stack.empty() && state.in_lc3test)
                 {
-                    changes.changes = LC3_SUBROUTINE_BEGIN;
-                    changes.subroutine.address = state.pc;
-                    changes.subroutine.r6 = state.regs[0x6];
-
-                    //printf("enter: %x %d\n", state.pc, state.call_stack.size());
-                    if (state.call_stack.empty() && state.in_lc3test)
+                    int32_t num_params = 0;
+                    lc3_subroutine_call_info call_info;
+                    call_info.address = state.pc;
+                    call_info.r6 = state.regs[0x6];
+                    if (state.subroutines.find(state.pc) != state.subroutines.end())
+                        num_params = state.subroutines[state.pc].num_params;
+                    for (int32_t i = 0; i < num_params; i++)
                     {
-                        int32_t num_params = 0;
-                        lc3_subroutine_call_info call_info;
-                        call_info.address = state.pc;
-                        call_info.r6 = state.regs[0x6];
-                        if (state.subroutines.find(state.pc) != state.subroutines.end())
-                            num_params = state.subroutines[state.pc].num_params;
-                        for (int32_t i = 0; i < num_params; i++)
-			{
-				call_info.params.push_back(state.mem[call_info.r6 + i]);
-			}
+                        call_info.params.push_back(state.mem[call_info.r6 + i]);
+                    }
+
            	        for (int32_t i = 0; i < 8; i++)
-			{
-				call_info.regs[i] = state.regs[i];
-			}
-
-                        state.first_level_calls.push_back(call_info);
-                    }
-                    if (state.max_call_stack_size != 0)
                     {
-                        state.call_stack.push_back(changes.subroutine);
-                        if (state.max_call_stack_size < state.call_stack.size())
-                            state.call_stack.pop_front();
+                        call_info.regs[i] = state.regs[i];
                     }
-                    //printf("enter: %s\n", subroutine.name.c_str());
+
+                    state.first_level_calls.push_back(call_info);
+                }
+                if (state.max_call_stack_size != 0)
+                {
+                    state.call_stack.push_back(changes.subroutine);
+                    if (state.max_call_stack_size < state.call_stack.size())
+                        state.call_stack.pop_front();
                 }
             }
             break;
         case AND_INSTR:
-            // Invalid instruction check
-            if (!instruction.arith.imm.is_imm && instruction.arith.reg.unused != 0 && state.strict_execution)
-            {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
+            changes.changes = LC3_REGISTER_CHANGE;
+            changes.location = instruction.dr();
+            changes.value = state.regs[changes.location];
+            if (instruction.is_imm())
+                state.regs[changes.location] = state.regs[instruction.sr1()] & instruction.imm5();
             else
-            {
-                // Hey DR will change here save it
-                changes.changes = LC3_REGISTER_CHANGE;
-                changes.location = instruction.arith.imm.dr;
-                changes.value = state.regs[changes.location];
-                // Two modes immediate value and registers
-                if (instruction.arith.imm.is_imm)
-                {
-                    state.regs[changes.location] = state.regs[instruction.arith.imm.sr1] & instruction.arith.imm.imm;
-                }
-                else
-                {
-                    state.regs[changes.location] = state.regs[instruction.arith.reg.sr1] &
-                                                   state.regs[instruction.arith.reg.sr2];
-                }
-                // Update NZP
-                lc3_setcc(state, state.regs[changes.location]);
-            }
+                state.regs[changes.location] = state.regs[instruction.sr1()] & state.regs[instruction.sr2()];
+            lc3_setcc(state, state.regs[changes.location]);
             break;
         case LDR_INSTR:
             changes.changes = LC3_REGISTER_CHANGE;
-            changes.location = instruction.mem.reg.reg;
+            changes.location = instruction.dr();
             changes.value = state.regs[changes.location];
 
-            state.regs[changes.location] = lc3_mem_read(state, state.regs[instruction.mem.reg.base_r] +
-                                           instruction.mem.reg.offset);
+            state.regs[changes.location] = lc3_mem_read(state, state.regs[instruction.base_r()] + instruction.offset6());
             lc3_setcc(state, state.regs[changes.location]);
             break;
         case STR_INSTR:
-            // MEM[BASE + OFFSET] is going to change
             changes.changes = LC3_MEMORY_CHANGE;
-            changes.location = state.regs[instruction.mem.reg.base_r] + instruction.mem.reg.offset;
+            changes.location = state.regs[instruction.base_r()] + instruction.offset6();
             changes.value = state.mem[changes.location];
 
-            lc3_mem_write(state, changes.location, state.regs[instruction.mem.reg.reg]);
+            lc3_mem_write(state, changes.location, state.regs[instruction.dr()]);
             break;
         case RTI_INSTR:
-            // Invalid instruction check
-            if (instruction.rti.data != 0 && state.strict_execution)
+            if (state.privilege)
             {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
-            // SECURITY!
-            else if (state.privilege) // user mode
-            {
-                // OOOOH I'M TELLING
                 if (state.interrupt_enabled)
                 {
-                    // Cause an interrupt
                     lc3_signal_interrupt(state, state.priority, 0x00);
                 }
                 else
                 {
-                    // Warning
                     lc3_warning(state, LC3_USER_RTI, 0);
                     if (!state.true_traps)
                     {
@@ -371,7 +223,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
                         state.interrupt_vector = -1;
                     }
 
-                    changes.changes = LC3_INTERRUPT_END; // second flag.
+                    changes.changes = LC3_INTERRUPT_END;
                 }
                 else
                 {
@@ -385,102 +237,60 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             }
             break;
         case NOT_INSTR:
-            // Invalid instruction check
-            if (instruction.arith.inv.unused != 0x3F && state.strict_execution)
-            {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
-            else
-            {
-                // Hey DR will change here save it
-                changes.changes = LC3_REGISTER_CHANGE;
-                changes.location = instruction.arith.imm.dr;
-                changes.value = state.regs[changes.location];
-                state.regs[changes.location] = ~state.regs[instruction.arith.inv.sr1];
-                // Update NZP
-                lc3_setcc(state, state.regs[changes.location]);
-            }
+            changes.changes = LC3_REGISTER_CHANGE;
+            changes.location = instruction.dr();
+            changes.value = state.regs[changes.location];
+            state.regs[changes.location] = ~state.regs[instruction.sr1()];
+            lc3_setcc(state, state.regs[changes.location]);
             break;
         case LDI_INSTR:
             changes.changes = LC3_REGISTER_CHANGE;
-            changes.location = instruction.mem.offset.reg;
+            changes.location = instruction.dr();
             changes.value = state.regs[changes.location];
 
-            state.regs[changes.location] = lc3_mem_read(state, lc3_mem_read(state, state.pc + instruction.mem.offset.pc_offset));
+            state.regs[changes.location] = lc3_mem_read(state, lc3_mem_read(state, state.pc + instruction.pc_offset9()));
             lc3_setcc(state, state.regs[changes.location]);
             break;
         case STI_INSTR:
-            // MEM[MEM[PC + PCOFFSET]]  is going to change here.
             changes.changes = LC3_MEMORY_CHANGE;
-            changes.location = lc3_mem_read(state, state.pc + instruction.mem.offset.pc_offset);
+            changes.location = lc3_mem_read(state, state.pc + instruction.pc_offset9());
             changes.value = state.mem[changes.location];
 
-            lc3_mem_write(state, changes.location, state.regs[instruction.mem.offset.reg]);
+            lc3_mem_write(state, changes.location, state.regs[instruction.dr()]);
             break;
         case JMP_INSTR:
-            // Invalid instruction check
-            if ((instruction.jmp.unused_3 != 0 || instruction.jmp.unused_6 != 0) && state.strict_execution)
+            state.pc = state.regs[instruction.base_r()];
+            if (state.privilege && instruction.base_r() == 0x7)
             {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
-            else
-            {
-                // Jump
-                state.pc = state.regs[instruction.jmp.base_r];
-                // If not within an interrupt and is actually RET
-                if (state.privilege && instruction.jmp.base_r == 0x7)
+                changes.changes = LC3_SUBROUTINE_END;
+                if (!state.call_stack.empty())
                 {
-                    changes.changes = LC3_SUBROUTINE_END;
-                    if (!state.call_stack.empty())
-                    {
-                        changes.subroutine = state.call_stack.back();
-                        state.call_stack.pop_back();
-                        //printf("exit: %s %d\n", subroutine.name.c_str(), state.call_stack.size());
-                    }
-                    //else
-                    //    lc3_warning(state, "RET encountered when call stack was empty.");
+                    changes.subroutine = state.call_stack.back();
+                    state.call_stack.pop_back();
                 }
             }
             break;
         case LEA_INSTR:
             changes.changes = LC3_REGISTER_CHANGE;
-            changes.location = instruction.mem.offset.reg;
+            changes.location = instruction.dr();
             changes.value = state.regs[changes.location];
 
-            state.regs[changes.location] = state.pc + instruction.mem.offset.pc_offset;
+            state.regs[changes.location] = state.pc + instruction.pc_offset9();
             // In the 2019 revision of LC-3 LEA no longer sets condition codes.
             if (state.lc3_version == 0)
                 lc3_setcc(state, state.regs[changes.location]);
             break;
         case TRAP_INSTR:
-            // Invalid instruction check
-            if (instruction.trap.unused != 0 && state.strict_execution)
-            {
-                state.halted = 1;
-                state.pc--;
-                lc3_warning(state, LC3_MALFORMED_INSTRUCTION, state.mem[state.pc]);
-            }
-            else
-        {
+            // First version of the lc3 stored return info in R7
+            // R7's going to change save it But again its already saved.
             if (state.lc3_version == 0)
-            {
-                // R7's going to change save it But again its already saved.
-                // Save Return Address
                 state.regs[0x7] = state.pc;
-            }
 
-            // Return information is done via the stack in the lc3 revision.
-
-                // Execute the trap
-                lc3_trap(state, changes, instruction.trap);
-            }
+            // Return information is done via the stack in the lc3 revision and is handled in lc3_trap.
+            // Execute the trap
+            lc3_trap(state, changes, instruction.vector());
             break;
         case ERROR_INSTR:
-            // Do we have a plugin handler?
             if (state.instructionPlugin)
             {
                 // Success use it.
@@ -488,8 +298,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             }
             else
             {
-                // Warning
-                lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data);
+                lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.bits());
                 if (!state.true_traps)
                 {
                     state.halted = 1;
@@ -498,8 +307,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
             }
             break;
         default:
-            // shouldn't happen.
-            lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.data.opcode << 12 | instruction.data.data);
+            lc3_warning(state, LC3_UNSUPPORTED_INSTRUCTION, instruction.bits());
             if (!state.true_traps)
             {
                 state.halted = 1;
@@ -511,6 +319,7 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
     // Post processing.  If it is a register change and the register is r7
     // then move it.  Though why people would do something like ADD R7, R0, #1 is
     // beyond me...
+    post_processing:
     if (changes.changes == LC3_REGISTER_CHANGE && changes.location == 0x7)
     {
         changes.changes = LC3_NO_CHANGE;
@@ -520,22 +329,20 @@ lc3_state_change lc3_execute(lc3_state& state, lc3_instr instruction)
     return changes;
 }
 
-void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap)
+void lc3_trap(lc3_state& state, lc3_state_change& changes, uint8_t vector)
 {
-    // If not within an interrupt.
     if (state.privilege)
     {
-        if (state.call_stack.empty() && state.in_lc3test && trap.vector != TRAP_HALT)
+        if (state.call_stack.empty() && state.in_lc3test && vector != TRAP_HALT)
         {
             lc3_trap_call_info call_info;
-            call_info.vector = trap.vector;
+            call_info.vector = vector;
             for (int32_t i = 0; i < 8; i++)
                 call_info.regs[i] = state.regs[i];
             state.first_level_traps.push_back(call_info);
         }
     }
 
-    // Declarations
     uint16_t r0 = state.regs[0];
     bool kernel_mode = (state.pc >= 0x200 && state.pc < 0x3000) || (state.privilege == 0);
 
@@ -544,7 +351,6 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
     if (state.lc3_version != 0)
         kernel_mode = state.privilege == 0;
 
-    // If we are doing true traps.
     if (state.true_traps)
     {
         changes.changes = LC3_SUBROUTINE_BEGIN;
@@ -568,8 +374,7 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
             state.rti_stack.push_back(lc3_rti_stack_item{false});
         }
 
-        // PC = MEM[VECTOR]
-        state.pc = state.mem[trap.vector];
+        state.pc = state.mem[vector];
         changes.subroutine.address = state.pc;
 
         // If not within an interrupt
@@ -586,10 +391,9 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
     }
     else
     {
-        switch(trap.vector)
+        switch(vector)
         {
             case TRAP_GETC:
-                // R0 changes so save it.
                 changes.changes = LC3_REGISTER_CHANGE;
                 changes.location = 0;
                 changes.value = state.regs[0];
@@ -615,7 +419,6 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
                 }
                 break;
             case TRAP_IN:
-                // R0 changes so save it.
                 changes.changes = LC3_REGISTER_CHANGE;
                 changes.location = 0;
                 changes.value = state.regs[0];
@@ -665,14 +468,13 @@ void lc3_trap(lc3_state& state, lc3_state_change& changes, trap_instruction trap
                 break;
             default:
             {
-                // Hey does a plugin handle this?
-                if (state.trapPlugins.find(trap.vector) != state.trapPlugins.end())
+                if (state.trapPlugins.find(vector) != state.trapPlugins.end())
                 {
-                    state.trapPlugins[trap.vector]->OnExecute(state, changes);
+                    state.trapPlugins[vector]->OnExecute(state, changes);
                 }
                 else
                 {
-                    lc3_warning(state, LC3_UNSUPPORTED_TRAP, trap.vector);
+                    lc3_warning(state, LC3_UNSUPPORTED_TRAP, vector);
                     if (!state.true_traps)
                     {
                         state.halted = 1;

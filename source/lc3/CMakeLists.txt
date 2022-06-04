@@ -44,6 +44,7 @@ set(headers
     ${include_path}/lc3/lc3_assemble.hpp
     ${include_path}/lc3/lc3.hpp
     ${include_path}/lc3/lc3_debug.hpp
+    #${include_path}/lc3/lc3_event.hpp
     ${include_path}/lc3/lc3_execute.hpp
     ${include_path}/lc3/lc3_expressions.hpp
     ${include_path}/lc3/lc3_os.hpp
@@ -61,6 +62,7 @@ set(sources
     ${source_path}/lc3_assemble.cpp
     ${source_path}/lc3.cpp
     ${source_path}/lc3_debug.cpp
+    #${source_path}/lc3_event.cpp
     ${source_path}/lc3_execute.cpp
     ${source_path}/lc3_expressions.cpp
     ${source_path}/lc3_os.cpp
@@ -172,10 +174,15 @@ target_link_libraries(${target}
 
     PUBLIC
     ${DEFAULT_LIBRARIES}
+    ${CMAKE_DL_LIBS}
 
     INTERFACE
 )
 
+if(WIN32)
+    # Needed for htons
+    target_link_libraries(${target} PUBLIC ws2_32)
+endif(WIN32)
 
 #
 # Compile definitions
@@ -217,15 +224,10 @@ target_link_libraries(${target}
 
     PUBLIC
     ${DEFAULT_LINKER_OPTIONS}
-    ${CMAKE_DL_LIBS}
 
     INTERFACE
 )
 
-if(WIN32)
-    # Needed for htons
-    target_link_libraries(${target} PUBLIC ws2_32)
-endif(WIN32)
 
 
 #
@@ -237,6 +239,7 @@ perform_health_checks(
     ${sources}
     ${headers}
 )
+
 
 #
 # Deployment

@@ -178,7 +178,7 @@ std::string zlib_decompress(const std::string& str)
     }
     catch (std::exception const& e)
     {
-        throw LC3ReplayStringException(str, "Failed to parse replay string. Unable to decompress replay string data. Make sure you copy the full string from the autograder properly.");
+        throw LC3ReplayStringException("", "Failed to parse replay string. Unable to decompress replay string data. Make sure you copy the full string from the autograder properly.");
     }
 }
 
@@ -199,15 +199,15 @@ std::tuple<uint32_t, uint32_t, bool, std::string, uint32_t> decode_header(const 
     unsigned int magic;
     hbstream >> magic;
     if (magic != MAGIC)
-        throw "Failed to parse replay string. Header data is not present.";
+        throw LC3ReplayStringException("", "Failed to parse replay string. Header data is not present.");
 
     unsigned int major, minor;
     hbstream >> major;
     hbstream >> minor;
     if (major != MAJOR)
-        throw "Failed to parse replay string. Replay string version doesn't match.";
+        throw LC3ReplayStringException("", "Failed to parse replay string. Replay string version does not match.");
     if (minor > MINOR)
-        throw "Failed to parse replay string. Replay string version is newer.";
+        throw LC3ReplayStringException("", "Failed to parse replay string. Replay string version is newer.");
 
     unsigned int size, crc;
     hbstream >> size;

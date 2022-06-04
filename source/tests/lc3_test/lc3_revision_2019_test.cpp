@@ -24,15 +24,11 @@ struct LC3Revision2019Test
 
 BOOST_FIXTURE_TEST_CASE(TestLea, LC3Revision2019Test)
 {
-    lc3_instr instr;
-    // LEA R0, #-1      : op, reg, pc_offset
-    memoryoffset_instruction lea = memoryoffset_instruction({LEA_INSTR, 0, -1});
-    instr.mem.offset = lea;
     state.n = 1;
     state.z = 0;
     state.p = 0;
 
-    lc3_execute(state, instr);
+    lc3_execute(state, 0xE1FF);
 
     // LEA no longer changes the CC register.
     BOOST_CHECK_EQUAL(state.regs[0], 0x2FFF);

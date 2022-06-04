@@ -211,7 +211,7 @@ struct LC3_API RLEColorEntry
   *
   * Implement OnDissassemble to handle producing an assembly version of the new instruction (alternative a human readable version if the level is high enough).
   *
-  * Implement OnDecode to handle filling out the lc3_instr object for use in OnExecute.
+  * Implement OnDecode to handle filling out the lc3_instruction object for use in OnExecute.
   *
   * Implement OnExecute to do whatever you wish being sure to fill out the lc3_state_change object or else backstepping will not work.
   *
@@ -233,15 +233,6 @@ public:
       * @param context LC3AssembleContext.
       */
     virtual uint16_t DoAssembleOne(lc3_state& state, LC3AssembleContext& context) = 0;
-    /** OnDecode
-      *
-      * Called when the new instruction is decoded.
-      * Fill out the lc3_instr object passed in.
-      * @param state LC3State object.
-      * @param data Bits to decode.
-      * @param instr lc3_instr object to fill in.
-      */
-    virtual void OnDecode(lc3_state& state, uint16_t data, lc3_instr& instr) = 0;
     /** OnExecute
       *
       * Called when the new instruction is executed.
@@ -250,7 +241,7 @@ public:
       * @param instruction Instruction data.
       * @param changes Record of changes made to LC3State object as part of execution.
       */
-    virtual void OnExecute(lc3_state& state, lc3_instr& instruction, lc3_state_change& changes) = 0;
+    virtual void OnExecute(lc3_state& state, const lc3_instruction& instruction, lc3_state_change& changes) = 0;
     /** OnDisassemble
       *
       * Called when a disassembled version of the new instruction is requested /
@@ -258,7 +249,7 @@ public:
       * @param instruction Instruction data.
       * @param level Disassemble level.
       */
-    virtual std::string OnDisassemble(lc3_state& state, lc3_instr& instr, unsigned int level) = 0;
+    virtual std::string OnDisassemble(lc3_state& state, const lc3_instruction& instr, unsigned int level) = 0;
     /** GetInstructionColoring
       *
       * Called to get the instruction coloring for this instruction.
