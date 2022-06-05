@@ -177,6 +177,26 @@ enum LC3_API DISASSEMBLE_LEVELS
     LC3_ADVANCED_DISASSEMBLE
 };
 
+/** LC3 event id type */
+enum class lc3_event_id
+{
+    INVALID = 0,
+    OUTPUT,
+    OUTPUT_STRING,
+    INPUT,
+    INTERRUPT,
+    EXIT_INTERRUPT,
+    TRAP,
+    EXIT_TRAP,
+    SUBROUTINE,
+    EXIT_SUBROUTINE,
+    MEMORY_READ,
+    MEMORY_WRITE,
+    WARNING,
+    BREAKPOINT,
+    WATCHPOINT,
+};
+
 #define DEFAULT_KEYBOARD_INTERRUPT_DELAY 1000
 
 class Plugin;
@@ -184,6 +204,7 @@ class InstructionPlugin;
 class DeviceRegisterPlugin;
 class TrapFunctionPlugin;
 class PluginParams;
+class lc3_state;
 
 using PluginCreateFunc = std::function<Plugin*(const PluginParams&)>;
 using PluginDestroyFunc = std::function<void(Plugin*)>;
@@ -406,6 +427,41 @@ typedef struct lc3_rti_stack_item
     bool is_interrupt;
 } lc3_rti_stack_item;
 
+using lc3_output_event          = std::function<void(lc3_state&, char)>;
+using lc3_puts_event            = std::function<void(lc3_state&, const std::string&)>;
+using lc3_input_event           = std::function<void(lc3_state&, uint8_t)>;
+using lc3_interrupt_event       = std::function<void(lc3_state&, uint8_t)>;
+using lc3_exit_interrupt_event  = std::function<void(lc3_state&, uint8_t)>;
+using lc3_trap_event            = std::function<void(lc3_state&, uint8_t)>;
+using lc3_exit_trap_event       = std::function<void(lc3_state&, uint8_t)>;
+using lc3_subroutine_event      = std::function<void(lc3_state&, uint8_t)>;
+using lc3_exit_subroutine_event = std::function<void(lc3_state&, uint8_t)>;
+using lc3_memory_read_event     = std::function<void(lc3_state&, uint16_t)>;
+using lc3_memory_write_event    = std::function<void(lc3_state&, uint16_t, int16_t)>;
+using lc3_warning_event         = std::function<void(lc3_state&, int32_t)>;
+using lc3_breakpoint_event      = std::function<void(lc3_state&, const lc3_debug_info&)>;
+using lc3_watchpoint_event      = std::function<void(lc3_state&, const lc3_debug_info&)>;
+
+//  LC3 event function type
+using lc3_event_function = std::variant<
+    std::monostate,
+    lc3_output_event,
+    lc3_puts_event,
+    lc3_input_event,
+    lc3_interrupt_event,
+    lc3_exit_interrupt_event,
+    lc3_trap_event,
+    lc3_exit_trap_event,
+    lc3_subroutine_event,
+    lc3_exit_subroutine_event,
+    lc3_memory_read_event,
+    lc3_memory_write_event,
+    lc3_warning_event,
+    lc3_breakpoint_event,
+    lc3_watchpoint_event
+>;
+
+
 /** Main type for a running lc3 machine */
 struct LC3_API lc3_state
 {
@@ -473,6 +529,8 @@ struct LC3_API lc3_state
     std::vector<lc3_subroutine_call_info> first_level_calls;
     // First layer of trap calls (In case of multi recursion).
     std::vector<lc3_trap_call_info> first_level_traps;
+    // Event table
+    std::unordered_map<lc3_event_id, std::list<lc3_event_function>> event_table;
 
     // Random number generator
     std::mt19937 rng;
